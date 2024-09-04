@@ -1,50 +1,6 @@
 <?php
 
-// ensure the page is not cached
-header("Cache-Control: no-cache, must-revalidate"); // HTTP 1.1
-header("Expires: Sat, 26 Jul 1997 05:00:00 GMT"); // Date in the past
-
-// Get the parameters from the URL
-
-// uncomment to make the parameter mandatory
-// if (!isset($_GET['last_id'])) {
-//   // Parameter is missing, exit the script with a message
-//   exit("Error: 'last_id' parameter is missing.");
-// }
-
-$last_id = isset($_GET['last_id']) ? $_GET['last_id'] : 0;
-
-// Get the server name (domain)
-$domain_name = $_SERVER['HTTP_HOST'];
-if ($domain_name == 'www.masadvise.org') {
-    $domain_name = 'masadvise.org';
-}
-$mas_path = '/home/mas/web/' . $domain_name . '/public_html/';
-// echo '$mas_path is: ' . $mas_path . '<br>';
-
-// Nina's contact id in this environment
-$nina = 7608;
-
-//required include files
-require($mas_path . 'wp-blog-header.php');
-require_once($mas_path . 'wp-config.php');
-require_once($mas_path . 'wp-includes/wp-db.php');
-// if you want to load all of wordpress, replace the three lines above with
-// require_once($mas_path . 'wp-load.php');
-
-// Ensure this script is executed within WordPress
-if (!defined('ABSPATH')) {
-    exit("This script can only be run within WordPress.");
-} else {
-    echo 'ABSPATH is: ' . ABSPATH . '<br>';
-}
-
-// Check if the current user is logged in and has the Administrator role
-if (current_user_can('administrator')) {
-    echo "You are an Administrator.<br>";
-} else {
-    exit("You do not have sufficient permissions to access this script.");
-}
+require_once 'dataload_header.php';
 
 class CiviCaseImport
 {
@@ -57,10 +13,11 @@ class CiviCaseImport
         global $wpdb;
         global $nina;
         global $last_id;
-        echo 'Source and Target Database is ' . $wpdb->dbname . ' and Ninas ID is ' . $nina . ' and $last_id is ' . $last_id . '<br>';
+
+        echo 'CRM Database is ' . $wpdb->dbname . '  and Ninas ID is ' . $nina . '  and $last_id is ' . $last_id . '<br>';
 
         // Fetch all rows from the project table
-        $p_sql = $wpdb->prepare("SELECT * FROM bgf_dataload_tProject WHERE ProjectID > %s", $last_id);
+        $p_sql = $wpdb->prepare("SELECT * FROM bgf_dataload_tProject WHERE ProjectID > %s AND Processed IS NOT TRUE", $last_id);
         $p_results = $wpdb->get_results($p_sql);
 
         // Check if any rows are returned
@@ -73,47 +30,66 @@ class CiviCaseImport
 
             foreach ($p_results as $project) {
 
-                // Get client, client rep, and MAS rep
-                $client_sql = $wpdb->prepare("SELECT id FROM civicrm_contact WHERE external_identifier = %s", $project->ClientID);
-                $client_id = $wpdb->get_var($client_sql);
+                // Get the client
+                $clients = \Civi\Api4\Contact::get(TRUE)
+                    ->addSelect('id')
+                    ->addWhere('external_identifier', '=', $project->ClientID)
+                    ->execute();
+                // Check if any client was found
+                if ($clients->rowCount > 0) {
+                    $client_id = $clients[0]['id']; // Correctly accessing the 'id' field
+                } else {
+                    // Handle the case where no contact was found with the given external_identifier
+                    echo 'No client found for external identifier ' . $project->ClientID . '<br>';
+                    $client_id = null; // Or handle it as needed
+                }
+
                 // $ext_client_rep_id = strval(intval($project->ClientRepID) + 1000000);
-                // $client_rep_sql = $wpdb->prepare("SELECT id FROM civicrm_contact WHERE external_identifier = %s", $ext_client_rep_id);
-                // $client_rep_id = $wpdb->get_var($client_rep_sql);
+                // Get the client rep
                 // $ext_mas_rep_id = strval(intval($project->RepID) + 2000000);
-                // $mas_rep_sql = $wpdb->prepare("SELECT id FROM civicrm_contact WHERE external_identifier = %s", $ext_mas_rep_id);
-                // $mas_rep_id = $wpdb->get_var($mas_rep_sql);
+                // Get the MAS rep
 
                 // Get the service request
                 if (!empty($project->RequestID)) {
-                    $sr_sql = $wpdb->prepare(
-                        "SELECT id FROM civicrm_case WHERE subject = %s",
-                        $project->RequestID
+
+                    $srs = \Civi\Api4\CiviCase::get(TRUE)
+                        ->addSelect('id')
+                        ->addWhere('subject', '=', $project->RequestID)
+                        ->execute();
+                    // Check if any client was found
+                    if ($srs->rowCount > 0) {
+                        $sr_id = $srs[0]['id']; // Correctly accessing the 'id' field
+                    } else {
+                        // Handle the case where no sr was found 
+                        echo 'No sr found for subject ' . $project->RequestID . '<br>';
+                        $sr_id = null; // Or handle it as needed
+                    }
+                    // UPDATE the project
+                    $update_results = $wpdb->update(
+                        'bgf_dataload_tProject',  // Table name
+                        array(
+                            'ClientID_Clean' => $client_id,
+                            // 'ClientRepID_Clean' => $client_rep_id,
+                            // 'MASRepID_Clean' => $mas_rep_id,
+                            'RequestID_Clean' => $sr_id
+                            // 'ProjectID_Clean' => $p_id
+                        ),
+                        array('ProjectID' => $project->ProjectID)  // WHERE clause
                     );
-                    $sr_id = $wpdb->get_var($sr_sql);
                 } else {
-                    $sr_id = null;
+                    // UPDATE the project
+                    $update_results = $wpdb->update(
+                        'bgf_dataload_tProject',  // Table name
+                        array(
+                            'ClientID_Clean' => $client_id,
+                            // 'ClientRepID_Clean' => $client_rep_id,
+                            // 'MASRepID_Clean' => $mas_rep_id,
+                            // 'RequestID_Clean' => $sr_id
+                            // 'ProjectID_Clean' => $p_id
+                        ),
+                        array('ProjectID' => $project->ProjectID)  // WHERE clause
+                    );
                 }
-
-                // // Get the project
-                // if (!empty($project->ProjectID)) {
-                //     $p_sql = $wpdb->prepare("SELECT id FROM civicrm_case WHERE subject = %s", $project->ProjectID);
-                //     $p_id = $wpdb->get_var($p_sql);
-                // } else {
-                //     $p_id = null;
-                // }
-
-                // UPDATE the project
-                $update_results = $wpdb->update(
-                    'bgf_dataload_tProject',  // Table name
-                    array(
-                        'ClientID_Clean' => $client_id,
-                        // 'ClientRepID_Clean' => $client_rep_id,
-                        // 'MASRepID_Clean' => $mas_rep_id,
-                        'RequestID_Clean' => $sr_id
-                        // 'ProjectID_Clean' => $p_id
-                    ),
-                    array('ProjectID' => $project->ProjectID)  // WHERE clause
-                );
 
                 // echo '<br> Updating Request ID: ' . $project->RequestID . ' Results: ' . $update_results . '<br>';
 
@@ -124,7 +100,7 @@ class CiviCaseImport
                         $last_id = $project->ProjectID;
 
                         // Construct the URL correctly using site_url or home_url
-                        $url = site_url('scripts/project_clean.php?last_id=' . urlencode($last_id));
+                        $url = site_url('/wp-content/uploads/civicrm/ext/mascode/extern/project_clean.php?last_id=' . urlencode($last_id));
 
                         // Output the correct URL
                         echo 'Run <a href="' . esc_url($url) . '">' . esc_url($url) . '</a><br>';
