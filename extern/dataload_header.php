@@ -4,14 +4,6 @@
 header("Cache-Control: no-cache, must-revalidate"); // HTTP 1.1
 header("Expires: Sat, 26 Jul 1997 05:00:00 GMT"); // Date in the past
 
-// Get the parameters from the URL
-
-// uncomment to make the parameter mandatory
-// if (!isset($_GET['last_id'])) {
-// // Parameter is missing, exit the script with a message
-// exit("Error: 'last_id' parameter is missing.");
-// }
-
 $last_id = isset($_GET['last_id']) ? $_GET['last_id'] : 0;
 
 // Get the server name (domain)
@@ -38,17 +30,8 @@ echo '$mas_path is: ' . $mas_path . '<br>';
 // Nina's contact id in this environment
 $nina = 7608;
 
-// required Wordpress include files
-// require($mas_path . 'wp-blog-header.php');
-// require_once($mas_path . 'wp-config.php');
-// require_once($mas_path . 'wp-includes/wp-db.php');
-// if you want to load all of wordpress, replace the three lines above with
+// require Wordpress
 require_once $mas_path . 'wp-load.php';
-
-// do we need to load and initialize CiviCRM???
-// require_once $mas_path . 'wp-content/uploads/civicrm/civicrm.settings.php';
-// require_once 'CRM/Core/Config.php';
-// $config = CRM_Core_Config::singleton();
 
 // Ensure this script is executed within WordPress
 if (!defined('ABSPATH')) {

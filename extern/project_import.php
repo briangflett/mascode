@@ -44,8 +44,8 @@ class CiviCaseImport
         if (!empty($p_results)) {
             // Iterate through each row
             $start_time = microtime(true);
-            $timeout_limit = 470; // Set this slightly less than 30 seconds
-            $check_interval = 200; // Check time every 100 rows
+            $timeout_limit = 1; // Set this slightly less than 30 seconds
+            $check_interval = 5; // Check time every 100 rows
             $row_count = 0;
 
             foreach ($p_results as $project) {
