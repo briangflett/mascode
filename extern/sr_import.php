@@ -110,12 +110,7 @@ class CiviCaseImport
                   ->execute();
               } catch (Exception $e) {
                 // Handle duplicate error or log the message
-                // echo "Error creating MAS relationship: $e->getMessage() <br>";
-                echo "Error creating MAS relationship: <br>";
-                // Dump the entire $e object to see its structure
-                echo "<pre>";
-                var_dump($e);
-                echo "</pre>";
+                echo "Error creating MAS relationship: " . $e->getMessage() . " for Case:$case_id Client:$sr->ClientID_Clean MAS Rep:$mas_rep_id<br>";
               }
             } else {
               echo "Unable to add MAS rep for service request $sr->RequestID because external id $mas_rep_id is missing.  <br>";
@@ -138,12 +133,7 @@ class CiviCaseImport
                   ->execute();
               } catch (Exception $e) {
                 // Handle duplicate error or log the message
-                // echo "Error creating Client relationship: $e->getMessage() <br>";
-                echo "Error creating Client relationship: <br>";
-                // Dump the entire $e object to see its structure
-                echo "<pre>";
-                var_dump($e);
-                echo "</pre>";
+                echo "Error creating Client relationship: " . $e->getMessage() . " for Case:$case_id Client:$sr->ClientID_Clean Client Rep:$client_rep_id<br>";
               }
             } else {
               echo "Unable to add client rep for service request $sr->RequestID because external id $client_rep_id is missing.  <br>";

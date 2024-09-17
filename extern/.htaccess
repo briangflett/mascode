@@ -1,0 +1,11 @@
+# Allow execution of PHP files in this specific directory
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    # Disable PHP restriction for this directory
+    RewriteCond %{REQUEST_URI} !^/wp-content/uploads/civicrm/ext/mascode/extern/.*\.(php[1-7]?|pht|phtml?|phps)\.?$
+</IfModule>
+
+# Allow all files to be executed in this directory
+<FilesMatch "\.(php|phtml|phps)$">
+    Require all granted
+</FilesMatch>
