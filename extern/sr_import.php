@@ -1,47 +1,6 @@
 <?php
 
-// ensure the page is not cached
-header("Cache-Control: no-cache, must-revalidate"); // HTTP 1.1
-header("Expires: Sat, 26 Jul 1997 05:00:00 GMT"); // Date in the past
-
-// Get the parameters from the URL
-
-// uncomment to make the parameter mandatory
-// if (!isset($_GET['last_id'])) {
-//   // Parameter is missing, exit the script with a message
-//   exit("Error: 'last_id' parameter is missing.");
-// }
-
-$last_id = isset($_GET['last_id']) ? $_GET['last_id'] : 'R00000';
-
-// Get the server name (domain)
-$domain_name = $_SERVER['HTTP_HOST'];
-$mas_path = '/home/mas/web/' . $domain_name . '/public_html/';
-// echo '$mas_path is: ' . $mas_path . '<br>';
-
-// Nina's contact id in this environment
-$nina = 7608;
-
-//required include files
-require($mas_path . 'wp-blog-header.php');
-require_once($mas_path . 'wp-config.php');
-require_once($mas_path . 'wp-includes/wp-db.php');
-// if you want to load all of wordpress, replace the three lines above with
-// require_once($mas_path . 'wp-load.php');
-
-// Ensure this script is executed within WordPress
-if (!defined('ABSPATH')) {
-  exit("This script can only be run within WordPress.");
-} else {
-  echo 'ABSPATH is: ' . ABSPATH . '<br>';
-}
-
-// Check if the current user is logged in and has the Administrator role
-if (current_user_can('administrator')) {
-  echo "You are an Administrator.<br>";
-} else {
-  exit("You do not have sufficient permissions to access this script.");
-}
+require_once 'dataload_header.php';
 
 class CiviCaseImport
 {
@@ -67,106 +26,202 @@ class CiviCaseImport
       $statusMap[$status['label']] = $status['grouping'];
     }
 
-    // Lookup the status class by label
-    function getStatusClass($label, $statusMap)
-    {
-      if (isset($statusMap[$label])) {
-        return $statusMap[$label];
-      } else {
-        return null;
-      }
-    }
-
-    // Fetch all rows from the service requests table
-    $sr_sql = $wpdb->prepare("SELECT * FROM bgf_dataload_tServiceRequest WHERE RequestID > %s AND ClientID_Clean IS NOT NULL", $last_id);
+    // Fetch a limited set of rows from the service requests table
+    $sr_sql = $wpdb->prepare(
+      "SELECT * FROM bgf_dataload_tServiceRequest WHERE RequestID > %s AND Processed IS NOT TRUE ORDER BY RequestID LIMIT %d",
+      $last_id,
+      1000 // For example, to limit the results to x rows
+    );
     $sr_results = $wpdb->get_results($sr_sql);
 
     // Check if any rows are returned
     if (!empty($sr_results)) {
       // Iterate through each row
-      $start_time = microtime(true);
-      $timeout_limit = 28; // Set this slightly less than 30 seconds
-      $check_interval = 100; // Check time every 100 rows
-      $row_count = 0;
-
       foreach ($sr_results as $sr) {
-        // Access the row's data
-        // echo 'Adding Request ID: ' . $sr->RequestID . ' for Practice Area ' . $sr->PracticeArea . '<br>';
+        // Get the CiviCRM ClientID
+        $sr->ClientID_Clean = $this->getClientID($sr->ClientID);
 
-        // Create a case
-        $civiCase = \Civi\Api4\CiviCase::create(TRUE)
-          ->addValue('case_type_id.name', 'service_request')
-          ->addValue('subject', $sr->RequestID)
-          ->addValue('creator_id', $nina)
-          ->addValue('start_date', $sr->InitiationDate)
-          ->addValue('end_date', $sr->ResolutionDate)
-          ->addValue('status_id:label', $sr->Status)
-          ->addValue('Cases_SR_Projects_.Practice_Area', $sr->PracticeArea)
-          ->addValue('Cases_SR_Projects_.Referral', $sr->Referral)
-          ->addValue('Cases_SR_Projects_.Notes', $sr->Notes)
-          ->addValue(
-            'contact_id',
-            [
-              $sr->ClientID_Clean
-            ]
-          )
-          ->execute();
-
-        // Access the ID of the first created case
-        $createdCaseId = $civiCase[0]['id'];
-        // echo 'Case created successfully with ID: ' . $createdCaseId . '<br>';
-
-        // Should the relationships be active or inactive?
-        if (getStatusClass($sr->Status, $statusMap) == "Closed") {
-          $relationshipActive = FALSE;
-        } else {
-          $relationshipActive = TRUE;
-        }
-
-        // Create the MAS Rep
-        if (!empty($sr->MASRepID_Clean)) {
-          $caseRole = \Civi\Api4\Relationship::create(TRUE)
-            ->addValue('contact_id_a', $sr->MASRepID_Clean)
-            ->addValue('contact_id_b', $sr->ClientID_Clean)
-            ->addValue('relationship_type_id:label', 'Case MAS Rep is')
-            ->addValue('case_id', $createdCaseId)
-            ->addValue('is_active', $relationshipActive)
-            ->execute();
-        }
-
-        // Create the Client Rep
-        if (!empty($sr->ClientRepID_Clean)) {
-          $caseRole = \Civi\Api4\Relationship::create(TRUE)
-            ->addValue('contact_id_a', $sr->ClientRepID_Clean)
-            ->addValue('contact_id_b', $sr->ClientID_Clean)
-            ->addValue('relationship_type_id:label', 'Case Client Rep is')
-            ->addValue('case_id', $createdCaseId)
-            ->addValue('is_active', $relationshipActive)
-            ->execute();
-        }
-
-        $row_count++;
-        if ($row_count % $check_interval == 0) {
-          if ((microtime(true) - $start_time) >= $timeout_limit) {
-            echo "Script is nearing the timeout limit after processing $row_count rows. <br>";
-            $last_id = $sr->RequestID;
-
-            // Construct the URL correctly using site_url or home_url
-            $url = site_url('scripts/sr_import.php?last_id=' . urlencode($last_id));
-
-            // Output the correct URL
-            echo 'Run <a href="' . esc_url($url) . '">' . esc_url($url) . '</a><br>';
-            echo "Exiting gracefully.";
-            exit;
+        if (!empty($sr->ClientID_Clean)) {
+          // insert or update BGF ??
+          if ($sr->RequestID > 'R24168') {
+            // Create a case
+            $civiCase = \Civi\Api4\CiviCase::create(TRUE)
+              ->addValue('case_type_id.name', 'service_request')
+              ->addValue('subject', $sr->RequestID)
+              ->addValue('creator_id', $nina)
+              ->addValue('start_date', $sr->InitiationDate)
+              ->addValue('end_date', $sr->ResolutionDate)
+              ->addValue('status_id:label', $sr->Status)
+              ->addValue('Cases_SR_Projects_.Practice_Area', $sr->PracticeArea)
+              ->addValue('Cases_SR_Projects_.Referral', $sr->Referral)
+              ->addValue('Cases_SR_Projects_.Notes', $sr->Notes)
+              ->addValue(
+                'contact_id',
+                [
+                  $sr->ClientID_Clean
+                ]
+              )
+              ->execute();
+          } else {
+            // Update a case
+            $civiCase = \Civi\Api4\CiviCase::update(TRUE)
+              ->addValue('case_type_id.name', 'service_request')
+              ->addValue('creator_id', $nina)
+              ->addValue('start_date', $sr->InitiationDate)
+              ->addValue('end_date', $sr->ResolutionDate)
+              ->addValue('status_id:label', $sr->Status)
+              ->addValue('Cases_SR_Projects_.Practice_Area', $sr->PracticeArea)
+              ->addValue('Cases_SR_Projects_.Referral', $sr->Referral)
+              ->addValue('Cases_SR_Projects_.Notes', $sr->Notes)
+              ->addValue(
+                'contact_id',
+                [
+                  $sr->ClientID_Clean
+                ]
+              )
+              ->addWhere('subject', '=', $sr->RequestID)
+              ->execute();
           }
+
+          // Access the ID of the first created or updated case
+          $case_id = $civiCase[0]['id'];
+
+          // Should the relationships be active or inactive?
+          $this_status = $this->getStatusClass($sr->Status, $statusMap);
+          if ($this_status == "Closed") {
+            $relationshipActive = FALSE;
+          } else {
+            $relationshipActive = TRUE;
+          }
+
+          // Create the MAS Rep
+          if (!empty($sr->RepID)) {
+            // Get the MAS rep
+            $ext_mas_rep_id = strval(intval($sr->RepID) + 2000000);
+            $mas_rep_id = $this->getClientID($ext_mas_rep_id);
+            if (!empty($mas_rep_id)) {
+              try {
+                $caseRole = \Civi\Api4\Relationship::create(TRUE)
+                  ->addValue('contact_id_a', $mas_rep_id)
+                  ->addValue('contact_id_b', $sr->ClientID_Clean)
+                  ->addValue('relationship_type_id:label', 'Case MAS Rep is')
+                  ->addValue('case_id', $case_id)
+                  ->addValue('is_active', $relationshipActive)
+                  ->execute();
+              } catch (Exception $e) {
+                // Handle duplicate error or log the message
+                // echo "Error creating MAS relationship: $e->getMessage() <br>";
+                echo "Error creating MAS relationship: <br>";
+                // Dump the entire $e object to see its structure
+                echo "<pre>";
+                var_dump($e);
+                echo "</pre>";
+              }
+            } else {
+              echo "Unable to add MAS rep for service request $sr->RequestID because external id $mas_rep_id is missing.  <br>";
+            }
+          }
+
+          // Create the Client Rep
+          if (!empty($sr->ClientRepID)) {
+            // Get the client rep
+            $ext_client_rep_id = strval(intval($sr->ClientRepID) + 1000000);
+            $client_rep_id = $this->getClientID($ext_client_rep_id);
+            if (!empty($client_rep_id)) {
+              try {
+                $caseRole = \Civi\Api4\Relationship::create(TRUE)
+                  ->addValue('contact_id_a', $client_rep_id)
+                  ->addValue('contact_id_b', $sr->ClientID_Clean)
+                  ->addValue('relationship_type_id:label', 'Case Client Rep is')
+                  ->addValue('case_id', $case_id)
+                  ->addValue('is_active', $relationshipActive)
+                  ->execute();
+              } catch (Exception $e) {
+                // Handle duplicate error or log the message
+                // echo "Error creating Client relationship: $e->getMessage() <br>";
+                echo "Error creating Client relationship: <br>";
+                // Dump the entire $e object to see its structure
+                echo "<pre>";
+                var_dump($e);
+                echo "</pre>";
+              }
+            } else {
+              echo "Unable to add client rep for service request $sr->RequestID because external id $client_rep_id is missing.  <br>";
+            }
+          }
+
+          // link activities
+          $this->linkActivities($case_id, $sr);
+        } else {
+          echo "Unable to add service request $sr->RequestID because Client external id $sr->ClientID is missing.  <br>";
         }
+        $last_id  = $sr->RequestID;
       }
     } else {
       echo 'No data found.<br>';
     }
 
     echo 'Works OK so far...<br>';
-    // exit;
+    // Construct the URL correctly using site_url or home_url
+    $url = site_url('/wp-content/uploads/civicrm/ext/mascode/extern/sr_import.php?last_id=' . urlencode($last_id));
+    // Output the correct URL
+    echo 'Run <a href="' . esc_url($url) . '">' . esc_url($url) . '</a><br>';
+  }
+
+  // Get the CiviCRM Client ID given the External (Access) Client ID
+  private function getClientID($clientID)
+  {
+    $contacts = \Civi\Api4\Contact::get(TRUE)
+      ->addSelect('id')
+      ->addWhere('external_identifier', '=', $clientID)
+      ->execute();
+
+    if (!empty($contacts)) {
+      return $contacts[0]['id']; // Accessing 'id' as an array
+    } else {
+      echo "External Client ID $clientID not found. <br>";
+      return null;
+    }
+  }
+
+  // Lookup the status class by label
+  private function getStatusClass($label, $statusMap)
+  {
+    if (isset($statusMap[$label])) {
+      return $statusMap[$label];
+    } else {
+      return null;
+    }
+  }
+  private function linkActivities($case_id, $sr)
+  {
+    global $wpdb;
+    global $nina;
+    // Fetch all rows from the activity table
+    $activity_sql = $wpdb->prepare("SELECT * FROM bgf_dataload_tActivity WHERE RequestID = %s AND Processed IS NOT TRUE", $sr->RequestID);
+    $activity_results = $wpdb->get_results($activity_sql);
+    // Check if any rows are returned
+    if (!empty($activity_results)) {
+      // Iterate through each row
+      foreach ($activity_results as $activity) {
+        // Source is Nina or the MAS Rep
+        if (!empty($activity->MASRepID_Clean)) {
+          $in_source = $activity->MASRepID_Clean;
+        } else {
+          $in_source = $nina;
+        }
+        // Create activity record
+        $civiActivity = \Civi\Api4\Activity::create(TRUE)
+          ->addValue('activity_type_id:label', 'Case Info Update')
+          ->addValue('case_id', $case_id)
+          ->addValue('source_contact_id', $in_source)
+          // ->addValue('target_contact_id', [$activity->ClientRepID_Clean])
+          ->addValue('details', $activity->Notes)
+          ->addValue('activity_date_time', $activity->ContactDate)
+          ->addValue('status_id:label', 'Completed')
+          ->execute();
+      }
+    }
   }
 }
 

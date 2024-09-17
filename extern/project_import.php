@@ -26,29 +26,22 @@ class CiviCaseImport
             $statusMap[$status['label']] = $status['grouping'];
         }
 
-        // Lookup the status class by label
-        function getStatusClass($label, $statusMap)
-        {
-            if (isset($statusMap[$label])) {
-                return $statusMap[$label];
-            } else {
-                return null;
-            }
-        }
-
-        // Fetch all rows from the project table
-        $p_sql = $wpdb->prepare("SELECT * FROM bgf_dataload_tProject WHERE ProjectID > %s AND Processed IS NOT TRUE", $last_id);
+        // Fetch a limited set of rows from the project table
+        $p_sql = $wpdb->prepare(
+            "SELECT * FROM bgf_dataload_tProject WHERE ProjectID > %d AND Processed IS NOT TRUE ORDER BY ProjectID LIMIT %d",
+            $last_id,
+            1000 // For example, to limit the results to x rows
+        );
         $p_results = $wpdb->get_results($p_sql);
 
         // Check if any rows are returned
         if (!empty($p_results)) {
             // Iterate through each row
-            $start_time = microtime(true);
-            $timeout_limit = 1; // Set this slightly less than 30 seconds
-            $check_interval = 5; // Check time every 100 rows
-            $row_count = 0;
-
             foreach ($p_results as $project) {
+
+                // Get the CiviCRM ID's for the associated External (Access) ID's
+                $project->ClientID_Clean = $this->getClientID($project->ClientID);
+
                 if (!empty($project->ClientID_Clean)) {
                     // Create a case
                     $civiCase = \Civi\Api4\CiviCase::create(TRUE)
@@ -65,60 +58,80 @@ class CiviCaseImport
                         ->addValue(
                             'contact_id',
                             [
-                                $project->ClientID_Clean
+                                $project->ClientID_Clean,
                             ]
                         )
                         ->execute();
+
+                    // Access the ID of the first created case
                     $case_id = $civiCase[0]['id'];
 
                     // Should the relationships be active or inactive?
-                    if (getStatusClass($project->Status, $statusMap) == "Closed") {
+                    $this_status = $this->getStatusClass($project->Status, $statusMap);
+                    if ($this_status == "Closed") {
                         $relationshipActive = FALSE;
                     } else {
                         $relationshipActive = TRUE;
                     }
 
                     // Create an activity to link to a Service Request if applicable
-                    if (!empty($project->RequestID_Clean)) {
-                        $this->linkSR($case_id, $project);
+                    if (!empty($project->RequestID)) {
+                        $project->RequestID_Clean = $this->getClientID($project->RequestID);
+                        if (!empty($project->RequestID_Clean)) {
+                            $this->linkSR($case_id, $project);
+                        } else {
+                            echo "Unable to link request $project->RequestID to project $project->ProjectID because request id is missing.  <br>";
+                        }
                     }
-
-                    // link client reps
-                    $this->linkClientReps($case_id, $project, $relationshipActive);
 
                     // link mas reps
                     $this->linkMASReps($case_id, $project, $relationshipActive);
 
+                    // link client reps
+                    $this->linkClientReps($case_id, $project, $relationshipActive);
+
                     // link activities
                     $this->linkActivities($case_id, $project);
                 } else {
-                    echo 'Unable to add project ' . $project->ProjectID . ' because external id ' . $project->ClientID . ' is missing.  <br>';
+                    echo "Unable to add project $project->ProjectID because external id $project->ClientID is missing.  <br>";
                 }
-
-                $row_count++;
-                if ($row_count % $check_interval == 0) {
-                    if ((microtime(true) - $start_time) >= $timeout_limit) {
-                        echo "Script is nearing the timeout limit after processing $row_count rows. <br>";
-                        $last_id = $project->ProjectID;
-
-                        // Construct the URL correctly using site_url or home_url
-                        $url = site_url('/wp-content/uploads/civicrm/ext/mascode/extern/project_import.php?last_id=' . urlencode($last_id));
-
-                        // Output the correct URL
-                        echo 'Run <a href="' . esc_url($url) . '">' . esc_url($url) . '</a><br>';
-                        echo "Exiting gracefully.";
-                        exit;
-                    } else {
-                        echo '(microtime(true) - $start_time) is: ' . (microtime(true) - $start_time) . '  $timeout_limit is: ' . $timeout_limit . '  ProjectID is: ' . $project->ProjectID . '<br>';
-                    }
-                }
+                $last_id = $project->ProjectID;
             }
         } else {
             echo 'No data found.';
         }
 
         echo 'Works OK so far...<br>';
-        // exit;
+        // Construct the URL correctly using site_url or home_url
+        $url = site_url('/wp-content/uploads/civicrm/ext/mascode/extern/project_import.php?last_id=' . urlencode($last_id));
+        // Output the correct URL
+        echo 'Run <a href="' . esc_url($url) . '">' . esc_url($url) . '</a><br>';
+    }
+
+    // Get the CiviCRM Client ID given the External (Access) Client ID
+    private function getClientID($clientID)
+    {
+        $contacts = \Civi\Api4\Contact::get(TRUE)
+            ->addSelect('id')
+            ->addWhere('external_identifier', '=', $clientID)
+            ->execute();
+
+        if (!empty($contacts)) {
+            return $contacts[0]['id']; // Accessing 'id' as an array
+        } else {
+            echo "External Client ID $clientID not found. <br>";
+            return null;
+        }
+    }
+
+    // Lookup the status class by label
+    private function getStatusClass($label, $statusMap)
+    {
+        if (isset($statusMap[$label])) {
+            return $statusMap[$label];
+        } else {
+            return null;
+        }
     }
 
     private function linkSR($case_id, $project)
@@ -142,31 +155,6 @@ class CiviCaseImport
             ->addValue('activity_id', $activity_id)
             ->execute();
     }
-    private function linkClientReps($case_id, $project, $relationshipActive)
-    {
-        global $wpdb;
-        // Fetch all rows from the project client reps table
-        $cr_sql = $wpdb->prepare("SELECT * FROM bgf_dataload_tProjectClientReps WHERE ProjectID = %s AND Processed IS NOT TRUE", $project->ProjectID);
-        $cr_results = $wpdb->get_results($cr_sql);
-        // Check if any rows are returned
-        if (!empty($cr_results)) {
-            // Iterate through each row
-            foreach ($cr_results as $clientRep) {
-                if (!empty($clientRep->ClientRepID_Clean)) {
-                    // Create a client rep relationship
-                    $civiRelationship = \Civi\Api4\Relationship::create(TRUE)
-                        ->addValue('contact_id_a', $clientRep->ClientRepID_Clean)     // client rep
-                        ->addValue('contact_id_b', $project->ClientID_Clean)     // client
-                        ->addValue('relationship_type_id:label', 'Case Client Rep is')
-                        ->addValue('is_active', $relationshipActive)  // depends on project
-                        ->addValue('case_id', $case_id)
-                        ->execute();
-                } else {
-                    echo 'Unable to add client rep relationshp for project ' . $project->ProjectID . ' because external id 1000000 + ' . $clientRep->ClientRepID . ' is missing.  <br>';
-                }
-            }
-        }
-    }
     private function linkMASReps($case_id, $project, $relationshipActive)
     {
         global $wpdb;
@@ -177,17 +165,48 @@ class CiviCaseImport
         if (!empty($mr_results)) {
             // Iterate through each row
             foreach ($mr_results as $masRep) {
-                if (!empty($masRep->MASRepID_Clean)) {
-                    // Create a client rep relationship
+                // Get the MAS rep
+                $ext_mas_rep_id = strval(intval($clientRep->RepID) + 2000000);
+                $mas_rep_id = $this->getClientID($ext_mas_rep_id);
+                if (!empty($mas_rep_id)) {
+                    // Create a MAS rep relationship
                     $civiRelationship = \Civi\Api4\Relationship::create(TRUE)
-                        ->addValue('contact_id_a', $masRep->MASRepID_Clean)     // mas rep
+                        ->addValue('contact_id_a', $mas_rep_id)     // mas rep
                         ->addValue('contact_id_b', $project->ClientID_Clean)     // client
                         ->addValue('relationship_type_id:label', 'Case MAS Rep is')
                         ->addValue('is_active', $relationshipActive)  // depends on project
                         ->addValue('case_id', $case_id)
                         ->execute();
                 } else {
-                    echo 'Unable to add MAS rep relationshp for project ' . $project->ProjectID . ' because external id 2000000 + ' . $masRep->MASRepID . ' is missing.  <br>';
+                    echo "Unable to add MAS rep relationshp for project $project->ProjectID because external id $mas_rep_id is missing.  <br>";
+                }
+            }
+        }
+    }
+    private function linkClientReps($case_id, $project, $relationshipActive)
+    {
+        global $wpdb;
+        // Fetch all rows from the project client reps table
+        $cr_sql = $wpdb->prepare("SELECT * FROM bgf_dataload_tProjectClientReps WHERE ProjectID = %s AND Processed IS NOT TRUE", $project->ProjectID);
+        $cr_results = $wpdb->get_results($cr_sql);
+        // Check if any rows are returned
+        if (!empty($cr_results)) {
+            // Iterate through each row
+            foreach ($cr_results as $clientRep) {
+                // Get the client rep
+                $ext_client_rep_id = strval(intval($clientRep->ClientRepID) + 1000000);
+                $client_rep_id = $this->getClientID($ext_client_rep_id);
+                if (!empty($client_rep_id)) {
+                    // Create a client rep relationship
+                    $civiRelationship = \Civi\Api4\Relationship::create(TRUE)
+                        ->addValue('contact_id_a', $client_rep_id)     // client rep
+                        ->addValue('contact_id_b', $project->ClientID_Clean)     // client
+                        ->addValue('relationship_type_id:label', 'Case Client Rep is')
+                        ->addValue('is_active', $relationshipActive)  // depends on project
+                        ->addValue('case_id', $case_id)
+                        ->execute();
+                } else {
+                    echo "Unable to add client rep relationshp for project $project->ProjectID because external id $client_rep_id is missing.  <br>";
                 }
             }
         }
@@ -196,7 +215,6 @@ class CiviCaseImport
     {
         global $wpdb;
         global $nina;
-        global $wpdb;
         // Fetch all rows from the activity table
         $activity_sql = $wpdb->prepare("SELECT * FROM bgf_dataload_tActivity WHERE ProjectID = %s AND Processed IS NOT TRUE", $project->ProjectID);
         $activity_results = $wpdb->get_results($activity_sql);
@@ -205,8 +223,15 @@ class CiviCaseImport
             // Iterate through each row
             foreach ($activity_results as $activity) {
                 // Source is Nina or the MAS Rep
-                if (!empty($activity->MASRepID_Clean)) {
-                    $in_source = $activity->MASRepID_Clean;
+                if (!empty($activity->RepID)) {
+                    // Get the MAS rep
+                    $ext_mas_rep_id = strval(intval($activity->RepID) + 2000000);
+                    $mas_rep_id = $this->getClientID($ext_mas_rep_id);
+                    if (!empty($mas_rep_id)) {
+                        $in_source = $mas_rep_id;
+                    } else {
+                        $in_source = $nina;
+                    }
                 } else {
                     $in_source = $nina;
                 }
@@ -215,7 +240,6 @@ class CiviCaseImport
                     ->addValue('activity_type_id:label', 'Case Info Update')
                     ->addValue('case_id', $case_id)
                     ->addValue('source_contact_id', $in_source)
-                    ->addValue('target_contact_id', [$activity->ClientRepID_Clean])
                     ->addValue('details', $activity->Notes)
                     ->addValue('activity_date_time', $activity->ContactDate)
                     ->addValue('status_id:label', 'Completed')
