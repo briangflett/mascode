@@ -38,30 +38,52 @@ class CiviCaseImport
         if (!empty($p_results)) {
             // Iterate through each row
             foreach ($p_results as $project) {
-
-                // Get the CiviCRM ID's for the associated External (Access) ID's
+                // Get the CiviCRM ClientID
                 $project->ClientID_Clean = $this->getClientID($project->ClientID);
 
                 if (!empty($project->ClientID_Clean)) {
-                    // Create a case
-                    $civiCase = \Civi\Api4\CiviCase::create(TRUE)
-                        ->addValue('case_type_id.name', 'project')
-                        ->addValue('subject', $project->ProjectID)  // should this be the ProjectID or the Title?
-                        ->addValue('creator_id', $nina)
-                        ->addValue('start_date', $project->StartDate)
-                        ->addValue('end_date', $project->EndDate)
-                        ->addValue('status_id:label', $project->Status)
-                        ->addValue('Projects_.Practice_Area', $project->PracticeArea)
-                        ->addValue('Projects_.Project_Type', $project->ProjectType)
-                        ->addValue('Projects_.Notes', $project->Notes)
-                        // Title, ProjectType, DefinitionDocDate, CompletionDocDate, EvaluationDocDate, RequestID
-                        ->addValue(
-                            'contact_id',
-                            [
-                                $project->ClientID_Clean,
-                            ]
-                        )
-                        ->execute();
+                    // insert or update BGF ???
+                    if ($project->ProjectID > '24097' and $project->ProjectID < '24999') {
+                        // Create a case
+                        $civiCase = \Civi\Api4\CiviCase::create(TRUE)
+                            ->addValue('case_type_id.name', 'project')
+                            ->addValue('subject', $project->ProjectID)  // should this be the ProjectID or the Title?
+                            ->addValue('creator_id', $nina)
+                            ->addValue('start_date', $project->StartDate)
+                            ->addValue('end_date', $project->EndDate)
+                            ->addValue('status_id:label', $project->Status)
+                            ->addValue('Projects_.Practice_Area', $project->PracticeArea)
+                            ->addValue('Projects_.Project_Type', $project->ProjectType)
+                            ->addValue('Projects_.Notes', $project->Notes)
+                            // Title, ProjectType, DefinitionDocDate, CompletionDocDate, EvaluationDocDate, RequestID
+                            ->addValue(
+                                'contact_id',
+                                [
+                                    $project->ClientID_Clean,
+                                ]
+                            )
+                            ->execute();
+                    } else {
+                        // Update a case
+                        $civiCase = \Civi\Api4\CiviCase::update(TRUE)
+                            ->addValue('case_type_id.name', 'project')
+                            ->addValue('creator_id', $nina)
+                            ->addValue('start_date', $project->StartDate)
+                            ->addValue('end_date', $project->EndDate)
+                            ->addValue('status_id:label', $project->Status)
+                            ->addValue('Projects_.Practice_Area', $project->PracticeArea)
+                            ->addValue('Projects_.Project_Type', $project->ProjectType)
+                            ->addValue('Projects_.Notes', $project->Notes)
+                            // Title, ProjectType, DefinitionDocDate, CompletionDocDate, EvaluationDocDate, RequestID
+                            ->addValue(
+                                'contact_id',
+                                [
+                                    $project->ClientID_Clean,
+                                ]
+                            )
+                            ->addWhere('subject', '=', $project->ProjectID)
+                            ->execute();
+                    }
 
                     // Access the ID of the first created case
                     $case_id = $civiCase[0]['id'];
@@ -74,8 +96,8 @@ class CiviCaseImport
                         $relationshipActive = TRUE;
                     }
 
-                    // Create an activity to link to a Service Request if applicable
-                    if (!empty($project->RequestID)) {
+                    // Create an activity to link to a Service Request if applicable  BGF
+                    if (!empty($project->RequestID) and $project->ProjectID > '24097' and $project->ProjectID < '24999') {
                         $project->RequestID_Clean = $this->getClientID($project->RequestID);
                         if (!empty($project->RequestID_Clean)) {
                             $this->linkSR($case_id, $project);
@@ -159,24 +181,29 @@ class CiviCaseImport
     {
         global $wpdb;
         // Fetch all rows from the project MAS reps table
-        $mr_sql = $wpdb->prepare("SELECT * FROM bgf_dataload_tProjectMASReps WHERE ProjectID = %s AND Processed IS NOT TRUE", $project->ProjectID);
+        $mr_sql = $wpdb->prepare("SELECT * FROM bgf_dataload_tProjectMASReps WHERE ProjectID = %s", $project->ProjectID);
         $mr_results = $wpdb->get_results($mr_sql);
         // Check if any rows are returned
         if (!empty($mr_results)) {
             // Iterate through each row
             foreach ($mr_results as $masRep) {
                 // Get the MAS rep
-                $ext_mas_rep_id = strval(intval($clientRep->RepID) + 2000000);
+                $ext_mas_rep_id = strval(intval($masRep->RepID) + 2000000);
                 $mas_rep_id = $this->getClientID($ext_mas_rep_id);
                 if (!empty($mas_rep_id)) {
                     // Create a MAS rep relationship
-                    $civiRelationship = \Civi\Api4\Relationship::create(TRUE)
-                        ->addValue('contact_id_a', $mas_rep_id)     // mas rep
-                        ->addValue('contact_id_b', $project->ClientID_Clean)     // client
-                        ->addValue('relationship_type_id:label', 'Case MAS Rep is')
-                        ->addValue('is_active', $relationshipActive)  // depends on project
-                        ->addValue('case_id', $case_id)
-                        ->execute();
+                    try {
+                        $civiRelationship = \Civi\Api4\Relationship::create(TRUE)
+                            ->addValue('contact_id_a', $mas_rep_id)     // mas rep
+                            ->addValue('contact_id_b', $project->ClientID_Clean)     // client
+                            ->addValue('relationship_type_id:label', 'Case MAS Rep is')
+                            ->addValue('is_active', $relationshipActive)  // depends on project
+                            ->addValue('case_id', $case_id)
+                            ->execute();
+                    } catch (Exception $e) {
+                        // Handle duplicate error or log the message
+                        echo "Error creating MAS relationship: " . $e->getMessage() . " for Case:$case_id Client:$project->ClientID_Clean MAS Rep:$mas_rep_id<br>";
+                    }
                 } else {
                     echo "Unable to add MAS rep relationshp for project $project->ProjectID because external id $mas_rep_id is missing.  <br>";
                 }
@@ -187,7 +214,7 @@ class CiviCaseImport
     {
         global $wpdb;
         // Fetch all rows from the project client reps table
-        $cr_sql = $wpdb->prepare("SELECT * FROM bgf_dataload_tProjectClientReps WHERE ProjectID = %s AND Processed IS NOT TRUE", $project->ProjectID);
+        $cr_sql = $wpdb->prepare("SELECT * FROM bgf_dataload_tProjectClientReps WHERE ProjectID = %s", $project->ProjectID);
         $cr_results = $wpdb->get_results($cr_sql);
         // Check if any rows are returned
         if (!empty($cr_results)) {
@@ -198,13 +225,18 @@ class CiviCaseImport
                 $client_rep_id = $this->getClientID($ext_client_rep_id);
                 if (!empty($client_rep_id)) {
                     // Create a client rep relationship
-                    $civiRelationship = \Civi\Api4\Relationship::create(TRUE)
-                        ->addValue('contact_id_a', $client_rep_id)     // client rep
-                        ->addValue('contact_id_b', $project->ClientID_Clean)     // client
-                        ->addValue('relationship_type_id:label', 'Case Client Rep is')
-                        ->addValue('is_active', $relationshipActive)  // depends on project
-                        ->addValue('case_id', $case_id)
-                        ->execute();
+                    try {
+                        $civiRelationship = \Civi\Api4\Relationship::create(TRUE)
+                            ->addValue('contact_id_a', $client_rep_id)     // client rep
+                            ->addValue('contact_id_b', $project->ClientID_Clean)     // client
+                            ->addValue('relationship_type_id:label', 'Case Client Rep is')
+                            ->addValue('is_active', $relationshipActive)  // depends on project
+                            ->addValue('case_id', $case_id)
+                            ->execute();
+                    } catch (Exception $e) {
+                        // Handle duplicate error or log the message
+                        echo "Error creating Client relationship: " . $e->getMessage() . " for Case:$case_id Client:$project->ClientID_Clean Client Rep:$client_rep_id<br>";
+                    }
                 } else {
                     echo "Unable to add client rep relationshp for project $project->ProjectID because external id $client_rep_id is missing.  <br>";
                 }
@@ -236,10 +268,16 @@ class CiviCaseImport
                     $in_source = $nina;
                 }
                 // Create activity record
+                if (strlen($activity->Notes) < 100) {
+                    $activity_subject = $activity->Notes;
+                } else {
+                    $activity_subject = substr($activity->Notes, 0, 97) . '...';
+                }
                 $civiActivity = \Civi\Api4\Activity::create(TRUE)
                     ->addValue('activity_type_id:label', 'Case Info Update')
                     ->addValue('case_id', $case_id)
                     ->addValue('source_contact_id', $in_source)
+                    ->addValue('subject', $activity_subject)
                     ->addValue('details', $activity->Notes)
                     ->addValue('activity_date_time', $activity->ContactDate)
                     ->addValue('status_id:label', 'Completed')

@@ -201,11 +201,16 @@ class CiviCaseImport
           $in_source = $nina;
         }
         // Create activity record
+        if (strlen($activity->Notes) < 100) {
+          $activity_subject = $activity->Notes;
+        } else {
+          $activity_subject = substr($activity->Notes, 0, 97) . '...';
+        }
         $civiActivity = \Civi\Api4\Activity::create(TRUE)
           ->addValue('activity_type_id:label', 'Case Info Update')
           ->addValue('case_id', $case_id)
           ->addValue('source_contact_id', $in_source)
-          // ->addValue('target_contact_id', [$activity->ClientRepID_Clean])
+          ->addValue('subject', $activity_subject)
           ->addValue('details', $activity->Notes)
           ->addValue('activity_date_time', $activity->ContactDate)
           ->addValue('status_id:label', 'Completed')
