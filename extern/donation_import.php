@@ -67,10 +67,10 @@ class CiviCaseImport
     {
         if (!empty($external_ID)) {
             // adjust the external D number based on the type
-            if ($type = 'ClientRepID') {
+            if ($type == 'ClientRepID') {
                 $external_ID = $external_ID + 1000000;
             } else {
-                if ($type = 'MASRepID') {
+                if ($type == 'MASRepID') {
                     $external_ID = $external_ID + 2000000;
                 }
             }
