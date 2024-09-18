@@ -19,7 +19,7 @@ class CiviCaseImport
         $d_sql = $wpdb->prepare(
             "SELECT * FROM bgf_dataload_tDonation WHERE ID > %d AND Processed IS NOT TRUE ORDER BY ID LIMIT %d",
             $last_id,
-            1000 // to limit the results to x rows
+            250 // to limit the results to x rows
         );
         $d_results = $wpdb->get_results($d_sql);
 
@@ -28,25 +28,26 @@ class CiviCaseImport
             // Iterate through each row
             foreach ($d_results as $donation) {
 
-                // Get the new Client ID
-                $client_id = $this->getContactID($donation->ClientID, 'ClientID');
-
-                // Get the new Client Rep ID
-                $client_rep_id = $this->getContactID($donation->DonorRepID, 'ClientRepID');
-
-                // Get the new MAS Rep ID
-                $mas_rep_id = $this->getContactID($donation->RepID, 'MASRepID');
-
-                // Add the donation 
-                if ($client_id <> NULL) {
-                    $this->createContribution($client_id, $mas_rep_id, $nina, $donation);
-                } else {
-                    if ($client_rep_id <> NULL) {
-                        $this->createContribution($client_rep_id, $mas_rep_id, $nina, $donation);
+                if (!empty($donation->ClientID)) {
+                    // client donation
+                    // Get the new Client ID
+                    $donor_id = $this->getContactID($donation->ClientID);
+                    // Get the new MAS Rep ID
+                    if (!empty($donation->RepID)) {
+                        $ext_mas_rep_id = strval(intval($donation->RepID) + 2000000);
+                        $mas_rep_id = $this->getContactID($ext_mas_rep_id);
                     } else {
-                        echo 'Unable to add donation ' . $donation->ID . ' because the client ' . $client_id . ' and the client rep ' . $client_rep_id . ' are empty.  <br>';
+                        $mas_rep_id = $nina;
                     }
+                } else {
+                    // MAS Rep Donation
+                    // Get the new MAS Rep ID
+                    $ext_mas_rep_id = strval(intval($donation->DonorRepID) + 2000000);
+                    $donor_id = $this->getContactID($ext_mas_rep_id);
+                    $mas_rep_id = $donor_id;
                 }
+                // Add the donation 
+                $this->createContribution($donor_id, $mas_rep_id, $nina, $donation);
 
                 $last_id = $donation->ID;
             }
@@ -63,17 +64,9 @@ class CiviCaseImport
         // exit;
     }
 
-    private function getContactID($external_ID, $type)
+    private function getContactID($external_ID)
     {
         if (!empty($external_ID)) {
-            // adjust the external D number based on the type
-            if ($type == 'ClientRepID') {
-                $external_ID = $external_ID + 1000000;
-            } else {
-                if ($type == 'MASRepID') {
-                    $external_ID = $external_ID + 2000000;
-                }
-            }
             // get the contact
             $civiContact = \Civi\Api4\Contact::get(TRUE)
                 ->addSelect('id')
@@ -89,12 +82,12 @@ class CiviCaseImport
         }
     }
 
-    private function createContribution($client_id, $mas_rep_id, $nina, $donation)
+    private function createContribution($donor_id, $mas_rep_id, $nina, $donation)
     {
         // step 1 - create the contribution
         if (!empty($mas_rep_id)) {
             $civiContribution = \Civi\Api4\Contribution::create(TRUE)
-                ->addValue('contact_id', $client_id)
+                ->addValue('contact_id', $donor_id)
                 ->addValue('financial_type_id:label', 'Donation')
                 ->addValue('total_amount', $donation->Amount)
                 ->addValue('receive_date', $donation->Date)
@@ -104,7 +97,7 @@ class CiviCaseImport
                 ->execute();
         } else {
             $civiContribution = \Civi\Api4\Contribution::create(TRUE)
-                ->addValue('contact_id', $client_id)
+                ->addValue('contact_id', $donor_id)
                 ->addValue('financial_type_id:label', 'Donation')
                 ->addValue('total_amount', $donation->Amount)
                 ->addValue('receive_date', $donation->Date)
