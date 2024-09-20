@@ -19,7 +19,7 @@ class CiviCaseImport
         $d_sql = $wpdb->prepare(
             "SELECT * FROM bgf_dataload_tDonation WHERE ID > %d AND Processed IS NOT TRUE ORDER BY ID LIMIT %d",
             $last_id,
-            250 // to limit the results to x rows
+            400 // to limit the results to x rows
         );
         $d_results = $wpdb->get_results($d_sql);
 

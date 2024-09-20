@@ -30,7 +30,7 @@ class CiviCaseImport
     $sr_sql = $wpdb->prepare(
       "SELECT * FROM bgf_dataload_tServiceRequest WHERE RequestID > %s AND Processed IS NOT TRUE ORDER BY RequestID LIMIT %d",
       $last_id,
-      1000 // For example, to limit the results to x rows
+      200 // For example, to limit the results to x rows
     );
     $sr_results = $wpdb->get_results($sr_sql);
 
@@ -43,45 +43,45 @@ class CiviCaseImport
 
         if (!empty($sr->ClientID_Clean)) {
           // insert or update BGF ??
-          if ($sr->RequestID > 'R24168') {
-            // Create a case
-            $civiCase = \Civi\Api4\CiviCase::create(TRUE)
-              ->addValue('case_type_id.name', 'service_request')
-              ->addValue('subject', $sr->RequestID)
-              ->addValue('creator_id', $nina)
-              ->addValue('start_date', $sr->InitiationDate)
-              ->addValue('end_date', $sr->ResolutionDate)
-              ->addValue('status_id:label', $sr->Status)
-              ->addValue('Cases_SR_Projects_.Practice_Area', $sr->PracticeArea)
-              ->addValue('Cases_SR_Projects_.Referral', $sr->Referral)
-              ->addValue('Cases_SR_Projects_.Notes', $sr->Notes)
-              ->addValue(
-                'contact_id',
-                [
-                  $sr->ClientID_Clean
-                ]
-              )
-              ->execute();
-          } else {
-            // Update a case
-            $civiCase = \Civi\Api4\CiviCase::update(TRUE)
-              ->addValue('case_type_id.name', 'service_request')
-              ->addValue('creator_id', $nina)
-              ->addValue('start_date', $sr->InitiationDate)
-              ->addValue('end_date', $sr->ResolutionDate)
-              ->addValue('status_id:label', $sr->Status)
-              ->addValue('Cases_SR_Projects_.Practice_Area', $sr->PracticeArea)
-              ->addValue('Cases_SR_Projects_.Referral', $sr->Referral)
-              ->addValue('Cases_SR_Projects_.Notes', $sr->Notes)
-              ->addValue(
-                'contact_id',
-                [
-                  $sr->ClientID_Clean
-                ]
-              )
-              ->addWhere('subject', '=', $sr->RequestID)
-              ->execute();
-          }
+          // if ($sr->RequestID > 'R24168') {
+          // Create a case
+          $civiCase = \Civi\Api4\CiviCase::create(TRUE)
+            ->addValue('case_type_id.name', 'service_request')
+            ->addValue('subject', $sr->RequestID)
+            ->addValue('creator_id', $nina)
+            ->addValue('start_date', $sr->InitiationDate)
+            ->addValue('end_date', $sr->ResolutionDate)
+            ->addValue('status_id:label', $sr->Status)
+            ->addValue('Cases_SR_Projects_.Practice_Area', $sr->PracticeArea)
+            ->addValue('Cases_SR_Projects_.Referral', $sr->Referral)
+            ->addValue('Cases_SR_Projects_.Notes', $sr->Notes)
+            ->addValue(
+              'contact_id',
+              [
+                $sr->ClientID_Clean
+              ]
+            )
+            ->execute();
+          // } else {
+          //   // Update a case
+          //   $civiCase = \Civi\Api4\CiviCase::update(TRUE)
+          //     ->addValue('case_type_id.name', 'service_request')
+          //     ->addValue('creator_id', $nina)
+          //     ->addValue('start_date', $sr->InitiationDate)
+          //     ->addValue('end_date', $sr->ResolutionDate)
+          //     ->addValue('status_id:label', $sr->Status)
+          //     ->addValue('Cases_SR_Projects_.Practice_Area', $sr->PracticeArea)
+          //     ->addValue('Cases_SR_Projects_.Referral', $sr->Referral)
+          //     ->addValue('Cases_SR_Projects_.Notes', $sr->Notes)
+          //     ->addValue(
+          //       'contact_id',
+          //       [
+          //         $sr->ClientID_Clean
+          //       ]
+          //     )
+          //     ->addWhere('subject', '=', $sr->RequestID)
+          //     ->execute();
+          // }
 
           // Access the ID of the first created or updated case
           $case_id = $civiCase[0]['id'];
@@ -136,7 +136,7 @@ class CiviCaseImport
                 echo "Error creating Client relationship: " . $e->getMessage() . " for Case:$case_id Client:$sr->ClientID_Clean Client Rep:$client_rep_id<br>";
               }
             } else {
-              echo "Unable to add client rep for service request $sr->RequestID because external id $client_rep_id is missing.  <br>";
+              echo "Unable to add client rep for service request $sr->RequestID because external id $ext_client_rep_id is missing.  <br>";
             }
           }
 
@@ -203,6 +203,7 @@ class CiviCaseImport
         // Create activity record
         if (strlen($activity->Notes) < 100) {
           $activity_subject = $activity->Notes;
+          $activity->Notes = '';
         } else {
           $activity_subject = substr($activity->Notes, 0, 97) . '...';
         }

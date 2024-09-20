@@ -30,7 +30,7 @@ class CiviCaseImport
         $p_sql = $wpdb->prepare(
             "SELECT * FROM bgf_dataload_tProject WHERE ProjectID > %d AND Processed IS NOT TRUE ORDER BY ProjectID LIMIT %d",
             $last_id,
-            1000 // For example, to limit the results to x rows
+            200 // For example, to limit the results to x rows
         );
         $p_results = $wpdb->get_results($p_sql);
 
@@ -43,47 +43,47 @@ class CiviCaseImport
 
                 if (!empty($project->ClientID_Clean)) {
                     // insert or update BGF ???
-                    if ($project->ProjectID > '24097' and $project->ProjectID < '24999') {
-                        // Create a case
-                        $civiCase = \Civi\Api4\CiviCase::create(TRUE)
-                            ->addValue('case_type_id.name', 'project')
-                            ->addValue('subject', $project->ProjectID)  // should this be the ProjectID or the Title?
-                            ->addValue('creator_id', $nina)
-                            ->addValue('start_date', $project->StartDate)
-                            ->addValue('end_date', $project->EndDate)
-                            ->addValue('status_id:label', $project->Status)
-                            ->addValue('Projects_.Practice_Area', $project->PracticeArea)
-                            ->addValue('Projects_.Project_Type', $project->ProjectType)
-                            ->addValue('Projects_.Notes', $project->Notes)
-                            // Title, ProjectType, DefinitionDocDate, CompletionDocDate, EvaluationDocDate, RequestID
-                            ->addValue(
-                                'contact_id',
-                                [
-                                    $project->ClientID_Clean,
-                                ]
-                            )
-                            ->execute();
-                    } else {
-                        // Update a case
-                        $civiCase = \Civi\Api4\CiviCase::update(TRUE)
-                            ->addValue('case_type_id.name', 'project')
-                            ->addValue('creator_id', $nina)
-                            ->addValue('start_date', $project->StartDate)
-                            ->addValue('end_date', $project->EndDate)
-                            ->addValue('status_id:label', $project->Status)
-                            ->addValue('Projects_.Practice_Area', $project->PracticeArea)
-                            ->addValue('Projects_.Project_Type', $project->ProjectType)
-                            ->addValue('Projects_.Notes', $project->Notes)
-                            // Title, ProjectType, DefinitionDocDate, CompletionDocDate, EvaluationDocDate, RequestID
-                            ->addValue(
-                                'contact_id',
-                                [
-                                    $project->ClientID_Clean,
-                                ]
-                            )
-                            ->addWhere('subject', '=', $project->ProjectID)
-                            ->execute();
-                    }
+                    // if ($project->ProjectID > '24097' and $project->ProjectID < '24999') {
+                    // Create a case
+                    $civiCase = \Civi\Api4\CiviCase::create(TRUE)
+                        ->addValue('case_type_id.name', 'project')
+                        ->addValue('subject', $project->ProjectID)  // should this be the ProjectID or the Title?
+                        ->addValue('creator_id', $nina)
+                        ->addValue('start_date', $project->StartDate)
+                        ->addValue('end_date', $project->EndDate)
+                        ->addValue('status_id:label', $project->Status)
+                        ->addValue('Projects_.Practice_Area', $project->PracticeArea)
+                        ->addValue('Projects_.Project_Type', $project->ProjectType)
+                        ->addValue('Projects_.Notes', $project->Notes)
+                        // Title, ProjectType, DefinitionDocDate, CompletionDocDate, EvaluationDocDate, RequestID
+                        ->addValue(
+                            'contact_id',
+                            [
+                                $project->ClientID_Clean,
+                            ]
+                        )
+                        ->execute();
+                    // } else {
+                    //     // Update a case
+                    //     $civiCase = \Civi\Api4\CiviCase::update(TRUE)
+                    //         ->addValue('case_type_id.name', 'project')
+                    //         ->addValue('creator_id', $nina)
+                    //         ->addValue('start_date', $project->StartDate)
+                    //         ->addValue('end_date', $project->EndDate)
+                    //         ->addValue('status_id:label', $project->Status)
+                    //         ->addValue('Projects_.Practice_Area', $project->PracticeArea)
+                    //         ->addValue('Projects_.Project_Type', $project->ProjectType)
+                    //         ->addValue('Projects_.Notes', $project->Notes)
+                    //         // Title, ProjectType, DefinitionDocDate, CompletionDocDate, EvaluationDocDate, RequestID
+                    //         ->addValue(
+                    //             'contact_id',
+                    //             [
+                    //                 $project->ClientID_Clean,
+                    //             ]
+                    //         )
+                    //         ->addWhere('subject', '=', $project->ProjectID)
+                    //         ->execute();
+                    // }
 
                     // Access the ID of the first created case
                     $case_id = $civiCase[0]['id'];
@@ -238,7 +238,7 @@ class CiviCaseImport
                         echo "Error creating Client relationship: " . $e->getMessage() . " for Case:$case_id Client:$project->ClientID_Clean Client Rep:$client_rep_id<br>";
                     }
                 } else {
-                    echo "Unable to add client rep relationshp for project $project->ProjectID because external id $client_rep_id is missing.  <br>";
+                    echo "Unable to add client rep relationshp for project $project->ProjectID because external id $ext_client_rep_id is missing.  <br>";
                 }
             }
         }
