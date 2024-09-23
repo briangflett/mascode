@@ -28,6 +28,50 @@ class CiviCaseImport
             // Iterate through each row
             foreach ($p_results as $project) {
 
+                if ($project->PracticeArea == 'FAC') {
+                    if (
+                        $project->ProjectType == 'FAC' or
+                        $project->ProjectType == ''
+                    ) {
+                        $project->PracticeArea = 'GEN';
+                        $project->ProjectType = 'FAC';
+                    } else {
+                        $project->PracticeArea = $project->ProjectType;
+                        $project->ProjectType = 'FAC';
+                    }
+                }
+
+                if ($project->PracticeArea == 'PRESENT') {
+                    if (
+                        $project->ProjectType == 'FAC'
+                        or
+                        $project->ProjectType == ''
+                    ) {
+                        $project->PracticeArea = 'GEN';
+                        $project->ProjectType = 'PRESENT';
+                    } else {
+                        $project->PracticeArea = $project->ProjectType;
+                        $project->ProjectType = 'PRESENT';
+                    }
+                }
+
+                if ($project->PracticeArea == '') {
+                    if (
+                        $project->ProjectType == 'FAC'
+                        or
+                        $project->ProjectType == ''
+                    ) {
+                        $project->PracticeArea = 'GEN';
+                    } else {
+                        $project->PracticeArea = $project->ProjectType;
+                    }
+                }
+
+                if (
+                    $project->ProjectType <> 'FAC' and
+                    $project->ProjectType <> 'PRESENT'
+                ) $project->ProjectType = '';
+
                 $civiCaSE = \Civi\Api4\CiviCase::update(TRUE)
                     ->addValue('Projects.Practice_Area', $project->PracticeArea)
                     ->addValue('Projects.Project_Type', $project->ProjectType)
