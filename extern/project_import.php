@@ -52,9 +52,9 @@ class CiviCaseImport
                         ->addValue('start_date', $project->StartDate)
                         ->addValue('end_date', $project->EndDate)
                         ->addValue('status_id:label', $project->Status)
-                        ->addValue('Projects_.Practice_Area', $project->PracticeArea)
-                        ->addValue('Projects_.Project_Type', $project->ProjectType)
-                        ->addValue('Projects_.Notes', $project->Notes)
+                        ->addValue('Projects.Practice_Area', $project->PracticeArea)
+                        ->addValue('Projects.Project_Type', $project->ProjectType)
+                        ->addValue('Projects.Notes', $project->Notes)
                         // Title, ProjectType, DefinitionDocDate, CompletionDocDate, EvaluationDocDate, RequestID
                         ->addValue(
                             'contact_id',

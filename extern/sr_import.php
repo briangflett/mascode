@@ -30,7 +30,7 @@ class CiviCaseImport
     $sr_sql = $wpdb->prepare(
       "SELECT * FROM bgf_dataload_tServiceRequest WHERE RequestID > %s AND Processed IS NOT TRUE ORDER BY RequestID LIMIT %d",
       $last_id,
-      200 // For example, to limit the results to x rows
+      300 // For example, to limit the results to x rows
     );
     $sr_results = $wpdb->get_results($sr_sql);
 
