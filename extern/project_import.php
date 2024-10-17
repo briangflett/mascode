@@ -38,6 +38,19 @@ class CiviCaseImport
         if (!empty($p_results)) {
             // Iterate through each row
             foreach ($p_results as $project) {
+
+                $projectID_Clean = str_pad($project->ProjectID, 5, '0', STR_PAD_LEFT);
+
+                // Fetch the project hours
+                $hr_sql = $wpdb->prepare(
+                    "SELECT * FROM bgf_dataload_tProjectMASRepHours WHERE ProjectID = %d",
+                    $project->ProjectID
+                );
+                $hr_results = $wpdb->get_results($hr_sql);
+
+                // update the practice area and type attributes of the project object
+                $this->updatePracticeAreaAndType($project);
+
                 // Get the CiviCRM ClientID
                 $project->ClientID_Clean = $this->getClientID($project->ClientID);
 
@@ -47,7 +60,7 @@ class CiviCaseImport
                     // Create a case
                     $civiCase = \Civi\Api4\CiviCase::create(TRUE)
                         ->addValue('case_type_id.name', 'project')
-                        ->addValue('subject', $project->ProjectID)  // should this be the ProjectID or the Title?
+                        ->addValue('subject', $projectID_Clean)  // should this be the ProjectID or the Title?
                         ->addValue('creator_id', $nina)
                         ->addValue('start_date', $project->StartDate)
                         ->addValue('end_date', $project->EndDate)
@@ -61,7 +74,11 @@ class CiviCaseImport
                             [
                                 $project->ClientID_Clean,
                             ]
-                        )
+                        );
+                    if (!empty($hr_results)) {
+                        $civiCaSE->addValue('Projects.Hours', $hr_results[0]->Hours);
+                    }
+                    $civiCaSE->addWhere('subject', '=', $project->ProjectID)
                         ->execute();
                     // } else {
                     //     // Update a case
@@ -154,6 +171,53 @@ class CiviCaseImport
         } else {
             return null;
         }
+    }
+
+    private function updatePracticeAreaAndType($project)
+    {
+        if ($project->PracticeArea == 'FAC') {
+            if (
+                $project->ProjectType == 'FAC' or
+                $project->ProjectType == ''
+            ) {
+                $project->PracticeArea = 'GEN';
+                $project->ProjectType = 'FAC';
+            } else {
+                $project->PracticeArea = $project->ProjectType;
+                $project->ProjectType = 'FAC';
+            }
+        }
+
+        if ($project->PracticeArea == 'PRESENT') {
+            if (
+                $project->ProjectType == 'FAC'
+                or
+                $project->ProjectType == ''
+            ) {
+                $project->PracticeArea = 'GEN';
+                $project->ProjectType = 'PRESENT';
+            } else {
+                $project->PracticeArea = $project->ProjectType;
+                $project->ProjectType = 'PRESENT';
+            }
+        }
+
+        if ($project->PracticeArea == '') {
+            if (
+                $project->ProjectType == 'FAC'
+                or
+                $project->ProjectType == ''
+            ) {
+                $project->PracticeArea = 'GEN';
+            } else {
+                $project->PracticeArea = $project->ProjectType;
+            }
+        }
+
+        if (
+            $project->ProjectType <> 'FAC' and
+            $project->ProjectType <> 'PRESENT'
+        ) $project->ProjectType = '';
     }
 
     private function linkSR($case_id, $project)
