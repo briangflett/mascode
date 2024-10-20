@@ -1,14 +1,6 @@
 <?php
 
-// Define the namespace for the action
-namespace CRM_Mascode_Action;
-
-// Include the necessary CiviCRM classes
-use CRM_Civirules_Action;
-use CRM_Civirules_TriggerData_TriggerData;
-
-// Extend the CRM_Civirules_Action class to define a new action
-class ServiceRequestToProject extends CRM_Civirules_Action
+class CRM_Mascode_Action_ServiceRequestToProject extends CRM_Civirules_Action
 {
 
     /**
@@ -19,52 +11,80 @@ class ServiceRequestToProject extends CRM_Civirules_Action
      */
     public function processAction(CRM_Civirules_TriggerData_TriggerData $triggerData)
     {
-        // Retrieve the case ID from the triggering event parameters
-        $caseId = $triggerData['case_id'];
+        // Retrieve the entity data and the action parameters if applicable
+        $srCase = $triggerData->getEntityData('Case');
+        // $actionParameters = $this->getActionParameters();
+        var_dump($srCase);
 
-        // Load the existing service request case using API v4
-        $serviceCase = civicrm_api4('Case', 'get', [
-            'where' => [['id', '=', $caseId]],
-        ])->first();
-        if (!$serviceCase) {
-            $this->logMessage("Service request case not found: $caseId");
-            return;
-        }
+        // It may be redundant to...
+        // Check if it is a case of type service request
+        // Check if the status has changed to "Project Created"
 
         // Extract details from the service request that may be needed for the project case
-        $contactId = $serviceCase['contact_id'];
-        $subject = "Project created from Service Request #" . $serviceCase['id'];
+        $pSubject = "P: " . $srCase['subject'];
+        $pStartDate = date('Y-m-d');
 
-        // Prepare parameters for creating a new project case
-        $projectParams = [
-            'contact_id' => $contactId,
-            'subject' => $subject,
-            'case_type_id' => 'project',  // Assuming 'project' is the case type for new projects
-            'status_id' => 'Open',
-            'start_date' => date('Ymd'),
-        ];
-
-        // Create the new project case using API v4
-        $result = civicrm_api4('Case', 'create', [
-            'values' => $projectParams,
-        ]);
-        if (is_a($result, 'CRM_Core_Error')) {
-            $this->logMessage("Failed to create project case: " . $result->getMessage());
-            return;
+        // Check if contacts array exists, throw exception if not
+        if (!isset($srCase['contacts']) || !is_array($srCase['contacts'])) {
+            throw new Exception("Contacts array not found in case data.");
         }
 
-        $this->logMessage("Project case created successfully for contact: $contactId");
-    }
+        $clientContactId = null;
+        $coordinatorContactId = null;
 
-    /**
-     * Provide a descriptive label for this action
-     *
-     * @return string
-     *   A label for the action.
-     */
-    public function getActionLabel()
-    {
-        return ts('Create Project Case from Service Request');
+        foreach ($srCase['contacts'] as $contact) {
+            if (isset($contact['role'])) {
+                if ($contact['role'] === 'Client' && !$clientContactId) {
+                    $clientContactId = $contact['contact_id'] ?? null;
+                } elseif ($contact['role'] === 'Case Coordinator for' && !$coordinatorContactId) {
+                    $coordinatorContactId = $contact['contact_id'] ?? null;
+                }
+
+                // Break the loop if we've found both contacts
+                if ($clientContactId && $coordinatorContactId) {
+                    break;
+                }
+            }
+        }
+
+
+        // Create the project
+        $civiCase = \Civi\Api4\CiviCase::create(TRUE)
+            ->addValue('case_type_id.name', 'project')
+            ->addValue('subject', $pSubject)
+            ->addValue('creator_id', $coordinatorContactId)
+            ->addValue('start_date', $pStartDate)
+            ->addValue('status_id:label', 'Active')
+            ->addValue(
+                'contact_id',
+                [
+                    $clientContactId,
+                ]
+            )
+            ->execute();
+
+        $srCase_id = $srCase['id'];
+        $pCase_id = $civiCase[0]['id'];
+
+        // Create a Link Cases activity, and link it to one case
+        $civiActivity = \Civi\Api4\Activity::create(TRUE)
+            ->addValue('activity_type_id:label', 'Link Cases')
+            ->addValue('source_contact_id', $coordinatorContactId)
+            ->addValue('target_contact_id', [
+                $clientContactId,
+            ])
+            ->addValue('case_id', $pCase_id)
+            ->addValue('status_id:label', 'Completed')
+            ->addValue('subject', 'Create link between - Service Request (CaseID: ' . $srCase_id . ') and Project (CaseID: ' . $pCase_id . ').')
+            ->execute();
+
+        $activity_id = $civiActivity[0]['id'];
+
+        // Then link the activity to the other case
+        $civiCaseActivity = \Civi\Api4\CaseActivity::create(TRUE)
+            ->addValue('case_id', $srCase_id)
+            ->addValue('activity_id', $activity_id)
+            ->execute();
     }
 
     /**
