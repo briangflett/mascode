@@ -15,31 +15,29 @@ class CiviCaseImport
         global $last_id;
         echo 'Source and Target Database is ' . $wpdb->dbname . ' and Ninas ID is ' . $nina . ' and $last_id is ' . $last_id . '<br>';
 
-        // Fetch a limited set of rows from the project table
-        $p_sql = $wpdb->prepare(
-            "SELECT * FROM bgf_dataload_tProject WHERE ProjectID > %d AND Processed IS NOT TRUE ORDER BY ProjectID LIMIT %d",
+        // Fetch a limited set of rows from the service requests table
+        $sr_sql = $wpdb->prepare(
+            "SELECT * FROM bgf_dataload_tServiceRequest WHERE RequestID > %s AND Processed IS NOT TRUE ORDER BY RequestID LIMIT %d",
             $last_id,
             500 // For example, to limit the results to x rows
         );
-        $p_results = $wpdb->get_results($p_sql);
+        $sr_results = $wpdb->get_results($sr_sql);
 
-        // Check if any rows are returned
-        if (!empty($p_results)) {
+        // Check if any rows are returned  (each array entry row is an object)
+        if (!empty($sr_results)) {
             // Iterate through each row
-            foreach ($p_results as $project) {
+            foreach ($sr_results as $sr) {
 
-                //Fetch the project
+                //Fetch the service request  (each array entry row is an array)
                 $civiCaseGet = \Civi\Api4\CiviCase::get(TRUE)
-                    ->addSelect('id', 'subject', 'Cases_SR_Projects_.Referral', 'Projects.Notes')
-                    ->addWhere('subject', '=', $project->ProjectID)
+                    ->addSelect('id', 'Cases_SR_Projects_.Referral', 'Cases_SR_Projects_.Notes')
+                    ->addWhere('subject', '=', $sr->RequestID)
                     ->execute();
 
-                $id = $civiCaseGet[0]->id;
-                $subject = $civiCaseGet[0]->subject;
-                $subject = str_pad($subject, 5, '0', STR_PAD_LEFT);
+                $id = $civiCaseGet[0]['id'];
 
                 // Referral is the source of interest
-                $referral = $civiCaseGet[0]->Cases_SR_Projects_ . Referral;
+                $referral = $civiCaseGet[0]['Cases_SR_Projects_.Referral'];
                 if ($referral === 'website') {
                     $referral = 'Website';
                 } else {
@@ -69,34 +67,20 @@ class CiviCaseImport
                 ];
                 if (in_array($referral, $validReferrals, true)) {
                     // Refferral is valid
-                    $notes = $civiCaseGet[0]->Projects . Notes;
+                    $notes = $civiCaseGet[0]['Cases_SR_Projects_.Notes'];
                 } else {
                     // Referral is invalid, move it to notes
-                    $notes = $civiCaseGet[0]->Projects . Notes . ' Referral: ' . $referral;
+                    $notes = $civiCaseGet[0]['Cases_SR_Projects_.Notes'] . ' Referral: ' . $referral;
                     $referral = 'Other';
                 }
 
-                // Fetch the project hours
-                $hr_sql = $wpdb->prepare(
-                    "SELECT * FROM bgf_dataload_tProjectMASRepHours WHERE ProjectID = %d",
-                    $project->ProjectID
-                );
-                $hr_results = $wpdb->get_results($hr_sql);
-                if (!empty($hr_results)) {
-                    $hours = $hr_results[0]->Hours;
-                } else {
-                    $hours = null;
-                }
-
                 $civiCaseUpdate = \Civi\Api4\CiviCase::update(TRUE)
-                    ->addValue('subject', $subject)
                     ->addValue('Cases_SR_Projects_.Referral', $referral)
-                    ->addValue('Projects.Notes', $notes)
-                    ->addValue('Projects.Hours', $hours)
+                    ->addValue('Cases_SR_Projects_.Notes', $notes)
                     ->addWhere('id', '=', $id)
                     ->execute();
 
-                $last_id = $project->ProjectID;
+                $last_id = $sr->RequestID;
             }
         } else {
             echo 'No data found.';
@@ -104,7 +88,7 @@ class CiviCaseImport
 
         echo 'Works OK so far...<br>';
         // Construct the URL correctly using site_url or home_url
-        $url = site_url('/wp-content/uploads/civicrm/ext/mascode/extern/project_fix_2.php?last_id=' . urlencode($last_id));
+        $url = site_url('/wp-content/uploads/civicrm/ext/mascode/extern/sr_fix.php?last_id=' . urlencode($last_id));
         // Output the correct URL
         echo 'Run <a href="' . esc_url($url) . '">' . esc_url($url) . '</a><br>';
     }

@@ -39,7 +39,10 @@ class CiviCaseImport
             // Iterate through each row
             foreach ($p_results as $project) {
 
-                $projectID_Clean = str_pad($project->ProjectID, 5, '0', STR_PAD_LEFT);
+                $subject = str_pad($project->ProjectID, 5, '0', STR_PAD_LEFT);
+
+                // update the practice area and type attributes of the project object
+                [$practiceArea, $projectType] = $this->updatePracticeAreaAndType($project);
 
                 // Fetch the project hours
                 $hr_sql = $wpdb->prepare(
@@ -47,9 +50,11 @@ class CiviCaseImport
                     $project->ProjectID
                 );
                 $hr_results = $wpdb->get_results($hr_sql);
-
-                // update the practice area and type attributes of the project object
-                $this->updatePracticeAreaAndType($project);
+                if (!empty($hr_results)) {
+                    $hours = $hr_results[0]->Hours;
+                } else {
+                    $hours = null;
+                }
 
                 // Get the CiviCRM ClientID
                 $project->ClientID_Clean = $this->getClientID($project->ClientID);
@@ -60,13 +65,14 @@ class CiviCaseImport
                     // Create a case
                     $civiCase = \Civi\Api4\CiviCase::create(TRUE)
                         ->addValue('case_type_id.name', 'project')
-                        ->addValue('subject', $projectID_Clean)  // should this be the ProjectID or the Title?
+                        ->addValue('subject', $subject)  // should this be the ProjectID or the Title?
                         ->addValue('creator_id', $nina)
                         ->addValue('start_date', $project->StartDate)
                         ->addValue('end_date', $project->EndDate)
                         ->addValue('status_id:label', $project->Status)
-                        ->addValue('Projects.Practice_Area', $project->PracticeArea)
-                        ->addValue('Projects.Project_Type', $project->ProjectType)
+                        ->addValue('Projects.Practice_Area', $practiceArea)
+                        ->addValue('Projects.Project_Type', $projectType)
+                        ->addValue('Projects.Hours', $hours)
                         ->addValue('Projects.Notes', $project->Notes)
                         // Title, ProjectType, DefinitionDocDate, CompletionDocDate, EvaluationDocDate, RequestID
                         ->addValue(
@@ -74,11 +80,7 @@ class CiviCaseImport
                             [
                                 $project->ClientID_Clean,
                             ]
-                        );
-                    if (!empty($hr_results)) {
-                        $civiCaSE->addValue('Projects.Hours', $hr_results[0]->Hours);
-                    }
-                    $civiCaSE->addWhere('subject', '=', $project->ProjectID)
+                        )                                
                         ->execute();
                     // } else {
                     //     // Update a case
@@ -106,8 +108,8 @@ class CiviCaseImport
                     $case_id = $civiCase[0]['id'];
 
                     // Should the relationships be active or inactive?
-                    $this_status = $this->getStatusClass($project->Status, $statusMap);
-                    if ($this_status == "Closed") {
+                    $thisStatus = $this->getStatusClass($project->Status, $statusMap);
+                    if ($thisStatus == "Closed") {
                         $relationshipActive = FALSE;
                     } else {
                         $relationshipActive = TRUE;
@@ -162,7 +164,6 @@ class CiviCaseImport
             return null;
         }
     }
-
     // Lookup the status class by label
     private function getStatusClass($label, $statusMap)
     {
@@ -172,54 +173,57 @@ class CiviCaseImport
             return null;
         }
     }
-
     private function updatePracticeAreaAndType($project)
     {
-        if ($project->PracticeArea == 'FAC') {
+        $practiceArea = $project->PracticeArea;
+        $projectType = $project->ProjectType;
+
+        if ($practiceArea == 'FAC') {
             if (
-                $project->ProjectType == 'FAC' or
-                $project->ProjectType == ''
+                $projectType == 'FAC' or
+                $projectType == ''
             ) {
-                $project->PracticeArea = 'GEN';
-                $project->ProjectType = 'FAC';
+                $practiceArea = 'GEN';
+                $projectType = 'FAC';
             } else {
-                $project->PracticeArea = $project->ProjectType;
-                $project->ProjectType = 'FAC';
+                $practiceArea = $projectType;
+                $projectType = 'FAC';
             }
         }
 
-        if ($project->PracticeArea == 'PRESENT') {
+        if ($practiceArea == 'PRESENT') {
             if (
-                $project->ProjectType == 'FAC'
+                $projectType == 'FAC'
                 or
-                $project->ProjectType == ''
+                $projectType == ''
             ) {
-                $project->PracticeArea = 'GEN';
-                $project->ProjectType = 'PRESENT';
+                $practiceArea = 'GEN';
+                $projectType = 'PRESENT';
             } else {
-                $project->PracticeArea = $project->ProjectType;
-                $project->ProjectType = 'PRESENT';
+                $practiceArea = $projectType;
+                $projectType = 'PRESENT';
             }
         }
 
-        if ($project->PracticeArea == '') {
+        if ($practiceArea == '') {
             if (
-                $project->ProjectType == 'FAC'
+                $projectType == 'FAC'
                 or
-                $project->ProjectType == ''
+                $projectType == ''
             ) {
-                $project->PracticeArea = 'GEN';
+                $practiceArea = 'GEN';
             } else {
-                $project->PracticeArea = $project->ProjectType;
+                $practiceArea = $projectType;
             }
         }
 
         if (
-            $project->ProjectType <> 'FAC' and
-            $project->ProjectType <> 'PRESENT'
-        ) $project->ProjectType = '';
-    }
+            $projectType <> 'FAC' and
+            $projectType <> 'PRESENT'
+        ) $projectType = '';
 
+        return [$practiceArea, $projectType]
+    }
     private function linkSR($case_id, $project)
     {
         global $nina;

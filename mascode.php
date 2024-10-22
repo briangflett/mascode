@@ -33,3 +33,18 @@ function mascode_civicrm_enable(): void
 {
   _mascode_civix_civicrm_enable();
 }
+
+/**
+ * Implements hook_civicrm_buildForm().
+ */
+function mascode_civicrm_buildForm($formName, &$form)
+{
+  $overrides = [
+    'CRM_Contact_Form_Contact',
+  ];
+
+  if (in_array($formName, $overrides)) {
+    $newName = preg_replace('/^CRM_/', 'CRM_Mascode_', $formName);
+    $newName::buildForm($form);
+  }
+}

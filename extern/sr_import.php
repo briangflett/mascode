@@ -30,7 +30,7 @@ class CiviCaseImport
     $sr_sql = $wpdb->prepare(
       "SELECT * FROM bgf_dataload_tServiceRequest WHERE RequestID > %s AND Processed IS NOT TRUE ORDER BY RequestID LIMIT %d",
       $last_id,
-      300 // For example, to limit the results to x rows
+      500 // For example, to limit the results to x rows
     );
     $sr_results = $wpdb->get_results($sr_sql);
 
@@ -40,6 +40,8 @@ class CiviCaseImport
       foreach ($sr_results as $sr) {
         // Get the CiviCRM ClientID
         $sr->ClientID_Clean = $this->getClientID($sr->ClientID);
+
+        [$referral, $notes] = $this->updateReferral($sr->Referral, $sr->Notes);
 
         if (!empty($sr->ClientID_Clean)) {
           // insert or update BGF ??
@@ -53,8 +55,8 @@ class CiviCaseImport
             ->addValue('end_date', $sr->ResolutionDate)
             ->addValue('status_id:label', $sr->Status)
             ->addValue('Cases_SR_Projects_.Practice_Area', $sr->PracticeArea)
-            ->addValue('Cases_SR_Projects_.Referral', $sr->Referral)
-            ->addValue('Cases_SR_Projects_.Notes', $sr->Notes)
+            ->addValue('Cases_SR_Projects_.Referral', $referral)
+            ->addValue('Cases_SR_Projects_.Notes', $notes)
             ->addValue(
               'contact_id',
               [
