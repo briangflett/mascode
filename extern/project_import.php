@@ -15,7 +15,7 @@ class CiviCaseImport
         global $last_id;
         echo 'Source and Target Database is ' . $wpdb->dbname . ' and Ninas ID is ' . $nina . ' and $last_id is ' . $last_id . '<br>';
 
-        // Fetch case statuses and build the associative array
+        // Fetch case statuses and build the associative array  (each array entry row is an array)
         $caseStatuses = \Civi\Api4\OptionValue::get(TRUE)
             ->addSelect('label', 'grouping')
             ->addWhere('option_group_id:label', '=', 'Case Status')
@@ -34,7 +34,7 @@ class CiviCaseImport
         );
         $p_results = $wpdb->get_results($p_sql);
 
-        // Check if any rows are returned
+        // Check if any rows are returned  (each array entry row is an object)
         if (!empty($p_results)) {
             // Iterate through each row
             foreach ($p_results as $project) {
@@ -42,7 +42,7 @@ class CiviCaseImport
                 $subject = str_pad($project->ProjectID, 5, '0', STR_PAD_LEFT);
 
                 // update the practice area and type attributes of the project object
-                [$practiceArea, $projectType] = $this->updatePracticeAreaAndType($project);
+                [$practiceArea, $projectType] = $this->updatePracticeAreaAndType($project->PreacticeArea, $project->ProjectType);
 
                 // Fetch the project hours
                 $hr_sql = $wpdb->prepare(
@@ -80,7 +80,7 @@ class CiviCaseImport
                             [
                                 $project->ClientID_Clean,
                             ]
-                        )                                
+                        )
                         ->execute();
                     // } else {
                     //     // Update a case
@@ -173,11 +173,8 @@ class CiviCaseImport
             return null;
         }
     }
-    private function updatePracticeAreaAndType($project)
+    private function updatePracticeAreaAndType($practiceArea, $projectType)
     {
-        $practiceArea = $project->PracticeArea;
-        $projectType = $project->ProjectType;
-
         if ($practiceArea == 'FAC') {
             if (
                 $projectType == 'FAC' or
@@ -222,7 +219,7 @@ class CiviCaseImport
             $projectType <> 'PRESENT'
         ) $projectType = '';
 
-        return [$practiceArea, $projectType]
+        return [$practiceArea, $projectType];
     }
     private function linkSR($case_id, $project)
     {

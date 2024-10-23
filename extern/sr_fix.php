@@ -19,7 +19,7 @@ class CiviCaseImport
         $sr_sql = $wpdb->prepare(
             "SELECT * FROM bgf_dataload_tServiceRequest WHERE RequestID > %s AND Processed IS NOT TRUE ORDER BY RequestID LIMIT %d",
             $last_id,
-            500 // For example, to limit the results to x rows
+            300
         );
         $sr_results = $wpdb->get_results($sr_sql);
 
@@ -37,42 +37,7 @@ class CiviCaseImport
                 $id = $civiCaseGet[0]['id'];
 
                 // Referral is the source of interest
-                $referral = $civiCaseGet[0]['Cases_SR_Projects_.Referral'];
-                if ($referral === 'website') {
-                    $referral = 'Website';
-                } else {
-                    if ($referral === 'Google') {
-                        $referral = 'Online Search';
-                    } else {
-                        if ($referral === 'Email from MAS') {
-                            $referral = 'MAS email';
-                        }
-                    }
-                }
-                $validReferrals = [
-                    'MAS Client',
-                    'Repeat Client',
-                    'Another Agency',
-                    'Online Search',
-                    'Website',
-                    'MAS Consultant',
-                    'Other',
-                    'Workshop',
-                    'Social Media',
-                    'MAS email',
-                    // These will be converted and then disabled...
-                    'Word of Mouth',
-                    'Thought of MAS again',
-                    null
-                ];
-                if (in_array($referral, $validReferrals, true)) {
-                    // Refferral is valid
-                    $notes = $civiCaseGet[0]['Cases_SR_Projects_.Notes'];
-                } else {
-                    // Referral is invalid, move it to notes
-                    $notes = $civiCaseGet[0]['Cases_SR_Projects_.Notes'] . ' Referral: ' . $referral;
-                    $referral = 'Other';
-                }
+                [$referral, $notes] = $this->updateReferral($civiCaseGet[0]['Cases_SR_Projects_.Referral'], $civiCaseGet[0]['Cases_SR_Projects_.Notes']);
 
                 $civiCaseUpdate = \Civi\Api4\CiviCase::update(TRUE)
                     ->addValue('Cases_SR_Projects_.Referral', $referral)
@@ -91,6 +56,42 @@ class CiviCaseImport
         $url = site_url('/wp-content/uploads/civicrm/ext/mascode/extern/sr_fix.php?last_id=' . urlencode($last_id));
         // Output the correct URL
         echo 'Run <a href="' . esc_url($url) . '">' . esc_url($url) . '</a><br>';
+    }
+    private function updateReferral($referral, $notes)
+    {
+        if ($referral === 'website') {
+            $referral = 'Website';
+        } else {
+            if ($referral === 'Google') {
+                $referral = 'Online Search';
+            } else {
+                if ($referral === 'Email from MAS') {
+                    $referral = 'MAS email';
+                }
+            }
+        }
+        $validReferrals = [
+            'MAS Client',
+            'Repeat Client',
+            'Another Agency',
+            'Online Search',
+            'Website',
+            'MAS Consultant',
+            'Other',
+            'Workshop',
+            'Social Media',
+            'MAS email',
+            // These will be converted and then disabled...
+            'Word of Mouth',
+            'Thought of MAS again',
+            null
+        ];
+        if (!in_array($referral, $validReferrals, true)) {
+            // Referral is invalid, move it to notes
+            $notes = $notes . ' Referral: ' . $referral;
+            $referral = 'Other';
+        }
+        return [$referral, $notes];
     }
 }
 

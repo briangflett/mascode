@@ -28,54 +28,28 @@ class CiviCaseImport
             // Iterate through each row
             foreach ($p_results as $project) {
 
-                if ($project->PracticeArea == 'FAC') {
-                    if (
-                        $project->ProjectType == 'FAC' or
-                        $project->ProjectType == ''
-                    ) {
-                        $project->PracticeArea = 'GEN';
-                        $project->ProjectType = 'FAC';
-                    } else {
-                        $project->PracticeArea = $project->ProjectType;
-                        $project->ProjectType = 'FAC';
-                    }
-                }
+                $subject = str_pad($project->ProjectID, 5, '0', STR_PAD_LEFT);
 
-                if ($project->PracticeArea == 'PRESENT') {
-                    if (
-                        $project->ProjectType == 'FAC'
-                        or
-                        $project->ProjectType == ''
-                    ) {
-                        $project->PracticeArea = 'GEN';
-                        $project->ProjectType = 'PRESENT';
-                    } else {
-                        $project->PracticeArea = $project->ProjectType;
-                        $project->ProjectType = 'PRESENT';
-                    }
-                }
+                // update the practice area and type attributes of the project object
+                [$practiceArea, $projectType] = $this->updatePracticeAreaAndType($project->PreacticeArea, $project->ProjectType);
 
-                if ($project->PracticeArea == '') {
-                    if (
-                        $project->ProjectType == 'FAC'
-                        or
-                        $project->ProjectType == ''
-                    ) {
-                        $project->PracticeArea = 'GEN';
-                    } else {
-                        $project->PracticeArea = $project->ProjectType;
-                    }
+                // Fetch the project hours
+                $hr_sql = $wpdb->prepare(
+                    "SELECT * FROM bgf_dataload_tProjectMASRepHours WHERE ProjectID = %d",
+                    $project->ProjectID
+                );
+                $hr_results = $wpdb->get_results($hr_sql);
+                if (!empty($hr_results)) {
+                    $hours = $hr_results[0]->Hours;
+                } else {
+                    $hours = null;
                 }
-
-                if (
-                    $project->ProjectType <> 'FAC' and
-                    $project->ProjectType <> 'PRESENT'
-                ) $project->ProjectType = '';
 
                 $civiCaSE = \Civi\Api4\CiviCase::update(TRUE)
-                    ->addValue('Projects.Practice_Area', $project->PracticeArea)
-                    ->addValue('Projects.Project_Type', $project->ProjectType)
-                    ->addValue('Projects.Notes', $project->Notes)
+                    ->addValue('Projects.Practice_Area', $subject)
+                    ->addValue('Projects.Practice_Area', $practiceArea)
+                    ->addValue('Projects.Project_Type', $projectType)
+                    ->addValue('Projects.Hours', $hours)
                     ->addWhere(
                         'subject',
                         '=',
@@ -93,6 +67,54 @@ class CiviCaseImport
         $url = site_url('/wp-content/uploads/civicrm/ext/mascode/extern/project_fix.php?last_id=' . urlencode($last_id));
         // Output the correct URL
         echo 'Run <a href="' . esc_url($url) . '">' . esc_url($url) . '</a><br>';
+    }
+    private function updatePracticeAreaAndType($practiceArea, $projectType)
+    {
+        if ($practiceArea == 'FAC') {
+            if (
+                $projectType == 'FAC' or
+                $projectType == ''
+            ) {
+                $practiceArea = 'GEN';
+                $projectType = 'FAC';
+            } else {
+                $practiceArea = $projectType;
+                $projectType = 'FAC';
+            }
+        }
+
+        if ($practiceArea == 'PRESENT') {
+            if (
+                $projectType == 'FAC'
+                or
+                $projectType == ''
+            ) {
+                $practiceArea = 'GEN';
+                $projectType = 'PRESENT';
+            } else {
+                $practiceArea = $projectType;
+                $projectType = 'PRESENT';
+            }
+        }
+
+        if ($practiceArea == '') {
+            if (
+                $projectType == 'FAC'
+                or
+                $projectType == ''
+            ) {
+                $practiceArea = 'GEN';
+            } else {
+                $practiceArea = $projectType;
+            }
+        }
+
+        if (
+            $projectType <> 'FAC' and
+            $projectType <> 'PRESENT'
+        ) $projectType = '';
+
+        return [$practiceArea, $projectType];
     }
 }
 

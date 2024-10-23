@@ -15,7 +15,7 @@ class CiviCaseImport
     global $last_id;
     echo 'Source and Target Database is ' . $wpdb->dbname . ' and Ninas ID is ' . $nina . ' and $last_id is ' . $last_id . '<br>';
 
-    // Fetch case statuses and build the associative array
+    // Fetch case statuses and build the associative array  (each array entry row is an array)
     $caseStatuses = \Civi\Api4\OptionValue::get(TRUE)
       ->addSelect('label', 'grouping')
       ->addWhere('option_group_id:label', '=', 'Case Status')
@@ -34,7 +34,7 @@ class CiviCaseImport
     );
     $sr_results = $wpdb->get_results($sr_sql);
 
-    // Check if any rows are returned
+    // Check if any rows are returned  (each array entry row is an object)
     if (!empty($sr_results)) {
       // Iterate through each row
       foreach ($sr_results as $sr) {
@@ -185,6 +185,44 @@ class CiviCaseImport
       return null;
     }
   }
+
+  private function updateReferral($referral, $notes)
+  {
+    if ($referral === 'website') {
+      $referral = 'Website';
+    } else {
+      if ($referral === 'Google') {
+        $referral = 'Online Search';
+      } else {
+        if ($referral === 'Email from MAS') {
+          $referral = 'MAS email';
+        }
+      }
+    }
+    $validReferrals = [
+      'MAS Client',
+      'Repeat Client',
+      'Another Agency',
+      'Online Search',
+      'Website',
+      'MAS Consultant',
+      'Other',
+      'Workshop',
+      'Social Media',
+      'MAS email',
+      // These will be converted and then disabled...
+      'Word of Mouth',
+      'Thought of MAS again',
+      null
+    ];
+    if (!in_array($referral, $validReferrals, true)) {
+      // Referral is invalid, move it to notes
+      $notes = $notes . ' Referral: ' . $referral;
+      $referral = 'Other';
+    }
+    return [$referral, $notes];
+  }
+
   private function linkActivities($case_id, $sr)
   {
     global $wpdb;
