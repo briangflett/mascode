@@ -1,4 +1,7 @@
 <?php
+
+// This is the example file provided by Edsel from JMA...
+
 //required include files
 require('wp-blog-header.php');
 require_once("wp-config.php");

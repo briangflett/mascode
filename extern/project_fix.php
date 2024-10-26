@@ -19,7 +19,7 @@ class CiviCaseImport
         $p_sql = $wpdb->prepare(
             "SELECT * FROM bgf_dataload_tProject WHERE ProjectID > %d AND Processed IS NOT TRUE ORDER BY ProjectID LIMIT %d",
             $last_id,
-            1 // For example, to limit the results to x rows
+            10 // For example, to limit the results to x rows
         );
         $p_results = $wpdb->get_results($p_sql);
 
@@ -28,7 +28,8 @@ class CiviCaseImport
             // Iterate through each row
             foreach ($p_results as $project) {
 
-                $subject = str_pad($project->ProjectID, 5, '0', STR_PAD_LEFT);
+                $projectID = str_pad($project->ProjectID, 5, '0', STR_PAD_LEFT);
+                $subject = $projectID . ' ' . $project->Title;
 
                 // update the practice area and type attributes of the project object
                 [$practiceArea, $projectType] = $this->updatePracticeAreaAndType($project->PreacticeArea, $project->ProjectType);
@@ -36,7 +37,7 @@ class CiviCaseImport
                 // Fetch the project hours
                 $hr_sql = $wpdb->prepare(
                     "SELECT * FROM bgf_dataload_tProjectMASRepHours WHERE ProjectID = %d",
-                    $project->ProjectID
+                    $projectID
                 );
                 $hr_results = $wpdb->get_results($hr_sql);
                 if (!empty($hr_results)) {
@@ -45,15 +46,17 @@ class CiviCaseImport
                     $hours = null;
                 }
 
+                $end_date = $this->updateEndDate($projectID, $project->Status, $project->EndDate);
+
                 $civiCaSE = \Civi\Api4\CiviCase::update(TRUE)
-                    ->addValue('Projects.Practice_Area', $subject)
+                    ->addValue('subject', $subject)
                     ->addValue('Projects.Practice_Area', $practiceArea)
                     ->addValue('Projects.Project_Type', $projectType)
                     ->addValue('Projects.Hours', $hours)
                     ->addWhere(
                         'subject',
-                        '=',
-                        $project->ProjectID
+                        'CONTAINS',
+                        $projectID
                     )
                     ->execute();
                 $last_id = $project->ProjectID;
@@ -116,8 +119,26 @@ class CiviCaseImport
 
         return [$practiceArea, $projectType];
     }
+    private function updateEndDate($projectID, $status, $endDate)
+    {
+        if ($endDate <> '') {
+            return $endDate;
+        } else {
+            $openStatuses = ["Open", "Active", "On Hold"];
+            if (in_array($status, $openStatuses, true)) {
+                return $endDate;
+            } else {
+                // Fetch the closed date
+                $ph_sql = $wpdb->prepare(
+                    "SELECT Date FROM bgf_dataload_tProjectStatusHistory WHERE ProjectID = %s",
+                    $projectID
+                );
+                $ph_results = $wpdb->get_results($ph_sql);
+                return $ph_results[0]['Date'];
+            }
+        }
+    }
 }
-
 function civiCaseImportFn()
 {
     $civiCaseImport = new CiviCaseImport();

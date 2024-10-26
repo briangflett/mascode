@@ -30,7 +30,7 @@ class CiviCaseImport
     $sr_sql = $wpdb->prepare(
       "SELECT * FROM bgf_dataload_tServiceRequest WHERE RequestID > %s AND Processed IS NOT TRUE ORDER BY RequestID LIMIT %d",
       $last_id,
-      500 // For example, to limit the results to x rows
+      10 // For example, to limit the results to x rows
     );
     $sr_results = $wpdb->get_results($sr_sql);
 
@@ -43,6 +43,8 @@ class CiviCaseImport
 
         [$referral, $notes] = $this->updateReferral($sr->Referral, $sr->Notes);
 
+        $end_date = $this->updateEndDate($sr->RequestID, $sr->Status, $sr->ResolutionDate);
+
         if (!empty($sr->ClientID_Clean)) {
           // insert or update BGF ??
           // if ($sr->RequestID > 'R24168') {
@@ -52,7 +54,7 @@ class CiviCaseImport
             ->addValue('subject', $sr->RequestID)
             ->addValue('creator_id', $nina)
             ->addValue('start_date', $sr->InitiationDate)
-            ->addValue('end_date', $sr->ResolutionDate)
+            ->addValue('end_date', $end_date)
             ->addValue('status_id:label', $sr->Status)
             ->addValue('Cases_SR_Projects_.Practice_Area', $sr->PracticeArea)
             ->addValue('Cases_SR_Projects_.Referral', $referral)
@@ -96,19 +98,20 @@ class CiviCaseImport
             $relationshipActive = TRUE;
           }
 
-          // Create the MAS Rep
+          // Create the relationship for the MAS rep
           if (!empty($sr->RepID)) {
             // Get the MAS rep
             $ext_mas_rep_id = strval(intval($sr->RepID) + 2000000);
             $mas_rep_id = $this->getClientID($ext_mas_rep_id);
             if (!empty($mas_rep_id)) {
+              // Create a MAS rep relationship
               try {
-                $caseRole = \Civi\Api4\Relationship::create(TRUE)
-                  ->addValue('contact_id_a', $mas_rep_id)
-                  ->addValue('contact_id_b', $sr->ClientID_Clean)
-                  ->addValue('relationship_type_id:label', 'Case MAS Rep is')
+                $civiRelationship = \Civi\Api4\Relationship::create(TRUE)
+                  ->addValue('contact_id_a', $mas_rep_id)     // mas rep
+                  ->addValue('contact_id_b', $sr->ClientID_Clean)     // client
+                  ->addValue('relationship_type_id:label', 'Case Coordinator is (MAS Rep)')
+                  ->addValue('is_active', $relationshipActive)  // depends on project
                   ->addValue('case_id', $case_id)
-                  ->addValue('is_active', $relationshipActive)
                   ->execute();
               } catch (Exception $e) {
                 // Handle duplicate error or log the message
@@ -213,7 +216,7 @@ class CiviCaseImport
       // These will be converted and then disabled...
       'Word of Mouth',
       'Thought of MAS again',
-      null
+      ''
     ];
     if (!in_array($referral, $validReferrals, true)) {
       // Referral is invalid, move it to notes
@@ -222,7 +225,25 @@ class CiviCaseImport
     }
     return [$referral, $notes];
   }
-
+  private function updateEndDate($requestID, $status, $resolutionDate)
+  {
+    if ($resolutionDate <> '') {
+      return $resolutionDate;
+    } else {
+      $openStatuses = ["Open", "Request RCS", "Sent for Assignment"];
+      if (in_array($status, $openStatuses, true)) {
+        return $resolutionDate;
+      } else {
+        // Fetch the closed date
+        $srh_sql = $wpdb->prepare(
+          "SELECT Date FROM bgf_dataload_tServiceRequestStatusHistory WHERE RequestID = %s",
+          $requestID
+        );
+        $srh_results = $wpdb->get_results($srh_sql);
+        return $srh_results[0]['Date'];
+      }
+    }
+  }
   private function linkActivities($case_id, $sr)
   {
     global $wpdb;

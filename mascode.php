@@ -35,16 +35,16 @@ function mascode_civicrm_enable(): void
 }
 
 /**
- * Implements hook_civicrm_buildForm().
+ * Implements hook_civicrm_buildForm().  --  Commented out for now
  */
-function mascode_civicrm_buildForm($formName, &$form)
-{
-  $overrides = [
-    'CRM_Contact_Form_Contact',
-  ];
+// function mascode_civicrm_buildForm($formName, &$form)
+// {
+//   $overrides = [
+//     'CRM_Contact_Form_Contact',
+//   ];
 
-  if (in_array($formName, $overrides)) {
-    $newName = preg_replace('/^CRM_/', 'CRM_Mascode_', $formName);
-    $newName::buildForm($form);
-  }
-}
+//   if (in_array($formName, $overrides)) {
+//     $newName = preg_replace('/^CRM_/', 'CRM_Mascode_', $formName);
+//     $newName::buildForm($form);
+//   }
+// }

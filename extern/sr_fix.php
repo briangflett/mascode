@@ -19,7 +19,7 @@ class CiviCaseImport
         $sr_sql = $wpdb->prepare(
             "SELECT * FROM bgf_dataload_tServiceRequest WHERE RequestID > %s AND Processed IS NOT TRUE ORDER BY RequestID LIMIT %d",
             $last_id,
-            300
+            10
         );
         $sr_results = $wpdb->get_results($sr_sql);
 
@@ -28,18 +28,17 @@ class CiviCaseImport
             // Iterate through each row
             foreach ($sr_results as $sr) {
 
-                //Fetch the service request  (each array entry row is an array)
-                $civiCaseGet = \Civi\Api4\CiviCase::get(TRUE)
-                    ->addSelect('id', 'Cases_SR_Projects_.Referral', 'Cases_SR_Projects_.Notes')
-                    ->addWhere('subject', '=', $sr->RequestID)
-                    ->execute();
-
-                $id = $civiCaseGet[0]['id'];
-
                 // Referral is the source of interest
-                [$referral, $notes] = $this->updateReferral($civiCaseGet[0]['Cases_SR_Projects_.Referral'], $civiCaseGet[0]['Cases_SR_Projects_.Notes']);
+                [$referral, $notes] = $this->updateReferral($sr->Referral, $sr->Notes);
+
+                $end_date = $this->updateEndDate(
+                    $sr->RequestID,
+                    $sr->Status,
+                    $sr->ResolutionDate
+                );
 
                 $civiCaseUpdate = \Civi\Api4\CiviCase::update(TRUE)
+                    ->addValue('end_date', $end_date)
                     ->addValue('Cases_SR_Projects_.Referral', $referral)
                     ->addValue('Cases_SR_Projects_.Notes', $notes)
                     ->addWhere('id', '=', $id)
@@ -92,6 +91,25 @@ class CiviCaseImport
             $referral = 'Other';
         }
         return [$referral, $notes];
+    }
+    private function updateEndDate($requestID, $status, $resolutionDate)
+    {
+        if ($resolutionDate <> '') {
+            return $resolutionDate;
+        } else {
+            $openStatuses = ["Open", "Request RCS", "Sent for Assignment"];
+            if (in_array($status, $openStatuses, true)) {
+                return $resolutionDate;
+            } else {
+                // Fetch the closed date
+                $srh_sql = $wpdb->prepare(
+                    "SELECT Date FROM bgf_dataload_tServiceRequestStatusHistory WHERE RequestID = %s",
+                    $requestID
+                );
+                $srh_results = $wpdb->get_results($srh_sql);
+                return $srh_results[0]['Date'];
+            }
+        }
     }
 }
 

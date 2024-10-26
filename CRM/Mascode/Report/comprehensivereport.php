@@ -1,4 +1,7 @@
 <?php
+
+// This is the example file provided by Edsel from JMA...
+
 /*
  +--------------------------------------------------------------------+
  | Comprehensive Donor Revenue Analysis Report                        |
@@ -31,7 +34,8 @@
  * $Id$
  *
  */
-class CRM_Report_Form_Contribute_ComprehensiveReport extends CRM_Report_Form {
+class CRM_Report_Form_Contribute_ComprehensiveReport extends CRM_Report_Form
+{
 
   protected $_summary = NULL;
 
@@ -50,7 +54,8 @@ class CRM_Report_Form_Contribute_ComprehensiveReport extends CRM_Report_Form {
   protected $_queryDates = NULL;
   /**
    */
-  public function __construct() {
+  public function __construct()
+  {
     $this->_columns = array(
       'civicrm_dpo' => array(
         'dao' => '',
@@ -150,17 +155,19 @@ class CRM_Report_Form_Contribute_ComprehensiveReport extends CRM_Report_Form {
     parent::__construct();
   }
 
-  public function buildInstanceAndButtons() {
+  public function buildInstanceAndButtons()
+  {
     parent::buildInstanceAndButtons();
     CRM_Core_Resources::singleton()->addScript(
-    "CRM.$(function($) {
+      "CRM.$(function($) {
       $('.crm-absolute-date-to').hide();
       $('.crm-absolute-date-from label').text('Is:');
     });"
-  );
+    );
   }
 
-  protected function getQueryDates($date) {
+  protected function getQueryDates($date)
+  {
     //$fiscalYear = Civi::settings()->get('fiscalYearStart');
     //$fiscalYear = date('Y') . '-' . implode('-', $fiscalYear);
     $fiscalYear = $nextYear = $date;
@@ -194,7 +201,8 @@ class CRM_Report_Form_Contribute_ComprehensiveReport extends CRM_Report_Form {
     );
   }
 
-  protected function getRowLabels() {
+  protected function getRowLabels()
+  {
     $this->_rowLabels = array(
       'activeDonors' => array(
         ts('Number of Active Donors') => array('donor_number'),
@@ -240,13 +248,13 @@ class CRM_Report_Form_Contribute_ComprehensiveReport extends CRM_Report_Form {
     );
   }
 
-  public function from() {
+  public function from()
+  {
     $date = date('Y-m-d');
     if (!empty($this->_submitValues['ending_date_relative'])) {
       $dates = $this->getFromTo($this->_submitValues['ending_date_relative']);
       $date = date('Y-m-d', strtotime($dates[0]));
-    }
-    elseif (!empty($this->_submitValues['ending_date_from'])) {
+    } elseif (!empty($this->_submitValues['ending_date_from'])) {
       $date = date('Y-m-d', strtotime($this->_submitValues['ending_date_from']));
     }
     $this->getQueryDates($date);
@@ -259,7 +267,8 @@ class CRM_Report_Form_Contribute_ComprehensiveReport extends CRM_Report_Form {
     $this->_from .= " FROM {$this->_dpoTempTable} {$this->_aliases['civicrm_dpo']}";
   }
 
-  protected function buildTempTableForDPOReport() {
+  protected function buildTempTableForDPOReport()
+  {
     CRM_Core_DAO::executeQuery("DROP TEMPORARY TABLE IF EXISTS {$this->_dpoTempTable}");
     $tempQuery = "CREATE TEMPORARY TABLE {$this->_dpoTempTable} (
       `label` VARCHAR(255) DEFAULT NULL,
@@ -277,7 +286,8 @@ class CRM_Report_Form_Contribute_ComprehensiveReport extends CRM_Report_Form {
     $this->insertAttrition();
   }
 
-  protected function insertActiveDonor() {
+  protected function insertActiveDonor()
+  {
     $queries = array(
       'common_query' => " SELECT %1 label, %2 current_year, %3 prior_year, %4 two_years_ago
         FROM civicrm_contribution cc
@@ -297,7 +307,8 @@ class CRM_Report_Form_Contribute_ComprehensiveReport extends CRM_Report_Form {
     );
   }
 
-  protected function insertRetainedDonor() {
+  protected function insertRetainedDonor()
+  {
     $queries = array(
       'common_query' => " SELECT %1 label, %2 current_year, %3 prior_year, %4 two_years_ago
       FROM civicrm_contribution cc
@@ -401,7 +412,8 @@ class CRM_Report_Form_Contribute_ComprehensiveReport extends CRM_Report_Form {
     );
   }
 
-  protected function insertNewDonor() {
+  protected function insertNewDonor()
+  {
     $queries = array(
       'common_query' => " SELECT %1 label, %2 current_year, %3 prior_year, %4 two_years_ago
         FROM civicrm_contribution cc
@@ -417,7 +429,8 @@ class CRM_Report_Form_Contribute_ComprehensiveReport extends CRM_Report_Form {
     );
   }
 
-  protected function insertReactivatedDonor() {
+  protected function insertReactivatedDonor()
+  {
     $queries = array(
       'common_query' => " SELECT %1 label, %2 current_year, %3 prior_year, %4 two_years_ago
       FROM civicrm_contribution cc
@@ -444,7 +457,8 @@ class CRM_Report_Form_Contribute_ComprehensiveReport extends CRM_Report_Form {
     );
   }
 
-  protected function insertAttrition() {
+  protected function insertAttrition()
+  {
     $queries = array(
       'common_query' => " SELECT %1 label, %2 current_year, %3 prior_year, %4 two_years_ago
         FROM civicrm_contribution cc
@@ -535,7 +549,8 @@ class CRM_Report_Form_Contribute_ComprehensiveReport extends CRM_Report_Form {
     );
   }
 
-  protected function processQueries($section, $labels, $queries) {
+  protected function processQueries($section, $labels, $queries)
+  {
     $sql = " INSERT INTO {$this->_dpoTempTable} ";
     if ($section) {
       $query = $sql . "(label) VALUES ('<b>{$section}</b>')";
@@ -564,8 +579,7 @@ class CRM_Report_Form_Contribute_ComprehensiveReport extends CRM_Report_Form {
           CONCAT('{$prefix}', FORMAT(ROUND(SUM(two_years_ago), {$round}), {$round}), '{$suffix}'),
           CONCAT('{$prefix}', FORMAT(ROUND((SUM(current_year) - SUM(prior_year)), {$round}), {$round}), '{$suffix}'),
           CONCAT(FORMAT(ROUND(((SUM(current_year) - SUM(prior_year))/SUM(prior_year) * 100), 2), 2), '%')
-        FROM ({$query}) AS temp"
-      ;
+        FROM ({$query}) AS temp";
       $query = $sql . $query;
       $params = array(
         1 => array($key, 'String'),
@@ -578,7 +592,8 @@ class CRM_Report_Form_Contribute_ComprehensiveReport extends CRM_Report_Form {
     }
   }
 
-  protected function getQuery($query) {
+  protected function getQuery($query)
+  {
     $queries = array();
     for ($i = 1; $i < 4; $i++) {
       $params = $this->_queryDates[$i] + $this->_qParams[$i];
@@ -587,5 +602,4 @@ class CRM_Report_Form_Contribute_ComprehensiveReport extends CRM_Report_Form {
     //CRM_Core_Error::debug('sss', $queries);
     return implode(' UNION ', $queries);
   }
-
 }

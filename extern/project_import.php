@@ -30,7 +30,7 @@ class CiviCaseImport
         $p_sql = $wpdb->prepare(
             "SELECT * FROM bgf_dataload_tProject WHERE ProjectID > %d AND Processed IS NOT TRUE ORDER BY ProjectID LIMIT %d",
             $last_id,
-            200 // For example, to limit the results to x rows
+            10 // For example, to limit the results to x rows
         );
         $p_results = $wpdb->get_results($p_sql);
 
@@ -39,7 +39,8 @@ class CiviCaseImport
             // Iterate through each row
             foreach ($p_results as $project) {
 
-                $subject = str_pad($project->ProjectID, 5, '0', STR_PAD_LEFT);
+                $projectID = str_pad($project->ProjectID, 5, '0', STR_PAD_LEFT);
+                $subject = $projectID . ' ' . $project->Title;
 
                 // update the practice area and type attributes of the project object
                 [$practiceArea, $projectType] = $this->updatePracticeAreaAndType($project->PreacticeArea, $project->ProjectType);
@@ -59,6 +60,8 @@ class CiviCaseImport
                 // Get the CiviCRM ClientID
                 $project->ClientID_Clean = $this->getClientID($project->ClientID);
 
+                $end_date = $this->updateEndDate($subject, $project->Status, $project->EndDate);
+
                 if (!empty($project->ClientID_Clean)) {
                     // insert or update BGF ???
                     // if ($project->ProjectID > '24097' and $project->ProjectID < '24999') {
@@ -68,13 +71,13 @@ class CiviCaseImport
                         ->addValue('subject', $subject)  // should this be the ProjectID or the Title?
                         ->addValue('creator_id', $nina)
                         ->addValue('start_date', $project->StartDate)
-                        ->addValue('end_date', $project->EndDate)
+                        ->addValue('end_date', $end_date)
                         ->addValue('status_id:label', $project->Status)
                         ->addValue('Projects.Practice_Area', $practiceArea)
                         ->addValue('Projects.Project_Type', $projectType)
                         ->addValue('Projects.Hours', $hours)
                         ->addValue('Projects.Notes', $project->Notes)
-                        // Title, ProjectType, DefinitionDocDate, CompletionDocDate, EvaluationDocDate, RequestID
+                        // DefinitionDocDate, CompletionDocDate, EvaluationDocDate - last used over 5 yrs ago
                         ->addValue(
                             'contact_id',
                             [
@@ -221,6 +224,25 @@ class CiviCaseImport
 
         return [$practiceArea, $projectType];
     }
+    private function updateEndDate($projectID, $status, $endDate)
+    {
+        if ($endDate <> '') {
+            return $endDate;
+        } else {
+            $openStatuses = ["Open", "Active", "On Hold"];
+            if (in_array($status, $openStatuses, true)) {
+                return $endDate;
+            } else {
+                // Fetch the closed date
+                $ph_sql = $wpdb->prepare(
+                    "SELECT Date FROM bgf_dataload_tProjectStatusHistory WHERE ProjectID = %s",
+                    $projectID
+                );
+                $ph_results = $wpdb->get_results($ph_sql);
+                return $ph_results[0]['Date'];
+            }
+        }
+    }
     private function linkSR($case_id, $project)
     {
         global $nina;
@@ -261,7 +283,7 @@ class CiviCaseImport
                         $civiRelationship = \Civi\Api4\Relationship::create(TRUE)
                             ->addValue('contact_id_a', $mas_rep_id)     // mas rep
                             ->addValue('contact_id_b', $project->ClientID_Clean)     // client
-                            ->addValue('relationship_type_id:label', 'Case MAS Rep is')
+                            ->addValue('relationship_type_id:label', 'Case Coordinator is (MAS Rep)')
                             ->addValue('is_active', $relationshipActive)  // depends on project
                             ->addValue('case_id', $case_id)
                             ->execute();
