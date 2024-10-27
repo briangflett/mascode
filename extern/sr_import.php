@@ -227,22 +227,39 @@ class CiviCaseImport
   }
   private function updateEndDate($requestID, $status, $resolutionDate)
   {
-    if ($resolutionDate <> '') {
+    global $wpdb;
+
+    // Early return if resolution date exists
+    if (!empty($resolutionDate)) {
       return $resolutionDate;
-    } else {
-      $openStatuses = ["Open", "Request RCS", "Sent for Assignment"];
-      if (in_array($status, $openStatuses, true)) {
-        return $resolutionDate;
-      } else {
-        // Fetch the closed date
-        $srh_sql = $wpdb->prepare(
-          "SELECT Date FROM bgf_dataload_tServiceRequestStatusHistory WHERE RequestID = %s",
-          $requestID
-        );
-        $srh_results = $wpdb->get_results($srh_sql);
-        return $srh_results[0]['Date'];
-      }
     }
+
+    // Define open statuses
+    $openStatuses = ["Open", "Request RCS", "Sent for Assignment"];
+
+    // Return empty resolution date for open statuses
+    if (in_array($status, $openStatuses, true)) {
+      return '';  // or return null, depending on your needs
+    }
+
+    // Fetch the closed date for non-open statuses
+    $srh_sql = $wpdb->prepare(
+      "SELECT Date FROM bgf_dataload_tServiceRequestStatusHistory 
+         WHERE RequestID = %s 
+         ORDER BY Date DESC 
+         LIMIT 1",
+      $requestID
+    );
+
+    $srh_results = $wpdb->get_results($srh_sql);
+
+    // Check if results exist before accessing array
+    if (!empty($srh_results)) {
+      return $srh_results[0]->Date;
+    }
+
+    // Return default value if no date found
+    return '';  // or null, or whatever makes sense as default
   }
   private function linkActivities($case_id, $sr)
   {
