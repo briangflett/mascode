@@ -60,7 +60,7 @@ class CiviCaseImport
                 // Get the CiviCRM ClientID
                 $project->ClientID_Clean = $this->getClientID($project->ClientID);
 
-                $end_date = $this->updateEndDate($subject, $project->Status, $project->EndDate);
+                $end_date = $this->updateEndDate($projectID, $project->Status, $project->EndDate);
 
                 if (!empty($project->ClientID_Clean)) {
                     // insert or update BGF ???
@@ -119,26 +119,26 @@ class CiviCaseImport
                     }
 
                     // Create an activity to link to a Service Request if applicable  BGF
-                    if (!empty($project->RequestID) and $project->ProjectID > '24097' and $project->ProjectID < '24999') {
-                        $project->RequestID_Clean = $this->getClientID($project->RequestID);
+                    // if (!empty($project->RequestID) and $project->ProjectID > '24097' and $project->ProjectID < '24999') {
+                    if (!empty($project->RequestID)) {
+                        $project->RequestID_Clean = $this->getRequestID($project->RequestID);
                         if (!empty($project->RequestID_Clean)) {
                             $this->linkSR($case_id, $project);
                         } else {
                             echo "Unable to link request $project->RequestID to project $project->ProjectID because request id is missing.  <br>";
                         }
                     }
-
-                    // link mas reps
-                    $this->linkMASReps($case_id, $project, $relationshipActive);
-
-                    // link client reps
-                    $this->linkClientReps($case_id, $project, $relationshipActive);
-
-                    // link activities
-                    $this->linkActivities($case_id, $project);
-                } else {
-                    echo "Unable to add project $project->ProjectID because external id $project->ClientID is missing.  <br>";
                 }
+
+                // link mas reps
+                $this->linkMASReps($case_id, $project, $relationshipActive);
+
+                // link client reps
+                $this->linkClientReps($case_id, $project, $relationshipActive);
+
+                // link activities
+                $this->linkActivities($case_id, $project);
+
                 $last_id = $project->ProjectID;
             }
         } else {
@@ -226,21 +226,51 @@ class CiviCaseImport
     }
     private function updateEndDate($projectID, $status, $endDate)
     {
-        if ($endDate <> '') {
+        global $wpdb;
+
+        // Early return if end date exists
+        if (!empty($endDate)) {
             return $endDate;
+        }
+
+        // Define open statuses
+        $openStatuses = ["Open", "Active", "On Hold"];
+
+        // Return empty end date for open statuses
+        if (in_array($status, $openStatuses, true)) {
+            return '';  // or return null, depending on your needs
+        }
+
+        // Fetch the closed date for non-open statuses
+        $ph_sql = $wpdb->prepare(
+            "SELECT Date FROM bgf_dataload_tProjectStatusHistory 
+                WHERE ProjectID = %s
+                ORDER BY Date DESC 
+                LIMIT 1",
+            $projectID
+        );
+
+        $ph_results = $wpdb->get_results($ph_sql);
+
+        // Check if results exist before accessing array
+        if (!empty($ph_results)) {
+            return $ph_results[0]->Date;
+        }
+
+        // Return default value if no date found
+        return '';  // or null, or whatever makes sense as default
+    }
+    private function getRequestID($requestID)
+    {
+        $request = \Civi\Api4\CiviCase::get(TRUE)
+            ->addSelect('id')
+            ->addWhere('subject', '=', $requestID)
+            ->setLimit(1)
+            ->execute();
+        if (!empty($request)) {
+            return $request[0]['id'];
         } else {
-            $openStatuses = ["Open", "Active", "On Hold"];
-            if (in_array($status, $openStatuses, true)) {
-                return $endDate;
-            } else {
-                // Fetch the closed date
-                $ph_sql = $wpdb->prepare(
-                    "SELECT Date FROM bgf_dataload_tProjectStatusHistory WHERE ProjectID = %s",
-                    $projectID
-                );
-                $ph_results = $wpdb->get_results($ph_sql);
-                return $ph_results[0]['Date'];
-            }
+            return null;
         }
     }
     private function linkSR($case_id, $project)
@@ -255,12 +285,12 @@ class CiviCaseImport
             ])
             ->addValue('case_id', $case_id)
             ->addValue('status_id:label', 'Completed')
-            ->addValue('subject', 'Create link between - Service Request (CaseID: ' . $project->RequestID_Clean . ') and Project (CaseID: ' . $case_id . ').')
+            ->addValue('subject', 'Create link between - Service Request (CaseID: ' . $project->RequestID . ') and Project (CaseID: ' . $case_id . ').')
             ->execute();
         $activity_id = $civiActivity[0]['id'];
         // Then link the activity to the other case
         $civiCaseActivity = \Civi\Api4\CaseActivity::create(TRUE)
-            ->addValue('case_id', $case_id)
+            ->addValue('case_id', $project->RequestID_Clean)
             ->addValue('activity_id', $activity_id)
             ->execute();
     }
