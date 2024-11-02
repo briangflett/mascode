@@ -19,7 +19,7 @@ class CiviCaseImport
         $p_sql = $wpdb->prepare(
             "SELECT * FROM bgf_dataload_tProject WHERE ProjectID > %d AND Processed IS NOT TRUE ORDER BY ProjectID LIMIT %d",
             $last_id,
-            10 // For example, to limit the results to x rows
+            500 // For example, to limit the results to x rows
         );
         $p_results = $wpdb->get_results($p_sql);
 
@@ -27,39 +27,44 @@ class CiviCaseImport
         if (!empty($p_results)) {
             // Iterate through each row
             foreach ($p_results as $project) {
+                if (
+                    $project->ProjectID > 20000
+                    and $project->ProjectID < 24999
+                    and $project->EndDate <> ""
+                ) {
+                    $projectID = str_pad($project->ProjectID, 5, '0', STR_PAD_LEFT);
+                    $subject = $projectID . ' ' . $project->Title;
+                    $project->ClientID_Clean = $this->getClientID($project->ClientID);
+                    $end_date = $this->updateEndDate($projectID, $project->Status, $project->EndDate);
 
-                $projectID = str_pad($project->ProjectID, 5, '0', STR_PAD_LEFT);
-                $subject = $projectID . ' ' . $project->Title;
+                    $civiCase = \Civi\Api4\CiviCase::get(TRUE)
+                        ->addSelect('id')
+                        ->addWhere('subject', '=', $subject)
+                        ->execute();
 
-                // update the practice area and type attributes of the project object
-                [$practiceArea, $projectType] = $this->updatePracticeAreaAndType($project->PreacticeArea, $project->ProjectType);
+                    $count = $civiCase->count();  // Store count in variable first
+                    // Check count() directly
+                    if ($count == 1) {
 
-                // Fetch the project hours
-                $hr_sql = $wpdb->prepare(
-                    "SELECT * FROM bgf_dataload_tProjectMASRepHours WHERE ProjectID = %d",
-                    $projectID
-                );
-                $hr_results = $wpdb->get_results($hr_sql);
-                if (!empty($hr_results)) {
-                    $hours = $hr_results[0]->Hours;
-                } else {
-                    $hours = null;
+                        $case_id = $civiCase[0]['id'];
+
+                        $civiActivity = \Civi\Api4\Activity::create(TRUE)
+                            ->addValue('activity_type_id:label', 'Change Case Status')
+                            ->addValue('source_contact_id', $nina)
+                            ->addValue('target_contact_id', [
+                                $project->ClientID_Clean,
+                            ])
+                            ->addValue('case_id', $case_id)
+                            ->addValue('status_id:label', 'Completed')
+                            ->addValue('subject', 'Case status changed from Active to ' . $project->Status)
+                            ->addvalue('activity_date_time', $end_date)
+                            ->execute();
+                    } else {
+                        echo "Project with Subject = $subject not found. <br>";
+                    }
+
+                    $last_id = $project->ProjectID;
                 }
-
-                $end_date = $this->updateEndDate($projectID, $project->Status, $project->EndDate);
-
-                $civiCaSE = \Civi\Api4\CiviCase::update(TRUE)
-                    ->addValue('subject', $subject)
-                    ->addValue('Projects.Practice_Area', $practiceArea)
-                    ->addValue('Projects.Project_Type', $projectType)
-                    ->addValue('Projects.Hours', $hours)
-                    ->addWhere(
-                        'subject',
-                        'CONTAINS',
-                        $projectID
-                    )
-                    ->execute();
-                $last_id = $project->ProjectID;
             }
         } else {
             echo 'No data found.';
@@ -71,53 +76,24 @@ class CiviCaseImport
         // Output the correct URL
         echo 'Run <a href="' . esc_url($url) . '">' . esc_url($url) . '</a><br>';
     }
-    private function updatePracticeAreaAndType($practiceArea, $projectType)
+    // Get the CiviCRM Client ID given the External (Access) Client ID
+    private function getClientID($clientID)
     {
-        if ($practiceArea == 'FAC') {
-            if (
-                $projectType == 'FAC' or
-                $projectType == ''
-            ) {
-                $practiceArea = 'GEN';
-                $projectType = 'FAC';
-            } else {
-                $practiceArea = $projectType;
-                $projectType = 'FAC';
-            }
+        $contacts = \Civi\Api4\Contact::get(TRUE)
+            ->addSelect('id')
+            ->addWhere('external_identifier', '=', $clientID)
+            ->execute();
+        $count = $contacts->count();  // Store count in variable first
+        // Check count() directly
+        if ($count == 0) {
+            echo "External Client ID $clientID not found. <br>";
+            return null;
+        } elseif ($count == 1) {
+            return $contacts[0]['id']; // Accessing 'id' as an array       
+        } else {
+            echo "Multiple External Client ID $clientID found. <br>";
+            return null;
         }
-
-        if ($practiceArea == 'PRESENT') {
-            if (
-                $projectType == 'FAC'
-                or
-                $projectType == ''
-            ) {
-                $practiceArea = 'GEN';
-                $projectType = 'PRESENT';
-            } else {
-                $practiceArea = $projectType;
-                $projectType = 'PRESENT';
-            }
-        }
-
-        if ($practiceArea == '') {
-            if (
-                $projectType == 'FAC'
-                or
-                $projectType == ''
-            ) {
-                $practiceArea = 'GEN';
-            } else {
-                $practiceArea = $projectType;
-            }
-        }
-
-        if (
-            $projectType <> 'FAC' and
-            $projectType <> 'PRESENT'
-        ) $projectType = '';
-
-        return [$practiceArea, $projectType];
     }
     private function updateEndDate($projectID, $status, $endDate)
     {

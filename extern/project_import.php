@@ -159,11 +159,15 @@ class CiviCaseImport
             ->addSelect('id')
             ->addWhere('external_identifier', '=', $clientID)
             ->execute();
-
-        if (!empty($contacts)) {
-            return $contacts[0]['id']; // Accessing 'id' as an array
-        } else {
+        $count = $contacts->count();  // Store count in variable first
+        // Check count() directly
+        if ($count == 0) {
             echo "External Client ID $clientID not found. <br>";
+            return null;
+        } elseif ($count == 1) {
+            return $contacts[0]['id']; // Accessing 'id' as an array       
+        } else {
+            echo "Multiple External Client ID $clientID found. <br>";
             return null;
         }
     }
@@ -267,7 +271,9 @@ class CiviCaseImport
             ->addWhere('subject', '=', $requestID)
             ->setLimit(1)
             ->execute();
-        if (!empty($request)) {
+        $count = $request->count();  // Store count in variable first
+        // Check count() directly
+        if ($count == 1) {
             return $request[0]['id'];
         } else {
             return null;
