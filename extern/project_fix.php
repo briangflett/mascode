@@ -23,51 +23,51 @@ class CiviCaseImport
         );
         $p_results = $wpdb->get_results($p_sql);
 
-        // Check if any rows are returned
-        if (!empty($p_results)) {
-            // Iterate through each row
-            foreach ($p_results as $project) {
-                if (
-                    $project->ProjectID > 20000
-                    and $project->ProjectID < 24999
-                    and $project->EndDate <> ""
-                ) {
-                    $projectID = str_pad($project->ProjectID, 5, '0', STR_PAD_LEFT);
-                    $subject = $projectID . ' ' . $project->Title;
-                    $project->ClientID_Clean = $this->getClientID($project->ClientID);
-                    $end_date = $this->updateEndDate($projectID, $project->Status, $project->EndDate);
-
-                    $civiCase = \Civi\Api4\CiviCase::get(TRUE)
-                        ->addSelect('id')
-                        ->addWhere('subject', '=', $subject)
-                        ->execute();
-
-                    $count = $civiCase->count();  // Store count in variable first
-                    // Check count() directly
-                    if ($count == 1) {
-
-                        $case_id = $civiCase[0]['id'];
-
-                        $civiActivity = \Civi\Api4\Activity::create(TRUE)
-                            ->addValue('activity_type_id:label', 'Change Case Status')
-                            ->addValue('source_contact_id', $nina)
-                            ->addValue('target_contact_id', [
-                                $project->ClientID_Clean,
-                            ])
-                            ->addValue('case_id', $case_id)
-                            ->addValue('status_id:label', 'Completed')
-                            ->addValue('subject', 'Case status changed from Active to ' . $project->Status)
-                            ->addvalue('activity_date_time', $end_date)
-                            ->execute();
-                    } else {
-                        echo "Project with Subject = $subject not found. <br>";
-                    }
-
-                    $last_id = $project->ProjectID;
+        // Iterate through each row
+        foreach ($p_results as $project) {
+            if (
+                $project->ProjectID > 20000
+                and $project->ProjectID < 24999
+                and $project->EndDate <> ""
+            ) {
+                $projectID = str_pad($project->ProjectID, 5, '0', STR_PAD_LEFT);
+                $subject = $projectID . ' ' . $project->Title;
+                $project->ClientID_Clean = $this->getClientID($project->ClientID);
+                $end_date = $this->updateEndDate($projectID, $project->Status, $project->EndDate, $project->LastUpdateDate);
+                if ($project->Status == 'Closed') {
+                    $status = 'Closed - Not Completed';
+                } else {
+                    $status = $project->Status;
                 }
+
+                $civiCase = \Civi\Api4\CiviCase::get(TRUE)
+                    ->addSelect('id')
+                    ->addWhere('subject', '=', $subject)
+                    ->execute();
+
+                $count = $civiCase->count();  // Store count in variable first
+                // Check count() directly
+                if ($count == 1) {
+
+                    $case_id = $civiCase[0]['id'];
+
+                    $civiActivity = \Civi\Api4\Activity::create(TRUE)
+                        ->addValue('activity_type_id:label', 'Change Case Status')
+                        ->addValue('source_contact_id', $nina)
+                        ->addValue('target_contact_id', [
+                            $project->ClientID_Clean,
+                        ])
+                        ->addValue('case_id', $case_id)
+                        ->addValue('status_id:label', 'Completed')
+                        ->addValue('subject', 'Case status changed to ' . $status)
+                        ->addvalue('activity_date_time', $end_date)
+                        ->execute();
+                } else {
+                    echo "Project with Subject = $subject not found. <br>";
+                }
+
+                $last_id = $project->ProjectID;
             }
-        } else {
-            echo 'No data found.';
         }
 
         echo 'Works OK so far...<br>';
@@ -95,23 +95,39 @@ class CiviCaseImport
             return null;
         }
     }
-    private function updateEndDate($projectID, $status, $endDate)
+    private function updateEndDate($projectID, $status, $endDate, $lastUpdateDate)
     {
-        if ($endDate <> '') {
+        global $wpdb;
+
+        // Early return if end date exists
+        if (!empty($endDate)) {
             return $endDate;
+        }
+
+        // Define open statuses
+        $openStatuses = ["Open", "Active", "On Hold"];
+
+        // Return empty end date for open statuses
+        if (in_array($status, $openStatuses, true)) {
+            return '';  // or return null, depending on your needs
+        }
+
+        // Fetch the closed date for non-open statuses
+        $ph_sql = $wpdb->prepare(
+            "SELECT Date FROM bgf_dataload_tProjectStatusHistory 
+                WHERE ProjectID = %s
+                ORDER BY Date DESC 
+                LIMIT 1",
+            $projectID
+        );
+
+        $ph_results = $wpdb->get_results($ph_sql);
+
+        // Check if results exist before accessing array
+        if (!empty($ph_results)) {
+            return $ph_results[0]->Date;
         } else {
-            $openStatuses = ["Open", "Active", "On Hold"];
-            if (in_array($status, $openStatuses, true)) {
-                return $endDate;
-            } else {
-                // Fetch the closed date
-                $ph_sql = $wpdb->prepare(
-                    "SELECT Date FROM bgf_dataload_tProjectStatusHistory WHERE ProjectID = %s",
-                    $projectID
-                );
-                $ph_results = $wpdb->get_results($ph_sql);
-                return $ph_results[0]['Date'];
-            }
+            return $lastUpdateDate;
         }
     }
 }

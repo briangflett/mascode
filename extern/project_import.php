@@ -30,103 +30,82 @@ class CiviCaseImport
         $p_sql = $wpdb->prepare(
             "SELECT * FROM bgf_dataload_tProject WHERE ProjectID > %d AND Processed IS NOT TRUE ORDER BY ProjectID LIMIT %d",
             $last_id,
-            10 // For example, to limit the results to x rows
+            500 // For example, to limit the results to x rows
         );
         $p_results = $wpdb->get_results($p_sql);
 
-        // Check if any rows are returned  (each array entry row is an object)
-        if (!empty($p_results)) {
-            // Iterate through each row
-            foreach ($p_results as $project) {
+        // Iterate through each row
+        foreach ($p_results as $project) {
 
-                $projectID = str_pad($project->ProjectID, 5, '0', STR_PAD_LEFT);
-                $subject = $projectID . ' ' . $project->Title;
+            $projectID = str_pad($project->ProjectID, 5, '0', STR_PAD_LEFT);
+            $subject = $projectID . ' ' . $project->Title;
 
-                // update the practice area and type attributes of the project object
-                [$practiceArea, $projectType] = $this->updatePracticeAreaAndType($project->PreacticeArea, $project->ProjectType);
+            // update the practice area and type attributes of the project object
+            [$practiceArea, $projectType] = $this->updatePracticeAreaAndType($project->PreacticeArea, $project->ProjectType);
 
-                // Fetch the project hours
-                $hr_sql = $wpdb->prepare(
-                    "SELECT * FROM bgf_dataload_tProjectMASRepHours WHERE ProjectID = %d",
-                    $project->ProjectID
-                );
-                $hr_results = $wpdb->get_results($hr_sql);
-                if (!empty($hr_results)) {
-                    $hours = $hr_results[0]->Hours;
+            // Fetch the project hours
+            $hr_sql = $wpdb->prepare(
+                "SELECT * FROM bgf_dataload_tProjectMASRepHours WHERE ProjectID = %d",
+                $project->ProjectID
+            );
+            $hr_results = $wpdb->get_results($hr_sql);
+            if (!empty($hr_results)) {
+                $hours = $hr_results[0]->Hours;
+            } else {
+                $hours = null;
+            }
+
+            // Get the CiviCRM ClientID
+            $project->ClientID_Clean = $this->getClientID($project->ClientID);
+
+            $end_date = $this->updateEndDate($projectID, $project->Status, $project->EndDate, $project->LastUpdateDate);
+
+            if ($project->Status == 'Closed') {
+                $status = 'Closed - Not Completed';
+            } else {
+                $status = $project->Status;
+            }
+
+            if (!empty($project->ClientID_Clean)) {
+                // Create a case
+                $civiCase = \Civi\Api4\CiviCase::create(TRUE)
+                    ->addValue('case_type_id.name', 'project')
+                    ->addValue('subject', $subject)
+                    ->addValue('creator_id', $nina)
+                    ->addValue('start_date', $project->StartDate)
+                    ->addValue('end_date', $end_date)
+                    ->addValue('status_id:label', $status)
+                    ->addValue('Projects.Practice_Area', $practiceArea)
+                    ->addValue('Projects.Project_Type', $projectType)
+                    ->addValue('Projects.Hours', $hours)
+                    ->addValue('Projects.Notes', $project->Notes)
+                    // DefinitionDocDate, CompletionDocDate, EvaluationDocDate - last used over 5 yrs ago
+                    ->addValue(
+                        'contact_id',
+                        [
+                            $project->ClientID_Clean,
+                        ]
+                    )
+                    ->execute();
+
+                // Access the ID of the first created case
+                $case_id = $civiCase[0]['id'];
+
+                // Should the relationships be active or inactive?
+                $thisStatus = $this->getStatusClass($project->Status, $statusMap);
+                if ($thisStatus == "Closed") {
+                    $relationshipActive = FALSE;
                 } else {
-                    $hours = null;
+                    $relationshipActive = TRUE;
                 }
 
-                // Get the CiviCRM ClientID
-                $project->ClientID_Clean = $this->getClientID($project->ClientID);
-
-                $end_date = $this->updateEndDate($projectID, $project->Status, $project->EndDate);
-
-                if (!empty($project->ClientID_Clean)) {
-                    // insert or update BGF ???
-                    // if ($project->ProjectID > '24097' and $project->ProjectID < '24999') {
-                    // Create a case
-                    $civiCase = \Civi\Api4\CiviCase::create(TRUE)
-                        ->addValue('case_type_id.name', 'project')
-                        ->addValue('subject', $subject)  // should this be the ProjectID or the Title?
-                        ->addValue('creator_id', $nina)
-                        ->addValue('start_date', $project->StartDate)
-                        ->addValue('end_date', $end_date)
-                        ->addValue('status_id:label', $project->Status)
-                        ->addValue('Projects.Practice_Area', $practiceArea)
-                        ->addValue('Projects.Project_Type', $projectType)
-                        ->addValue('Projects.Hours', $hours)
-                        ->addValue('Projects.Notes', $project->Notes)
-                        // DefinitionDocDate, CompletionDocDate, EvaluationDocDate - last used over 5 yrs ago
-                        ->addValue(
-                            'contact_id',
-                            [
-                                $project->ClientID_Clean,
-                            ]
-                        )
-                        ->execute();
-                    // } else {
-                    //     // Update a case
-                    //     $civiCase = \Civi\Api4\CiviCase::update(TRUE)
-                    //         ->addValue('case_type_id.name', 'project')
-                    //         ->addValue('creator_id', $nina)
-                    //         ->addValue('start_date', $project->StartDate)
-                    //         ->addValue('end_date', $project->EndDate)
-                    //         ->addValue('status_id:label', $project->Status)
-                    //         ->addValue('Projects_.Practice_Area', $project->PracticeArea)
-                    //         ->addValue('Projects_.Project_Type', $project->ProjectType)
-                    //         ->addValue('Projects_.Notes', $project->Notes)
-                    //         // Title, ProjectType, DefinitionDocDate, CompletionDocDate, EvaluationDocDate, RequestID
-                    //         ->addValue(
-                    //             'contact_id',
-                    //             [
-                    //                 $project->ClientID_Clean,
-                    //             ]
-                    //         )
-                    //         ->addWhere('subject', '=', $project->ProjectID)
-                    //         ->execute();
-                    // }
-
-                    // Access the ID of the first created case
-                    $case_id = $civiCase[0]['id'];
-
-                    // Should the relationships be active or inactive?
-                    $thisStatus = $this->getStatusClass($project->Status, $statusMap);
-                    if ($thisStatus == "Closed") {
-                        $relationshipActive = FALSE;
+                // Create an activity to link to a Service Request if applicable  BGF
+                if (!empty($project->RequestID)) {
+                    $project->RequestID_Clean = $this->getRequestID($project->RequestID);
+                    if (!empty($project->RequestID_Clean)) {
+                        $this->linkSR($case_id, $project);
                     } else {
-                        $relationshipActive = TRUE;
-                    }
-
-                    // Create an activity to link to a Service Request if applicable  BGF
-                    // if (!empty($project->RequestID) and $project->ProjectID > '24097' and $project->ProjectID < '24999') {
-                    if (!empty($project->RequestID)) {
-                        $project->RequestID_Clean = $this->getRequestID($project->RequestID);
-                        if (!empty($project->RequestID_Clean)) {
-                            $this->linkSR($case_id, $project);
-                        } else {
-                            echo "Unable to link request $project->RequestID to project $project->ProjectID because request id is missing.  <br>";
-                        }
+                        echo "Unable to link request $project->RequestID to project $project->ProjectID because request id is missing.  <br>";
                     }
                 }
 
@@ -139,10 +118,27 @@ class CiviCaseImport
                 // link activities
                 $this->linkActivities($case_id, $project);
 
-                $last_id = $project->ProjectID;
+                // add a status change activity for the end date if applicable
+                if (
+                    $project->ProjectID > 20000
+                    and $project->ProjectID < 24999
+                    and $project->EndDate <> ""
+                ) {
+                    $civiActivity = \Civi\Api4\Activity::create(TRUE)
+                        ->addValue('activity_type_id:label', 'Change Case Status')
+                        ->addValue('source_contact_id', $nina)
+                        ->addValue('target_contact_id', [
+                            $project->ClientID_Clean,
+                        ])
+                        ->addValue('case_id', $case_id)
+                        ->addValue('status_id:label', 'Completed')
+                        ->addValue('subject', 'Case status changed to ' . $status)
+                        ->addvalue('activity_date_time', $end_date)
+                        ->execute();
+                }
             }
-        } else {
-            echo 'No data found.';
+
+            $last_id = $project->ProjectID;
         }
 
         echo 'Works OK so far...<br>';
@@ -228,7 +224,7 @@ class CiviCaseImport
 
         return [$practiceArea, $projectType];
     }
-    private function updateEndDate($projectID, $status, $endDate)
+    private function updateEndDate($projectID, $status, $endDate, $lastUpdateDate)
     {
         global $wpdb;
 
@@ -259,10 +255,9 @@ class CiviCaseImport
         // Check if results exist before accessing array
         if (!empty($ph_results)) {
             return $ph_results[0]->Date;
+        } else {
+            return $lastUpdateDate;
         }
-
-        // Return default value if no date found
-        return '';  // or null, or whatever makes sense as default
     }
     private function getRequestID($requestID)
     {

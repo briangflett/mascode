@@ -30,131 +30,125 @@ class CiviCaseImport
     $sr_sql = $wpdb->prepare(
       "SELECT * FROM bgf_dataload_tServiceRequest WHERE RequestID > %s AND Processed IS NOT TRUE ORDER BY RequestID LIMIT %d",
       $last_id,
-      10 // For example, to limit the results to x rows
+      500 // For example, to limit the results to x rows
     );
     $sr_results = $wpdb->get_results($sr_sql);
 
-    // Check if any rows are returned  (each array entry row is an object)
-    if (!empty($sr_results)) {
-      // Iterate through each row
-      foreach ($sr_results as $sr) {
-        // Get the CiviCRM ClientID
-        $sr->ClientID_Clean = $this->getClientID($sr->ClientID);
 
-        [$referral, $notes] = $this->updateReferral($sr->Referral, $sr->Notes);
+    // Iterate through each row
+    foreach ($sr_results as $sr) {
+      // Get the CiviCRM ClientID
+      $sr->ClientID_Clean = $this->getClientID($sr->ClientID);
 
-        $end_date = $this->updateEndDate($sr->RequestID, $sr->Status, $sr->ResolutionDate);
+      [$referral, $notes] = $this->updateReferral($sr->Referral, $sr->Notes);
 
-        if (!empty($sr->ClientID_Clean)) {
-          // insert or update BGF ??
-          // if ($sr->RequestID > 'R24168') {
-          // Create a case
-          $civiCase = \Civi\Api4\CiviCase::create(TRUE)
-            ->addValue('case_type_id.name', 'service_request')
-            ->addValue('subject', $sr->RequestID)
-            ->addValue('creator_id', $nina)
-            ->addValue('start_date', $sr->InitiationDate)
-            ->addValue('end_date', $end_date)
-            ->addValue('status_id:label', $sr->Status)
-            ->addValue('Cases_SR_Projects_.Practice_Area', $sr->PracticeArea)
-            ->addValue('Cases_SR_Projects_.Referral', $referral)
-            ->addValue('Cases_SR_Projects_.Notes', $notes)
-            ->addValue(
-              'contact_id',
-              [
-                $sr->ClientID_Clean
-              ]
-            )
-            ->execute();
-          // } else {
-          //   // Update a case
-          //   $civiCase = \Civi\Api4\CiviCase::update(TRUE)
-          //     ->addValue('case_type_id.name', 'service_request')
-          //     ->addValue('creator_id', $nina)
-          //     ->addValue('start_date', $sr->InitiationDate)
-          //     ->addValue('end_date', $sr->ResolutionDate)
-          //     ->addValue('status_id:label', $sr->Status)
-          //     ->addValue('Cases_SR_Projects_.Practice_Area', $sr->PracticeArea)
-          //     ->addValue('Cases_SR_Projects_.Referral', $sr->Referral)
-          //     ->addValue('Cases_SR_Projects_.Notes', $sr->Notes)
-          //     ->addValue(
-          //       'contact_id',
-          //       [
-          //         $sr->ClientID_Clean
-          //       ]
-          //     )
-          //     ->addWhere('subject', '=', $sr->RequestID)
-          //     ->execute();
-          // }
+      $end_date = $this->updateEndDate($sr->RequestID, $sr->Status, $sr->ResolutionDate, $sr->LastUpdateDate);
 
-          // Access the ID of the first created or updated case
-          $case_id = $civiCase[0]['id'];
+      if (!empty($sr->ClientID_Clean)) {
+        // Create a case
+        $civiCase = \Civi\Api4\CiviCase::create(TRUE)
+          ->addValue('case_type_id.name', 'service_request')
+          ->addValue('subject', $sr->RequestID)
+          ->addValue('creator_id', $nina)
+          ->addValue('start_date', $sr->InitiationDate)
+          ->addValue('end_date', $end_date)
+          ->addValue('status_id:label', $sr->Status)
+          ->addValue('Cases_SR_Projects_.Practice_Area', $sr->PracticeArea)
+          ->addValue('Cases_SR_Projects_.Referral', $referral)
+          ->addValue('Cases_SR_Projects_.Notes', $notes)
+          ->addValue(
+            'contact_id',
+            [
+              $sr->ClientID_Clean
+            ]
+          )
+          ->execute();
 
-          // Should the relationships be active or inactive?
-          $this_status = $this->getStatusClass($sr->Status, $statusMap);
-          if ($this_status == "Closed") {
-            $relationshipActive = FALSE;
-          } else {
-            $relationshipActive = TRUE;
-          }
+        // Access the ID of the first created or updated case
+        $case_id = $civiCase[0]['id'];
 
-          // Create the relationship for the MAS rep
-          if (!empty($sr->RepID)) {
-            // Get the MAS rep
-            $ext_mas_rep_id = strval(intval($sr->RepID) + 2000000);
-            $mas_rep_id = $this->getClientID($ext_mas_rep_id);
-            if (!empty($mas_rep_id)) {
-              // Create a MAS rep relationship
-              try {
-                $civiRelationship = \Civi\Api4\Relationship::create(TRUE)
-                  ->addValue('contact_id_a', $mas_rep_id)     // mas rep
-                  ->addValue('contact_id_b', $sr->ClientID_Clean)     // client
-                  ->addValue('relationship_type_id:label', 'Case Coordinator is (MAS Rep)')
-                  ->addValue('is_active', $relationshipActive)  // depends on project
-                  ->addValue('case_id', $case_id)
-                  ->execute();
-              } catch (Exception $e) {
-                // Handle duplicate error or log the message
-                echo "Error creating MAS relationship: " . $e->getMessage() . " for Case:$case_id Client:$sr->ClientID_Clean MAS Rep:$mas_rep_id<br>";
-              }
-            } else {
-              echo "Unable to add MAS rep for service request $sr->RequestID because external id $mas_rep_id is missing.  <br>";
-            }
-          }
-
-          // Create the Client Rep
-          if (!empty($sr->ClientRepID)) {
-            // Get the client rep
-            $ext_client_rep_id = strval(intval($sr->ClientRepID) + 1000000);
-            $client_rep_id = $this->getClientID($ext_client_rep_id);
-            if (!empty($client_rep_id)) {
-              try {
-                $caseRole = \Civi\Api4\Relationship::create(TRUE)
-                  ->addValue('contact_id_a', $client_rep_id)
-                  ->addValue('contact_id_b', $sr->ClientID_Clean)
-                  ->addValue('relationship_type_id:label', 'Case Client Rep is')
-                  ->addValue('case_id', $case_id)
-                  ->addValue('is_active', $relationshipActive)
-                  ->execute();
-              } catch (Exception $e) {
-                // Handle duplicate error or log the message
-                echo "Error creating Client relationship: " . $e->getMessage() . " for Case:$case_id Client:$sr->ClientID_Clean Client Rep:$client_rep_id<br>";
-              }
-            } else {
-              echo "Unable to add client rep for service request $sr->RequestID because external id $ext_client_rep_id is missing.  <br>";
-            }
-          }
-
-          // link activities
-          $this->linkActivities($case_id, $sr);
+        // Should the relationships be active or inactive?
+        $this_status = $this->getStatusClass($sr->Status, $statusMap);
+        if ($this_status == "Closed") {
+          $relationshipActive = FALSE;
         } else {
-          echo "Unable to add service request $sr->RequestID because Client external id $sr->ClientID is missing.  <br>";
+          $relationshipActive = TRUE;
         }
-        $last_id  = $sr->RequestID;
+
+        // Create the relationship for the MAS rep
+        if (!empty($sr->RepID)) {
+          // Get the MAS rep
+          $ext_mas_rep_id = strval(intval($sr->RepID) + 2000000);
+          $mas_rep_id = $this->getClientID($ext_mas_rep_id);
+          if (!empty($mas_rep_id)) {
+            // Create a MAS rep relationship
+            try {
+              $civiRelationship = \Civi\Api4\Relationship::create(TRUE)
+                ->addValue('contact_id_a', $mas_rep_id)     // mas rep
+                ->addValue('contact_id_b', $sr->ClientID_Clean)     // client
+                ->addValue('relationship_type_id:label', 'Case Coordinator is (MAS Rep)')
+                ->addValue('is_active', $relationshipActive)  // depends on project
+                ->addValue('case_id', $case_id)
+                ->execute();
+            } catch (Exception $e) {
+              // Handle duplicate error or log the message
+              echo "Error creating MAS relationship: " . $e->getMessage() . " for Case:$case_id Client:$sr->ClientID_Clean MAS Rep:$mas_rep_id<br>";
+            }
+          } else {
+            echo "Unable to add MAS rep for service request $sr->RequestID because external id $mas_rep_id is missing.  <br>";
+          }
+        }
+
+        // Create the Client Rep
+        if (!empty($sr->ClientRepID)) {
+          // Get the client rep
+          $ext_client_rep_id = strval(intval($sr->ClientRepID) + 1000000);
+          $client_rep_id = $this->getClientID($ext_client_rep_id);
+          if (!empty($client_rep_id)) {
+            try {
+              $caseRole = \Civi\Api4\Relationship::create(TRUE)
+                ->addValue('contact_id_a', $client_rep_id)
+                ->addValue('contact_id_b', $sr->ClientID_Clean)
+                ->addValue('relationship_type_id:label', 'Case Client Rep is')
+                ->addValue('case_id', $case_id)
+                ->addValue('is_active', $relationshipActive)
+                ->execute();
+            } catch (Exception $e) {
+              // Handle duplicate error or log the message
+              echo "Error creating Client relationship: " . $e->getMessage() . " for Case:$case_id Client:$sr->ClientID_Clean Client Rep:$client_rep_id<br>";
+            }
+          } else {
+            echo "Unable to add client rep for service request $sr->RequestID because external id $ext_client_rep_id is missing.  <br>";
+          }
+        }
+
+        // link activities
+        $this->linkActivities($case_id, $sr);
+
+        // add a status change activity for the end date if applicable
+        if (
+          $sr->RequestD > 'R20000'
+          and $sr->RequestID < 'R24999'
+          and !empty($end_date)
+        ) {
+          $civiActivity = \Civi\Api4\Activity::create(TRUE)
+            ->addValue('activity_type_id:label', 'Change Case Status')
+            ->addValue('source_contact_id', $nina)
+            ->addValue('target_contact_id', [
+              $sr->ClientID_Clean,
+            ])
+            ->addValue('case_id', $case_id)
+            ->addValue('status_id:label', 'Completed')
+            ->addValue('subject', 'Case status changed to ' . $sr->Status)
+            ->addvalue('activity_date_time', $end_date)
+            ->execute();
+        }
+      } else {
+        echo "Unable to add service request $sr->RequestID because Client external id $sr->ClientID is missing.  <br>";
       }
-    } else {
-      echo 'No data found.<br>';
+      $last_id  = $sr->RequestID;
     }
+
 
     echo 'Works OK so far...<br>';
     // Construct the URL correctly using site_url or home_url
@@ -170,15 +164,18 @@ class CiviCaseImport
       ->addSelect('id')
       ->addWhere('external_identifier', '=', $clientID)
       ->execute();
-
-    if (!empty($contacts)) {
-      return $contacts[0]['id']; // Accessing 'id' as an array
-    } else {
+    $count = $contacts->count();  // Store count in variable first
+    // Check count() directly
+    if ($count == 0) {
       echo "External Client ID $clientID not found. <br>";
+      return null;
+    } elseif ($count == 1) {
+      return $contacts[0]['id']; // Accessing 'id' as an array       
+    } else {
+      echo "Multiple External Client ID $clientID found. <br>";
       return null;
     }
   }
-
   // Lookup the status class by label
   private function getStatusClass($label, $statusMap)
   {
@@ -188,7 +185,6 @@ class CiviCaseImport
       return null;
     }
   }
-
   private function updateReferral($referral, $notes)
   {
     if ($referral === 'website') {
@@ -225,7 +221,7 @@ class CiviCaseImport
     }
     return [$referral, $notes];
   }
-  private function updateEndDate($requestID, $status, $resolutionDate)
+  private function updateEndDate($requestID, $status, $resolutionDate, $lastUpdateDate)
   {
     global $wpdb;
 
@@ -256,10 +252,9 @@ class CiviCaseImport
     // Check if results exist before accessing array
     if (!empty($srh_results)) {
       return $srh_results[0]->Date;
+    } else {
+      return $lastUpdateDate;
     }
-
-    // Return default value if no date found
-    return '';  // or null, or whatever makes sense as default
   }
   private function linkActivities($case_id, $sr)
   {
