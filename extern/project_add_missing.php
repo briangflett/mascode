@@ -155,7 +155,7 @@ class CiviCaseImport
 
         echo 'Works OK so far...<br>';
         // Construct the URL correctly using site_url or home_url
-        $url = site_url('/wp-content/uploads/civicrm/ext/mascode/extern/project_import.php?last_id=' . urlencode($last_id));
+        $url = site_url('/wp-content/uploads/civicrm/ext/mascode/extern/project_add_missing.php?last_id=' . urlencode($last_id));
         // Output the correct URL
         echo 'Run <a href="' . esc_url($url) . '">' . esc_url($url) . '</a><br>';
     }
