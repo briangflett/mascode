@@ -38,6 +38,13 @@ class CiviCaseImport
         foreach ($p_results as $project) {
 
             $projectID = str_pad($project->ProjectID, 5, '0', STR_PAD_LEFT);
+
+            if ($projectID <= '24156') {
+                $updateProject = true;
+            } else {
+                $updateProject = false;
+            }
+
             $subject = $projectID . ' ' . $project->Title;
 
             // update the practice area and type attributes of the project object
@@ -68,25 +75,38 @@ class CiviCaseImport
 
             if (!empty($project->ClientID_Clean)) {
                 // Create a case
-                $civiCase = \Civi\Api4\CiviCase::create(TRUE)
-                    ->addValue('case_type_id.name', 'project')
-                    ->addValue('subject', $subject)
-                    ->addValue('creator_id', $nina)
-                    ->addValue('start_date', $project->StartDate)
-                    ->addValue('end_date', $end_date)
-                    ->addValue('status_id:label', $status)
-                    ->addValue('Projects.Practice_Area', $practiceArea)
-                    ->addValue('Projects.Project_Type', $projectType)
-                    ->addValue('Projects.Hours', $hours)
-                    ->addValue('Projects.Notes', $project->Notes)
-                    // DefinitionDocDate, CompletionDocDate, EvaluationDocDate - last used over 5 yrs ago
-                    ->addValue(
-                        'contact_id',
-                        [
-                            $project->ClientID_Clean,
-                        ]
-                    )
-                    ->execute();
+                if ($updateProject) {
+                    $civiCase = \Civi\Api4\CiviCase::update(TRUE)
+                        ->addValue('start_date', $project->StartDate)
+                        ->addValue('end_date', $end_date)
+                        ->addValue('status_id:label', $status)
+                        ->addValue('Projects.Practice_Area', $practiceArea)
+                        ->addValue('Projects.Project_Type', $projectType)
+                        ->addValue('Projects.Hours', $hours)
+                        ->addValue('Projects.Notes', $project->Notes)
+                        ->addWhere('subject', '=', $subject)
+                        ->execute();
+                } else {
+                    $civiCase = \Civi\Api4\CiviCase::create(TRUE)
+                        ->addValue('case_type_id.name', 'project')
+                        ->addValue('subject', $subject)
+                        ->addValue('creator_id', $nina)
+                        ->addValue('start_date', $project->StartDate)
+                        ->addValue('end_date', $end_date)
+                        ->addValue('status_id:label', $status)
+                        ->addValue('Projects.Practice_Area', $practiceArea)
+                        ->addValue('Projects.Project_Type', $projectType)
+                        ->addValue('Projects.Hours', $hours)
+                        ->addValue('Projects.Notes', $project->Notes)
+                        // DefinitionDocDate, CompletionDocDate, EvaluationDocDate - last used over 5 yrs ago
+                        ->addValue(
+                            'contact_id',
+                            [
+                                $project->ClientID_Clean,
+                            ]
+                        )
+                        ->execute();
+                }
 
                 // Access the ID of the first created case
                 $case_id = $civiCase[0]['id'];
@@ -97,6 +117,12 @@ class CiviCaseImport
                     $relationshipActive = FALSE;
                 } else {
                     $relationshipActive = TRUE;
+                }
+
+                if ($updateProject) {
+                    $civiRelationship = \Civi\Api4\Relationship::delete(TRUE)
+                        ->addWhere('case_id', '=', $case_id)
+                        ->execute();
                 }
 
                 // Create an activity to link to a Service Request if applicable  BGF
@@ -119,11 +145,7 @@ class CiviCaseImport
                 $this->linkActivities($case_id, $project);
 
                 // add a status change activity for the end date if applicable
-                if (
-                    $project->ProjectID > 20000
-                    and $project->ProjectID < 24999
-                    and $project->EndDate <> ""
-                ) {
+                if ($project->EndDate <> "") {
                     $civiActivity = \Civi\Api4\Activity::create(TRUE)
                         ->addValue('activity_type_id:label', 'Change Case Status')
                         ->addValue('source_contact_id', $nina)

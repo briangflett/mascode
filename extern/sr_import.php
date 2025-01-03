@@ -37,6 +37,13 @@ class CiviCaseImport
 
     // Iterate through each row
     foreach ($sr_results as $sr) {
+
+      if ($sr->RequestID <= 'R24272') {
+        $updateSR = true;
+      } else {
+        $updateSR = false;
+      }
+
       // Get the CiviCRM ClientID
       $sr->ClientID_Clean = $this->getClientID($sr->ClientID);
 
@@ -46,23 +53,35 @@ class CiviCaseImport
 
       if (!empty($sr->ClientID_Clean)) {
         // Create a case
-        $civiCase = \Civi\Api4\CiviCase::create(TRUE)
-          ->addValue('case_type_id.name', 'service_request')
-          ->addValue('subject', $sr->RequestID)
-          ->addValue('creator_id', $nina)
-          ->addValue('start_date', $sr->InitiationDate)
-          ->addValue('end_date', $end_date)
-          ->addValue('status_id:label', $sr->Status)
-          ->addValue('Cases_SR_Projects_.Practice_Area', $sr->PracticeArea)
-          ->addValue('Cases_SR_Projects_.Referral', $referral)
-          ->addValue('Cases_SR_Projects_.Notes', $notes)
-          ->addValue(
-            'contact_id',
-            [
-              $sr->ClientID_Clean
-            ]
-          )
-          ->execute();
+        if ($updateSR) {
+          $civiCase = \Civi\Api4\CiviCase::update(TRUE)
+            ->addValue('start_date', $sr->InitiationDate)
+            ->addValue('end_date', $end_date)
+            ->addValue('status_id:label', $sr->Status)
+            ->addValue('Cases_SR_Projects_.Practice_Area', $sr->PracticeArea)
+            ->addValue('Cases_SR_Projects_.Referral', $referral)
+            ->addValue('Cases_SR_Projects_.Notes', $notes)
+            ->addWhere('subject', '=', $sr->RequestID)
+            ->execute();
+        } else {
+          $civiCase = \Civi\Api4\CiviCase::create(TRUE)
+            ->addValue('case_type_id.name', 'service_request')
+            ->addValue('subject', $sr->RequestID)
+            ->addValue('creator_id', $nina)
+            ->addValue('start_date', $sr->InitiationDate)
+            ->addValue('end_date', $end_date)
+            ->addValue('status_id:label', $sr->Status)
+            ->addValue('Cases_SR_Projects_.Practice_Area', $sr->PracticeArea)
+            ->addValue('Cases_SR_Projects_.Referral', $referral)
+            ->addValue('Cases_SR_Projects_.Notes', $notes)
+            ->addValue(
+              'contact_id',
+              [
+                $sr->ClientID_Clean
+              ]
+            )
+            ->execute();
+        }
 
         // Access the ID of the first created or updated case
         $case_id = $civiCase[0]['id'];
@@ -73,6 +92,12 @@ class CiviCaseImport
           $relationshipActive = FALSE;
         } else {
           $relationshipActive = TRUE;
+        }
+
+        if ($updateSR) {
+          $civiRelationship = \Civi\Api4\Relationship::delete(TRUE)
+            ->addWhere('case_id', '=', $case_id)
+            ->execute();
         }
 
         // Create the relationship for the MAS rep
@@ -126,11 +151,7 @@ class CiviCaseImport
         $this->linkActivities($case_id, $sr);
 
         // add a status change activity for the end date if applicable
-        if (
-          $sr->RequestD > 'R20000'
-          and $sr->RequestID < 'R24999'
-          and !empty($end_date)
-        ) {
+        if (!empty($end_date)) {
           $civiActivity = \Civi\Api4\Activity::create(TRUE)
             ->addValue('activity_type_id:label', 'Change Case Status')
             ->addValue('source_contact_id', $nina)
