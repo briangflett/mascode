@@ -1,0 +1,5 @@
+/*  This CSS is not currently being used */
+#caseSummary {display: table;}
+#end_date {display: table-row; border: 1px solid #999999; width: 200px;}
+#caseSummary label {display: table-cell;}
+#caseSummary div {display: table-cell; padding-left: 5px; padding-right: 5px;}
