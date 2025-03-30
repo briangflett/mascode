@@ -1,0 +1,10 @@
+{
+    "name": "masadvise/mascode",
+    "description": "MAS custom automation and logic",
+    "type": "civicrm-extension",
+    "autoload": {
+        "psr-4": {
+            "Civi\\Mascode\\": "."
+        }
+    }
+}

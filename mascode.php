@@ -2,6 +2,11 @@
 
 require_once 'mascode.civix.php';
 
+// Load Composer autoload if present
+if (file_exists(__DIR__ . '/vendor/autoload.php')) {
+  require_once __DIR__ . '/vendor/autoload.php';
+}
+
 use CRM_Mascode_ExtensionUtil as E;
 
 /**
@@ -35,49 +40,17 @@ function mascode_civicrm_enable(): void
 }
 
 /**
- * Implements hook_civicrm_caseSummary().
+ * Implements hook_civicrm_caseSummary() - display the case summary page.
  */
-function mascode_civicrm_caseSummary($caseID)
+function mascode_civicrm_caseSummary($caseId)
 {
-  if (empty($caseID)) {
-    return;
-  }
-
-  // Check if user has permission to view cases
-  if (!CRM_Core_Permission::check('view cases')) {
-    return; // Prevent unauthorized access
-  }
-
-  // Get Case End Date
-  $query = "SELECT end_date FROM civicrm_case WHERE id = %1";
-  $params = [1 => [$caseID, 'Integer']];
-  $endDate = CRM_Core_DAO::singleValueQuery($query, $params);
-
-  // Format and add to summary
-  if ($endDate) {
-    $formattedDate = CRM_Utils_Date::customFormat($endDate);
-    //    $summary['Case End Date'] = $formattedDate;
-    
-    return array(
-      'end_date' => array(
-        'label' => ts('Case End Date:'),
-        'value' => $formattedDate,
-      ),
-    );
-  }
+  return \Civi\Mascode\Hooks\CaseSummaryHook::handle($caseId);
 }
 
 /**
- * Implements hook_civicrm_buildForm().  --  Commented out for now
+ * Implements hook_civicrm_pre() - executed prior to saving to the DB.
  */
-// function mascode_civicrm_buildForm($formName, &$form)
-// {
-//   $overrides = [
-//     'CRM_Contact_Form_Contact',
-//   ];
-
-//   if (in_array($formName, $overrides)) {
-//     $newName = preg_replace('/^CRM_/', 'CRM_Mascode_', $formName);
-//     $newName::buildForm($form);
-//   }
-// }
+function mascode_civicrm_pre($op, $objectName, $id, &$params)
+{
+  \Civi\Mascode\Hooks\PreHook::handle($op, $objectName, $id, $params);
+}

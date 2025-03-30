@@ -1,5 +1,7 @@
 /*  This CSS is not currently being used */
-#caseSummary {display: table;}
-#end_date {display: table-row; border: 1px solid #999999; width: 200px;}
+#caseSummary {display: table;box-sizing: border-box;text-indent: initial;unicode-bidi: isolate;border-spacing: 2px;}
+#end_date {display: table-row; border: 1px solid #999999; width: 200px;color: #3e3e3e;}
+#modrtw {display: table-row; border: 1px solid #999999; width: 200px;color: #3e3e3e;}
+#mcstat {display: table-row; border: 1px solid #999999; width: 200px;color: #3e3e3e;}
 #caseSummary label {display: table-cell;}
 #caseSummary div {display: table-cell; padding-left: 5px; padding-right: 5px;}
