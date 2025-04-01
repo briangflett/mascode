@@ -4,11 +4,15 @@ namespace Civi\Mascode\Utils;
 
 class CodeGenerator
 {
-    public static function generate($params)
+    public static function generate($caseType)
     {
         $year = date('y');
         $seq = self::getSequence($year);
-        return 'R' . $year . str_pad($seq, 3, '0', STR_PAD_LEFT);
+        $returnValue = $year . str_pad($seq, 3, '0', STR_PAD_LEFT);
+        if ($caseType == 'Service Request') {
+            $returnValue = 'R' . $returnValue;
+        }
+        return $returnValue;
     }
 
     private function getSequence($year)
@@ -44,7 +48,7 @@ class CodeGenerator
     }
 
 
-    public static function getFieldId($label, $groupName)
+    public static function getFieldId($groupName, $label)
     {
         try {
             // Get the CustomGroup by name

@@ -27,6 +27,9 @@ function mascode_civicrm_config(&$config): void
 function mascode_civicrm_install(): void
 {
   _mascode_civix_civicrm_install();
+
+  // Delegate custom installation code to my OOP class
+  \Civi\Mascode\Hooks\InstallHook::handle();
 }
 
 /**
@@ -53,4 +56,12 @@ function mascode_civicrm_caseSummary($caseId)
 function mascode_civicrm_pre($op, $objectName, $id, &$params)
 {
   \Civi\Mascode\Hooks\PreHook::handle($op, $objectName, $id, $params);
+}
+
+/**
+ * Implements hook_civicrm_buildForm() - executed prior to saving to the DB.
+ */
+function mascode_civicrm_buildForm($formName, &$form)
+{
+  \Civi\Mascode\Hooks\BuildFormHook::handle($formName, $form);
 }
