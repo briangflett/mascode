@@ -1,6 +1,11 @@
 <?php
 
-class CRM_Mascode_Action_ServiceRequestToProject extends CRM_Civirules_Action
+namespace Civi\Mascode\CiviRules\Action;
+
+use CRM_Civirules_Action;
+use CRM_Civirules_TriggerData_TriggerData;
+
+class ServiceRequestToProject extends CRM_Civirules_Action
 {
 
     /**
@@ -26,7 +31,7 @@ class CRM_Mascode_Action_ServiceRequestToProject extends CRM_Civirules_Action
 
         // Check if contacts array exists, throw exception if not
         if (!isset($srCase['contacts']) || !is_array($srCase['contacts'])) {
-            throw new Exception("Contacts array not found in case data.");
+            throw new \Exception("Contacts array not found in case data.");
         }
 
         $clientContactId = null;

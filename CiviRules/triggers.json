@@ -1,0 +1,10 @@
+[
+    {
+        "name": "mailingevent_unsubscribe",
+        "label": "MailingEvent is Unsubscribed from",
+        "object_name": "MailingEvent/Unsubscribe",
+        "op": "create",
+        "class_name": "Civi\\Mascode\\CiviRules\\Trigger\\MailingUnsubscribe",
+        "cron": "0"
+    }
+]

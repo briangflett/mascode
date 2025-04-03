@@ -3,7 +3,6 @@
 namespace Civi\Mascode\Hooks;
 
 use CRM_Utils_Date;
-use Civi\Api4\CaseItem;
 
 class CaseSummaryHook
 {

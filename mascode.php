@@ -59,9 +59,23 @@ function mascode_civicrm_pre($op, $objectName, $id, &$params)
 }
 
 /**
+ * Implements hook_civicrm_post() - executed after to saving to the DB.
+ */
+function mascode_civicrm_post(string $op, string $objectName, int $objectId, &$objectRef)
+{
+  \Civi\Mascode\Hooks\PostHook::handle($op, $objectName, $objectId, $objectRef);
+}
+
+/**
  * Implements hook_civicrm_buildForm() - executed prior to saving to the DB.
  */
 function mascode_civicrm_buildForm($formName, &$form)
 {
   \Civi\Mascode\Hooks\BuildFormHook::handle($formName, $form);
 }
+
+/**
+ * Example - So far all my hook handlers are stateless.
+ * If I need a hook handler with state, I should use a hook dispatcher to avoid repeated instantiation
+ */
+//   \Civi\Mascode\Utils\HookDispatcher::call(\Civi\Mascode\Hooks\StatefulHook::class, 'handle', $event);

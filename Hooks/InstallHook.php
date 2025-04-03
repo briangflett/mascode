@@ -2,12 +2,17 @@
 
 namespace Civi\Mascode\Hooks;
 
+use CRM_Civirules_Utils_Upgrader;
+
 class InstallHook
 {
   public static function handle(): void
   {
     self::createOptionGroupAndValues();
-    self::registerCiviRuleAction();
+    // self::registerCiviRuleAction();
+    CRM_Civirules_Utils_Upgrader::insertTriggersFromJson('../CiviRules/triggers.json');
+    CRM_Civirules_Utils_Upgrader::insertActionsFromJson('../CiviRules/actions.json');
+    CRM_Civirules_Utils_Upgrader::insertConditionsFromJson('../CiviRules/conditions.json');
   }
   private static function createOptionGroupAndValues(): void
   {
@@ -53,21 +58,21 @@ class InstallHook
     }
   }
 
-  private static function registerCiviRuleAction(): void
-  {
-    $exists = $civiRulesActions = \Civi\Api4\CiviRulesAction::get(TRUE)
-      ->addSelect('id')
-      ->addWhere('name', '=', 'mas_create_project_from_sr')
-      ->setLimit(25)
-      ->execute();
+  // private static function registerCiviRuleAction(): void
+  // {
+  //   $exists = $civiRulesActions = \Civi\Api4\CiviRulesAction::get(TRUE)
+  //     ->addSelect('id')
+  //     ->addWhere('name', '=', 'mas_create_project_from_sr')
+  //     ->setLimit(25)
+  //     ->execute();
 
-    if (!$exists) {
-      \Civi\Api4\CiviRulesAction::create(TRUE)
-        ->addValue('name', 'mas_create_project_from_sr')
-        ->addValue('label', 'Create a Project from a Service Request')
-        ->addValue('class_name', 'CRM_Mascode_Action_ServiceRequestToProject')
-        ->addValue('is_active', TRUE)
-        ->execute();
-    }
-  }
+  //   if (!$exists) {
+  //     \Civi\Api4\CiviRulesAction::create(TRUE)
+  //       ->addValue('name', 'mas_create_project_from_sr')
+  //       ->addValue('label', 'Create a Project from a Service Request')
+  //       ->addValue('class_name', 'CRM_Mascode_Action_ServiceRequestToProject')
+  //       ->addValue('is_active', TRUE)
+  //       ->execute();
+  //   }
+  // }
 }

@@ -2,6 +2,8 @@
 
 namespace Civi\Mascode\Hooks;
 
+use CRM_Core_Resources;
+
 class BuildFormHook
 {
   public static function handle($formName, &$form)

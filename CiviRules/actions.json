@@ -1,0 +1,7 @@
+[
+    {
+        "name": "mas_create_project_from_sr",
+        "label": "Create a Project from a Service Request",
+        "class_name": "Civi\\Mascode\\CiviRules\\Action\\ServiceRequestToProject"
+    }
+]

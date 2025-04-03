@@ -6,7 +6,7 @@ use Civi\Mascode\Utils\CodeGenerator;
 
 class PreHook
 {
-  public static function handle($op, $objectName, $id, &$params)
+  public static function handle($op, $objectName, $id, $params)
   {
     if ($objectName == 'Case' && in_array($op, ['edit', 'create'])) {
       $caseTypeId = $params['case_type_id'] ?? null;
