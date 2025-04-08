@@ -2,10 +2,9 @@
 
 namespace Civi\Mascode\CiviRules\Action;
 
-use CRM_Civirules_Action;
 use CRM_Civirules_TriggerData_TriggerData;
 
-class ServiceRequestToProject extends CRM_Civirules_Action
+class ServiceRequestToProject extends \CRM_Civirules_Action
 {
 
     /**
@@ -20,7 +19,9 @@ class ServiceRequestToProject extends CRM_Civirules_Action
         $srCase = $triggerData->getEntityData('Case');
         // $actionParameters = $this->getActionParameters();
         var_dump($srCase);
-
+        if (empty($srCase['id]'])) {
+            throw new \Exception("Service Request ID missing.");
+        }
         // It may be redundant to...
         // Check if it is a case of type service request
         // Check if the status has changed to "Project Created"
@@ -52,6 +53,9 @@ class ServiceRequestToProject extends CRM_Civirules_Action
             }
         }
 
+        if (!$clientContactId || !$coordinatorContactId) {
+            throw new \Exception("Missing client or coordinator contact ID.");
+        }
 
         // Create the project
         $civiCase = \Civi\Api4\CiviCase::create(TRUE)
@@ -67,6 +71,10 @@ class ServiceRequestToProject extends CRM_Civirules_Action
                 ]
             )
             ->execute();
+
+        if (empty($civiCase[0]['id'])) {
+            throw new \Exception("Project case creation failed.");
+        }
 
         $srCase_id = $srCase['id'];
         $pCase_id = $civiCase[0]['id'];

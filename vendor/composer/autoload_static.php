@@ -9,22 +9,28 @@ class ComposerStaticInit334829e0dad00eff037a0085cc5406af
     public static $prefixLengthsPsr4 = array (
         'C' => 
         array (
-            'Civi\\Mascode\\' => 13,
+            'Civi\\' => 5,
         ),
     );
 
     public static $prefixDirsPsr4 = array (
-        'Civi\\Mascode\\' => 
+        'Civi\\' => 
         array (
-            0 => __DIR__ . '/../..' . '/',
+            0 => __DIR__ . '/../..' . '/Civi',
+        ),
+    );
+
+    public static $prefixesPsr0 = array (
+        'C' => 
+        array (
+            'CRM_' => 
+            array (
+                0 => __DIR__ . '/../..' . '/',
+            ),
         ),
     );
 
     public static $classMap = array (
-        'Civi\\Mascode\\Hooks\\CaseSummaryHook' => __DIR__ . '/../..' . '/Hooks/CaseSummaryHook.php',
-        'Civi\\Mascode\\Hooks\\PageRunHook' => __DIR__ . '/../..' . '/Hooks/PageRunHook.php',
-        'Civi\\Mascode\\Hooks\\PreHook' => __DIR__ . '/../..' . '/Hooks/PreHook.php',
-        'Civi\\Mascode\\Utils\\CodeGenerator' => __DIR__ . '/../..' . '/Utils/CodeGenerator.php',
         'Composer\\InstalledVersions' => __DIR__ . '/..' . '/composer/InstalledVersions.php',
     );
 
@@ -33,6 +39,7 @@ class ComposerStaticInit334829e0dad00eff037a0085cc5406af
         return \Closure::bind(function () use ($loader) {
             $loader->prefixLengthsPsr4 = ComposerStaticInit334829e0dad00eff037a0085cc5406af::$prefixLengthsPsr4;
             $loader->prefixDirsPsr4 = ComposerStaticInit334829e0dad00eff037a0085cc5406af::$prefixDirsPsr4;
+            $loader->prefixesPsr0 = ComposerStaticInit334829e0dad00eff037a0085cc5406af::$prefixesPsr0;
             $loader->classMap = ComposerStaticInit334829e0dad00eff037a0085cc5406af::$classMap;
 
         }, null, ClassLoader::class);

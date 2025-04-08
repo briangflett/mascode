@@ -1,6 +1,6 @@
 <?php
 
-namespace Civi\Mascode\Hooks;
+namespace Civi\Mascode\Hook;
 
 use CRM_Civirules_Utils_Upgrader;
 

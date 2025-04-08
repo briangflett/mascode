@@ -1,0 +1,17 @@
+services:
+  mascode.case_pre_subscriber:
+    class: Civi\Mascode\Event\CasePreSubscriber
+    tags:
+      - { name: 'event_subscriber' }
+
+  mascode.case_post_subscriber:
+    class: Civi\Mascode\Event\CasePostSubscriber
+    tags:
+      - { name: 'event_subscriber' }
+
+    mascode.case_summary_subscriber:
+    class: Civi\Mascode\Event\CaseSummarySubscriber
+    tags:
+      - { name: 'event_subscriber' }
+
+  

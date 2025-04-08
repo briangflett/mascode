@@ -6,9 +6,5 @@ $vendorDir = dirname(__DIR__);
 $baseDir = dirname($vendorDir);
 
 return array(
-    'Civi\\Mascode\\Hooks\\CaseSummaryHook' => $baseDir . '/Hooks/CaseSummaryHook.php',
-    'Civi\\Mascode\\Hooks\\PageRunHook' => $baseDir . '/Hooks/PageRunHook.php',
-    'Civi\\Mascode\\Hooks\\PreHook' => $baseDir . '/Hooks/PreHook.php',
-    'Civi\\Mascode\\Utils\\CodeGenerator' => $baseDir . '/Utils/CodeGenerator.php',
     'Composer\\InstalledVersions' => $vendorDir . '/composer/InstalledVersions.php',
 );

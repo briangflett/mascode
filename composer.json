@@ -3,8 +3,19 @@
     "description": "MAS custom automation and logic",
     "type": "civicrm-extension",
     "autoload": {
+        "psr-0": {
+            "CRM_": "."
+        },
         "psr-4": {
-            "Civi\\Mascode\\": "."
+            "Civi\\": "Civi/"
+        }
+    },
+    "require": {
+        "php": ">=7.4"
+    },
+    "extra": {
+        "civicrm": {
+            "extension": "mascode"
         }
     }
 }

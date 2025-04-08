@@ -1,8 +1,8 @@
 <?php
 
-namespace Civi\Mascode\Hooks;
+namespace Civi\Mascode\Hook;
 
-use Civi\Mascode\Utils\CodeGenerator;
+use Civi\Mascode\Util\CodeGenerator;
 
 class PreHook
 {

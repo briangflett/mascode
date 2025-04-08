@@ -1,15 +1,5 @@
 <?php
 
-/**
- * I am trying to follow the latest object oriented best practices for this extension, 
- * but I have been running into lots of issues trying to convert from traditional hooks to Symfony Events.  
- * 
- * I couldn't get the subscribers registered declaratively through services.yml
- * I couldn't get the subscribers registered imperitavely through addSubscriber()
- * So I am currently adding them as listeners imperitively using addListener()
- * Perhaps I should just go back to using hooks??? 
- */
-
 require_once 'mascode.civix.php';
 
 // Load Composer autoload if present
@@ -18,6 +8,12 @@ if (file_exists(__DIR__ . '/vendor/autoload.php')) {
 }
 
 use CRM_Mascode_ExtensionUtil as E;
+
+/**
+ * I couldn't get the subscribers registered declaratively through services.yml
+ * I couldn't get the subscribers registered imperitavely through addSubscriber()
+ * So I am adding them as listeners imperitively using addListener() 
+ */
 
 use Civi\Mascode\Event\CasePreListener;
 use Civi\Mascode\Event\CasePostListener;

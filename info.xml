@@ -24,11 +24,6 @@
     <ext>org.civicoop.civirules</ext>
   </requires>
   <comments>This is work in progress</comments>
-  <classloader>
-    <psr0 prefix="CRM_" path="."/>
-    <psr4 prefix="Civi\" path="Civi"/>
-    <psr4 prefix="Civi\\Mascode\\" path="."/>
-  </classloader>
   <civix>
     <namespace>CRM/Mascode</namespace>
     <format>24.09.0</format>
@@ -40,4 +35,11 @@
     <mixin>entity-types-php@2.0.0</mixin>
     <mixin>smarty@1.0.3</mixin>
   </mixins>
+  <schema>
+    <path>xml/schema</path>
+  </schema>
+  <entity>
+    <name>MascodeSubmission</name>
+    <class>CRM_Mascode_DAO_MascodeSubmission</class>
+  </entity>
 </extension>

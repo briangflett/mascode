@@ -6,5 +6,5 @@ $vendorDir = dirname(__DIR__);
 $baseDir = dirname($vendorDir);
 
 return array(
-    'Civi\\Mascode\\' => array($baseDir . '/'),
+    'Civi\\' => array($baseDir . '/Civi'),
 );

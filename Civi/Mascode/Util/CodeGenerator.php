@@ -1,6 +1,6 @@
 <?php
 
-namespace Civi\Mascode\Utils;
+namespace Civi\Mascode\Util;
 
 class CodeGenerator
 {
@@ -9,7 +9,7 @@ class CodeGenerator
         $year = date('y');
         $seq = self::getSequence($year);
         $returnValue = $year . str_pad($seq, 3, '0', STR_PAD_LEFT);
-        if ($caseType == 'Service Request') {
+        if ($caseType == 'service_request') {
             $returnValue = 'R' . $returnValue;
         }
         return $returnValue;

@@ -1,6 +1,6 @@
 <?php
 
-namespace Civi\Mascode\Utils;
+namespace Civi\Mascode\Util;
 
 /**
  * Generic Hook Dispatcher
