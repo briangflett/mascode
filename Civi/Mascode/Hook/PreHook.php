@@ -1,5 +1,9 @@
 <?php
 
+/**
+ * If service request status is set to "Project Created", then create the project.
+ */
+
 namespace Civi\Mascode\Hook;
 
 use Civi\Mascode\Util\CodeGenerator;

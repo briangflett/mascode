@@ -1,5 +1,9 @@
 <?php
 
+/**
+ * If someone unsubscribes, make sure they are added to the unsubscribe group.
+ */
+
 namespace Civi\Mascode\Hook;
 
 use Civi\Api4\Mailing;

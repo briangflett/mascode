@@ -1,0 +1,4 @@
+services:
+  Civi\Mascode\Event\CasePreInsertListener:
+    tags:
+      - { name: "civicrm.hook_subscriber" }

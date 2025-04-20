@@ -1,13 +1,22 @@
 <?php
 
+/**
+ * Add the end date to the Case Summary screen.
+ */
+
 namespace Civi\Mascode\Hook;
 
 use CRM_Utils_Date;
 
 class CaseSummaryHook
 {
-
-    public static function handle($caseId)
+    /**
+     * Handles the case summary hook.
+     *
+     * @param int $caseId The ID of the case.
+     * @return array<array{label: string, value: string}> The formatted case summary.
+     */
+    public static function handle($caseId): array
     {
         if (empty($caseId)) {
             return [];

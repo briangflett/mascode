@@ -1,5 +1,10 @@
 <?php
 
+/**
+ * Install CiviRules triggers, actions, & conditions.
+ * Install mas_parameters.
+ */
+
 namespace Civi\Mascode\Hook;
 
 use CRM_Civirules_Utils_Upgrader;
