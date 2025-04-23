@@ -12,6 +12,9 @@ class PreHook
 {
   public static function handle($op, $objectName, $id, $params)
   {
+    // skip this hook for now
+    return;
+    
     if ($objectName == 'Case' && in_array($op, ['edit', 'create'])) {
       $caseTypeId = $params['case_type_id'] ?? null;
       if (!$caseTypeId) return;

@@ -16,6 +16,9 @@ class PostHook
 {
   public static function handle(string $op, string $objectName, int $objectId, $objectRef)
   {
+    // skip this hook for now
+    return;
+    
     // \Civi::log()->info("hook_civicrm_post fired", [
     //   'op' => $op,
     //   'objectName' => $objectName,

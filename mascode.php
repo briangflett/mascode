@@ -1,7 +1,8 @@
 <?php
 
 /**
- * I am using hooks for now.  May refactor to use Symphony Events later.
+ * I am using Symfony for Form Processor Actions and CiviRules Actions.
+ * I am using hooks for listeners for now.  I may refactor to use Symphony Events later.
  */
 
 require_once 'mascode.civix.php';
@@ -12,6 +13,16 @@ if (file_exists(__DIR__ . '/vendor/autoload.php')) {
 }
 
 use CRM_Mascode_ExtensionUtil as E;
+use Civi\Mascode\CompilerPass;
+use Symfony\Component\DependencyInjection\ContainerBuilder;
+
+/**
+ * Implements hook_civicrm_container() - used to register services via service.yml.
+ */
+function mascode_civicrm_container(ContainerBuilder $container)
+{
+  $container->addCompilerPass(new CompilerPass());
+}
 
 /**
  * Implements hook_civicrm_config().
@@ -46,7 +57,7 @@ function mascode_civicrm_enable(): void
 }
 
 /**
- * Implement hook_civicrm_caseSummary() inline for now and comment everything else out.
+ * Implement hook_civicrm_caseSummary().
  */
 function mascode_civicrm_caseSummary($caseId)
 {
@@ -68,14 +79,6 @@ function mascode_civicrm_post(string $op, string $objectName, int $objectId, &$o
 {
   \Civi\Mascode\Hook\PostHook::handle($op, $objectName, $objectId, $objectRef);
 }
-
-/**
- * Implements hook_civicrm_triggerInfo() - required to create CiviRules triggers.
- */
-// function mascode_civicrm_triggerInfo(&$triggerInfo)
-// {
-//   $triggerInfo[] = new \Civi\Mascode\CiviRules\Trigger\MailingUnsubscribe();
-// }
 
 // /**
 //  * Example - So far all my hook handlers are stateless.

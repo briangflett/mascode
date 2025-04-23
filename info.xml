@@ -38,8 +38,14 @@
   <schema>
     <path>xml/schema</path>
   </schema>
-  <entity>
-    <name>MascodeSubmission</name>
-    <class>CRM_Mascode_DAO_MascodeSubmission</class>
-  </entity>
+  <classloader>
+    <psr0 prefix="CRM_" path="."/>
+    <psr4 prefix="Civi\\">Civi/</psr4>
+  </classloader>
+<!--
+<entity>
+  <name>MascodeSubmission</name>
+  <class>CRM_Mascode_DAO_MascodeSubmission</class>
+</entity>
+-->
 </extension>

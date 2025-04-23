@@ -4,7 +4,7 @@ namespace Civi\Mascode\CiviRules\Action;
 
 use CRM_Civirules_TriggerData_TriggerData;
 
-class ServiceRequestToProject extends \CRM_Civirules_Action
+class ServiceRequestToProject extends CRM_Civirules_Action
 {
 
     /**

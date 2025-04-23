@@ -1,7 +1,12 @@
 [
     {
         "name": "mas_create_project_from_sr",
-        "label": "Create a Project from a Service Request",
+        "label": "mas: Create a Project from a Service Request",
         "class_name": "Civi\\Mascode\\CiviRules\\Action\\ServiceRequestToProject"
+    },
+    {
+        "name": "mas_example_civirules_action",
+        "label": "mas: Example CiviRules Action",
+        "class_name": "Civi\\Mascode\\CiviRules\\Action\\ExampleCiviRulesAction"
     }
 ]
