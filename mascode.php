@@ -1,8 +1,9 @@
 <?php
 
 /**
- * I am using Symfony for Form Processor Actions and CiviRules Actions.
- * I am using hooks for listeners for now.  I may refactor to use Symphony Events later.
+ * I am using Symfony EventDispatcher for the hooks that support it.
+ * config, install, and enable happen before the container is built, so I need to use the traditional hooks.
+ * caseSummary is expecting a return value, so I need to use the traditional hook.
  */
 
 require_once 'mascode.civix.php';
@@ -13,15 +14,27 @@ if (file_exists(__DIR__ . '/vendor/autoload.php')) {
 }
 
 use CRM_Mascode_ExtensionUtil as E;
-use Civi\Mascode\CompilerPass;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
+use Symfony\Component\DependencyInjection\Reference;
+use Civi\Mascode\CompilerPass;
 
 /**
  * Implements hook_civicrm_container() - used to register services via service.yml.
  */
 function mascode_civicrm_container(ContainerBuilder $container)
 {
+  // dispatcher has already been defined, so we can add hook listeners to it
+  // This can be removed once we move service definitions to YAML.
+  $container->register('Civi\Mascode\Event\CaseEventListener', Civi\Mascode\Event\CaseEventListener::class)
+    ->setPublic(true);
+  $container->findDefinition('dispatcher')
+    ->addMethodCall('addSubscriber', [new Reference('Civi\Mascode\Event\CaseEventListener')]);
+  // $container->findDefinition('dispatcher')
+  //   ->addMethodCall('addListener', array('hook_civicrm_alterContent', '_example_say_hello'));
+  // other services like form actions may need to wait until the container is built
   $container->addCompilerPass(new CompilerPass());
+  // I don't need to define CiviRule actions as services, 
+  // as those methods are called directly by CiviRules based on rows in the CiviRules tables.
 }
 
 /**
@@ -56,32 +69,9 @@ function mascode_civicrm_enable(): void
   _mascode_civix_civicrm_enable();
 }
 
-/**
- * Implement hook_civicrm_caseSummary().
- */
+// Need to handle caseSummary as a traditional hook for now as it is expecting a return value
+// 
 function mascode_civicrm_caseSummary($caseId)
 {
   return \Civi\Mascode\Hook\CaseSummaryHook::handle($caseId);
 }
-
-// /**
-//  * Implements hook_civicrm_pre() - executed prior to saving to the DB.
-//  */
-function mascode_civicrm_pre($op, $objectName, $id, &$params)
-{
-  \Civi\Mascode\Hook\PreHook::handle($op, $objectName, $id, $params);
-}
-
-// /**
-//  * Implements hook_civicrm_post() - executed after to saving to the DB.
-//  */
-function mascode_civicrm_post(string $op, string $objectName, int $objectId, &$objectRef)
-{
-  \Civi\Mascode\Hook\PostHook::handle($op, $objectName, $objectId, $objectRef);
-}
-
-// /**
-//  * Example - So far all my hook handlers are stateless.
-//  * If I need a hook handler with state, I should use a hook dispatcher to avoid repeated instantiation
-//  */
-// //   \Civi\Mascode\Utils\HookDispatcher::call(\Civi\Mascode\Hooks\StatefulHook::class, 'handle', $event);
