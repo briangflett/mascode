@@ -10,7 +10,10 @@ use Civi\mascode\CiviRules\Trigger\MailingUnsubscribe;
 
 class CaseEventListener implements EventSubscriberInterface
 {
-
+    
+  public function __construct() {
+    \Civi::log()->debug('🔍 CaseEventListener instantiated');
+  }
     public static function getSubscribedEvents(): array
     {
         return [

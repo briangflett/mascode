@@ -30,6 +30,18 @@ class CompilerPass implements CompilerPassInterface
         'label' => E::ts('mas: Example Form Action'),
         'options' => [],
       ],
+      [
+        'id' => 'MasAddRole',
+        'class' => 'Civi\Mascode\FormProcessor\Action\MasAddRole',
+        'label' => E::ts('mas: Add a case role'),
+        'options' => [],
+      ],
+      [
+        'id' => 'MasCreateCaseWithRole',
+        'class' => 'Civi\Mascode\FormProcessor\Action\MasCreateCaseWithRole',
+        'label' => E::ts('mas: Create a case with role'),
+        'options' => [],  
+      ],
       // Add more actions here easily later
       // [
       //   'id' => 'AnotherAction',
