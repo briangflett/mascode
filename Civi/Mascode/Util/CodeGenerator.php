@@ -1,4 +1,5 @@
 <?php
+// file: Civi/Mascode/Util/CodeGenerator.php
 
 namespace Civi\Mascode\Util;
 
@@ -48,22 +49,13 @@ class CodeGenerator
     }
 
 
-    public static function getFieldId($groupName, $label)
+    public static function getFieldId($groupName, $fieldName)
     {
         try {
-            // Get the CustomGroup by name
-            $group = \Civi\Api4\CustomGroup::get()
-                ->addWhere('name', '=', $groupName)
-                ->setLimit(1)
-                ->execute()
-                ->first();
-
-            if (!$group) {
-                return null;
-            }
-
-            // Get the CustomField by label within that group
+            // Get the CustomField by group and field names
             $field = \Civi\Api4\CustomField::get()
+                ->addWhere('custom_group_id:name', '=', $groupName)
+                ->addWhere('name', '=', $fieldName)
                 ->addWhere('custom_group_id', '=', $group['id'])
                 ->addWhere('label', '=', $label)
                 ->setLimit(1)

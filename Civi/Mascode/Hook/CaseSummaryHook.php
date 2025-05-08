@@ -1,12 +1,11 @@
 <?php
+// file: Civi/Mascode/Hook/CaseSummaryHook.php
 
 /**
  * Add the end date to the Case Summary screen.
  */
 
 namespace Civi\Mascode\Hook;
-
-use CRM_Utils_Date;
 
 class CaseSummaryHook
 {
@@ -39,7 +38,7 @@ class CaseSummaryHook
 
 
         $formattedEndDate = !empty($case['end_date'])
-            ? CRM_Utils_Date::customFormat($case['end_date'])
+            ? \CRM_Utils_Date::customFormat($case['end_date'])
             : '';
 
         //   Instead of returning the array of values and styling trough CSS

@@ -1,4 +1,5 @@
 <?php
+// file:  Civi/Mascode/CompilerPass.php
 
 /**
  * CompilerPass does not execute until all services (like action provider) have been registered.
@@ -25,22 +26,10 @@ class CompilerPass implements CompilerPassInterface
     // Define all your FormProcessor actions here
     $actions = [
       [
-        'id' => 'ExampleFormAction',
-        'class' => 'Civi\Mascode\FormProcessor\Action\ExampleFormAction',
-        'label' => E::ts('mas: Example Form Action'),
-        'options' => [],
-      ],
-      [
         'id' => 'MasAddRole',
         'class' => 'Civi\Mascode\FormProcessor\Action\MasAddRole',
         'label' => E::ts('mas: Add a case role'),
         'options' => [],
-      ],
-      [
-        'id' => 'MasCreateCaseWithRole',
-        'class' => 'Civi\Mascode\FormProcessor\Action\MasCreateCaseWithRole',
-        'label' => E::ts('mas: Create a case with role'),
-        'options' => [],  
       ],
       // Add more actions here easily later
       // [

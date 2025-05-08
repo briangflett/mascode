@@ -1,0 +1,9 @@
+<?xml version="1.0"?>
+<menu>
+  <item>
+    <path>civicrm/mascode/form/mascodeselectadmin</path>
+    <page_callback>CRM_Mascode_Form_MascodeSelectAdmin</page_callback>
+    <title>MascodeSelectAdmin</title>
+    <access_arguments>access CiviCRM</access_arguments>
+  </item>
+</menu>

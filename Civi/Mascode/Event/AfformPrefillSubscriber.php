@@ -1,12 +1,12 @@
 <?php
-// File: Civi/Mascode/Event/FormPrefillSubscriber.php
+// File: Civi/Mascode/Event/AfformPrefillSubscriber.php
 
 namespace Civi\Mascode\Event;
 
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Civi\Afform\Event\AfformPrefillEvent;
 
-class FormPrefillSubscriber implements EventSubscriberInterface
+class AfformPrefillSubscriber implements EventSubscriberInterface
 {
     /**
      * @var \CRM_Utils_Token
@@ -14,12 +14,12 @@ class FormPrefillSubscriber implements EventSubscriberInterface
     protected $tokenProcessor;
 
     /**
-     * Constructor with dependency injection
+     * Constructor with dependency initialization
      */
     public function __construct()
     {
-        // If needed, you could inject services here
         $this->tokenProcessor = new \CRM_Utils_Token();
+        \Civi::log()->debug('FormPrefillSubscriber instantiated');
     }
 
     /**
@@ -54,27 +54,49 @@ class FormPrefillSubscriber implements EventSubscriberInterface
      */
     protected function prefillAnonymousCaseForm(AfformPrefillEvent $event): void
     {
-        $data = $event->getData();
+        try {
+            $data = $event->getData();
 
-        // Get URL parameters - this could be how you identify the case and validate access
-        $checksum = $_GET['cs'] ?? NULL;
-        $contactId = $_GET['cid'] ?? NULL;
-        $caseId = $_GET['caseid'] ?? NULL;
+            // Get URL parameters - this could be how you identify the case and validate access
+            $checksum = $_GET['cs'] ?? NULL;
+            $contactId = $_GET['cid'] ?? NULL;
+            $caseId = $_GET['caseid'] ?? NULL;
 
-        // Check if this is a valid anonymous access request
-        if (!$this->validateAnonymousAccess($contactId, $checksum, $caseId)) {
-            // If invalid, you could:
-            // 1. Leave the form empty
-            // 2. Set an error message in the form
-            // 3. Redirect (though this might be better handled at the route level)
-            $data['access_denied'] = TRUE;
+            // Check if this is a valid anonymous access request
+            if (!$this->validateAnonymousAccess($contactId, $checksum, $caseId)) {
+                $data['access_denied'] = TRUE;
+                $event->setData($data);
+                return;
+            }
+
+            // If we get here, access is validated
+            $data = $this->loadOrganizationData($data, $caseId);
+            $data = $this->loadIndividualData($data, $contactId);
+            $data = $this->loadCaseData($data, $caseId);
+
             $event->setData($data);
-            return;
+        } catch (\Exception $e) {
+            \Civi::log()->error('Error in FormPrefillSubscriber::prefillAnonymousCaseForm: {message}', [
+                'message' => $e->getMessage(),
+                'exception' => $e,
+            ]);
+            
+            // Set error state in form data
+            $data = $event->getData();
+            $data['error_occurred'] = TRUE;
+            $event->setData($data);
         }
+    }
 
-        // If we get here, access is validated
-
-        // 1. Load organization data
+    /**
+     * Load organization data related to the case
+     * 
+     * @param array $data Form data
+     * @param int $caseId Case ID
+     * @return array Updated form data
+     */
+    protected function loadOrganizationData(array $data, int $caseId): array
+    {
         try {
             // Assuming the organization is related to the case
             $orgContact = $this->getOrganizationForCase($caseId);
@@ -86,10 +108,24 @@ class FormPrefillSubscriber implements EventSubscriberInterface
                 // Add more fields as needed
             }
         } catch (\Exception $e) {
-            \Civi::log()->error('Failed to fetch organization data: ' . $e->getMessage());
+            \Civi::log()->error('Failed to fetch organization data: {message}', [
+                'message' => $e->getMessage(),
+                'exception' => $e,
+            ]);
         }
+        
+        return $data;
+    }
 
-        // 2. Load individual data
+    /**
+     * Load individual contact data
+     * 
+     * @param array $data Form data
+     * @param int $contactId Contact ID
+     * @return array Updated form data
+     */
+    protected function loadIndividualData(array $data, int $contactId): array
+    {
         try {
             if ($contactId) {
                 $individual = \Civi\Api4\Contact::get(FALSE)
@@ -110,10 +146,24 @@ class FormPrefillSubscriber implements EventSubscriberInterface
                 }
             }
         } catch (\Exception $e) {
-            \Civi::log()->error('Failed to fetch individual data: ' . $e->getMessage());
+            \Civi::log()->error('Failed to fetch individual data: {message}', [
+                'message' => $e->getMessage(),
+                'exception' => $e,
+            ]);
         }
+        
+        return $data;
+    }
 
-        // 3. Load case data
+    /**
+     * Load case data
+     * 
+     * @param array $data Form data
+     * @param int $caseId Case ID
+     * @return array Updated form data
+     */
+    protected function loadCaseData(array $data, int $caseId): array
+    {
         try {
             if ($caseId) {
                 $case = \Civi\Api4\CiviCase::get(FALSE)
@@ -133,10 +183,13 @@ class FormPrefillSubscriber implements EventSubscriberInterface
                 }
             }
         } catch (\Exception $e) {
-            \Civi::log()->error('Failed to fetch case data: ' . $e->getMessage());
+            \Civi::log()->error('Failed to fetch case data: {message}', [
+                'message' => $e->getMessage(),
+                'exception' => $e,
+            ]);
         }
-
-        $event->setData($data);
+        
+        return $data;
     }
 
     /**
@@ -151,12 +204,14 @@ class FormPrefillSubscriber implements EventSubscriberInterface
     {
         // If we don't have the necessary parameters, deny access
         if (empty($contactId) || empty($checksum) || empty($caseId)) {
+            \Civi::log()->info('Anonymous access denied: missing parameters');
             return FALSE;
         }
 
         // Validate the checksum for the contact
         $isValidChecksum = \CRM_Contact_BAO_Contact_Utils::validChecksum($contactId, $checksum);
         if (!$isValidChecksum) {
+            \Civi::log()->info('Anonymous access denied: invalid checksum');
             return FALSE;
         }
 
@@ -170,13 +225,21 @@ class FormPrefillSubscriber implements EventSubscriberInterface
 
             if ($caseContact->count() === 0) {
                 // Contact is not associated with this case
+                \Civi::log()->info('Anonymous access denied: contact not associated with case');
                 return FALSE;
             }
         } catch (\Exception $e) {
-            \Civi::log()->error('Failed to validate case access: ' . $e->getMessage());
+            \Civi::log()->error('Failed to validate case access: {message}', [
+                'message' => $e->getMessage(),
+                'exception' => $e,
+            ]);
             return FALSE;
         }
 
+        \Civi::log()->info('Anonymous access granted for contact {contactId} to case {caseId}', [
+            'contactId' => $contactId,
+            'caseId' => $caseId,
+        ]);
         return TRUE;
     }
 
@@ -234,7 +297,10 @@ class FormPrefillSubscriber implements EventSubscriberInterface
                 }
             }
         } catch (\Exception $e) {
-            \Civi::log()->error('Failed to fetch organization for case: ' . $e->getMessage());
+            \Civi::log()->error('Failed to fetch organization for case: {message}', [
+                'message' => $e->getMessage(),
+                'exception' => $e,
+            ]);
         }
 
         return NULL;

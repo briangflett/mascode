@@ -1,103 +1,219 @@
 <?php
-
-  /**
-   * This is a clone of ActionProvider\Action\CiviCase\AddRole.php
-   * removing the authorization check.  If we got this far, we are authorized.
-   */
+// file: Civi/Mascode/FormProcessor/Action/MasAddRole.php
 
 namespace Civi\Mascode\FormProcessor\Action;
 
 use \Civi\ActionProvider\Action\AbstractAction;
-use Civi\ActionProvider\Parameter\OptionGroupSpecification;
 use \Civi\ActionProvider\Parameter\ParameterBagInterface;
 use \Civi\ActionProvider\Parameter\SpecificationBag;
 use \Civi\ActionProvider\Parameter\Specification;
 
-use Civi\ActionProvider\Utils\CiviCase;
 use CRM_Mascode_ExtensionUtil as E;
 
-class MasAddRole extends AbstractAction {
+class MasAddRole extends AbstractAction
+{
 
-  private function relationshipTypes(){
+  /**
+   * Get relationship type options for the configuration form
+   */
+  private function relationshipTypes()
+  {
     $options = [];
-    $result = civicrm_api3('RelationshipType', 'get', [
-      'sequential' => 1,
-      'return' => ["id", "label_a_b", "label_b_a"],
-      'options' => ['limit' => 0]
-    ]);
-    foreach($result['values'] as $value) {
-      $options["${value['id']}_a_b"]="{$value['label_a_b']} (a->b)";
-      $options["${value['id']}_b_a"]="{$value['label_b_a']} (b->a)";
+    try {
+      // Use API4 for better error handling and cleaner code
+      $relationshipTypes = \Civi\Api4\RelationshipType::get(FALSE)
+        ->addSelect('id', 'label_a_b', 'label_b_a')
+        ->addWhere('is_active', '=', TRUE)
+        ->execute();
+
+      foreach ($relationshipTypes as $type) {
+        $options["{$type['id']}_a_b"] = "{$type['label_a_b']} (a->b)";
+        $options["{$type['id']}_b_a"] = "{$type['label_b_a']} (b->a)";
+      }
+
+      // Sort options alphabetically using proper comparison function
+      uasort($options, function ($a, $b) {
+        return strcmp($a, $b);
+      });
+    } catch (\Exception $e) {
+      \Civi::log()->error('Failed to get relationship types: ' . $e->getMessage());
     }
-    uasort($options, function($a, $b) {
-      return $a>=$b;
-    });
+
     return $options;
   }
 
   /**
    * Returns the specification of the configuration options for the action.
-   *
-   * @return SpecificationBag
    */
-  public function getConfigurationSpecification() {
-    /**
-     * The parameters given to the Specification object are:
-     *
-     * @param string $name
-     * @param string $dataType
-     * @param string $title
-     * @param bool $required
-     * @param mixed $defaultValue
-     * @param string|null $fkEntity
-     * @param array $options
-     * @param bool $multiple
-     */
-    return new SpecificationBag(
-      [
-        new Specification('relationship_type', 'String', E::ts('mas: RelationShip'), TRUE, NULL, NULL,$this->relationshipTypes(), FALSE),
-      ]
-    );
+  public function getConfigurationSpecification()
+  {
+    return new SpecificationBag([
+      new Specification('relationship_type', 'String', E::ts('Relationship Type'), TRUE, NULL, NULL, $this->relationshipTypes(), FALSE),
+      new Specification('activity_source_contact_id', 'Integer', E::ts('Default Source Contact ID'), FALSE, NULL, 'Contact', NULL, FALSE),
+    ]);
   }
 
   /**
-   * Returns the specification of the configuration options for the action.
-   *
-   * @return SpecificationBag
+   * Returns the specification of the parameters for the action.
    */
-  public function getParameterSpecification() {
+  public function getParameterSpecification()
+  {
     return new SpecificationBag([
       new Specification('contact_id', 'Integer', E::ts('Contact ID'), TRUE, NULL, NULL, NULL, FALSE),
-      new Specification('case_id', 'Integer', E::ts('Case ID'), TRUE, NULL, 'Contact', NULL, FALSE),
+      new Specification('case_id', 'Integer', E::ts('Case ID'), TRUE, NULL, NULL, NULL, FALSE),
+      new Specification('source_contact_id', 'Integer', E::ts('Source Contact ID (optional)'), FALSE, NULL, 'Contact', NULL, FALSE),
     ]);
   }
 
   /**
    * Returns the specification of the output parameters of this action.
-   *
-   * @return SpecificationBag
    */
-  public function getOutputSpecification() {
-    return new SpecificationBag(
-      [new Specification('relation_ship_id', 'Integer', E::ts('Relationship ID'), FALSE)]
-    );
+  public function getOutputSpecification()
+  {
+    return new SpecificationBag([
+      new Specification('relationship_id', 'Integer', E::ts('Relationship ID'), FALSE),
+    ]);
   }
 
   /**
    * Run the action
-   *
-   * @param ParameterInterface $parameters
-   *   The parameters to this action.
-   * @param ParameterBagInterface $output
-   *   The parameters this action can send back
-   *
-   * @return void
    */
-  protected function doAction(ParameterBagInterface $parameters, ParameterBagInterface $output) {
-    // Get the contact.
-    $contact_id = $parameters->getParameter('contact_id');
-    $case_id = $parameters->getParameter('case_id');
-    $relationshipType = $this->configuration->getParameter('relationship_type');
-    CiviCase::relationship($relationshipType,$contact_id,$case_id);
+  protected function doAction(ParameterBagInterface $parameters, ParameterBagInterface $output)
+  {
+    // Get basic parameters
+    $contactId = (int) $parameters->getParameter('contact_id');
+    $caseId = (int) $parameters->getParameter('case_id');
+
+    // Get source contact ID from parameters or configuration
+    $sourceContactId = 0;
+    if ($parameters->doesParameterExists('source_contact_id') && !empty($parameters->getParameter('source_contact_id'))) {
+      $sourceContactId = (int) $parameters->getParameter('source_contact_id');
+    } elseif (
+      $this->configuration->doesParameterExists('activity_source_contact_id') &&
+      !empty($this->configuration->getParameter('activity_source_contact_id'))
+    ) {
+      $sourceContactId = (int) $this->configuration->getParameter('activity_source_contact_id');
+    }
+
+    // If no source contact was provided, use a default
+    if (!$sourceContactId) {
+      try {
+        // Try to get domain contact
+        $domainContactId = \Civi\Api4\Domain::get(FALSE)
+          ->addSelect('contact_id')
+          ->setLimit(1)
+          ->execute()
+          ->first()['contact_id'] ?? NULL;
+
+        if ($domainContactId) {
+          $sourceContactId = $domainContactId;
+        } else {
+          // Fallback to user ID 1
+          $sourceContactId = 1;
+        }
+      } catch (\Exception $e) {
+        $sourceContactId = 1; // Final fallback
+      }
+    }
+
+    try {
+      // Parse relationship type
+      $relTypeConfig = $this->configuration->getParameter('relationship_type');
+      list($relationshipTypeId, $direction) = $this->parseRelationshipType($relTypeConfig);
+
+      // Find the case client
+      $caseClientResult = \Civi\Api4\CaseContact::get(FALSE)
+        ->addSelect('contact_id')
+        ->addWhere('case_id', '=', $caseId)
+        ->execute();
+
+      if ($caseClientResult->count() == 0) {
+        throw new \Exception("Could not find client for case ID: $caseId");
+      }
+
+      $caseClient = $caseClientResult->first()['contact_id'];
+
+      // Set relationship parameters based on direction
+      $contactIdA = ($direction == 'a_b') ? $caseClient : $contactId;
+      $contactIdB = ($direction == 'a_b') ? $contactId : $caseClient;
+
+      // Check if relationship already exists
+      $existingRel = \Civi\Api4\Relationship::get(FALSE)
+        ->addSelect('id')
+        ->addWhere('relationship_type_id', '=', $relationshipTypeId)
+        ->addWhere('contact_id_a', '=', $contactIdA)
+        ->addWhere('contact_id_b', '=', $contactIdB)
+        ->addWhere('case_id', '=', $caseId)
+        ->execute();
+
+      if ($existingRel->count() > 0) {
+        // Relationship already exists, return its ID
+        $relationshipId = $existingRel->first()['id'];
+      } else {
+        // Create new relationship
+        $relationshipResult = \Civi\Api4\Relationship::create(FALSE)
+          ->addValue('relationship_type_id', $relationshipTypeId)
+          ->addValue('contact_id_a', $contactIdA)
+          ->addValue('contact_id_b', $contactIdB)
+          ->addValue('case_id', $caseId)
+          ->addValue('is_active', TRUE)
+          ->execute();
+
+        $relationshipId = $relationshipResult->first()['id'] ?? NULL;
+
+        if (!$relationshipId) {
+          throw new \Exception("Failed to create relationship");
+        }
+      }
+
+      // Create activity to record the relationship assignment
+      $activityResult = \Civi\Api4\Activity::create(FALSE)
+        ->addValue('activity_type_id:name', 'Assign Case Role')
+        ->addValue('source_contact_id', $sourceContactId)
+        ->addValue('target_contact_id', [$contactId])
+        ->addValue('case_id', [$caseId])
+        ->addValue('status_id:name', 'Completed')
+        ->addValue('subject', 'Case role assigned')
+        ->execute();
+
+      // Set output
+      $output->setParameter('relationship_id', $relationshipId);
+
+      \Civi::log()->info('Successfully added case role: ' . $relationshipId);
+    } catch (\Exception $e) {
+      \Civi::log()->error('MasAddRole error: ' . $e->getMessage());
+      throw new \Exception('Error adding case role: ' . $e->getMessage());
+    }
+  }
+
+  /**
+   * Parse the relationship type configuration string
+   * 
+   * @param string $relationshipType Format: "123_a_b" or "123_b_a"
+   * @return array [relationshipTypeId, direction]
+   */
+  private function parseRelationshipType($relationshipType)
+  {
+    // Debug log the input value
+    \Civi::log()->debug('Parsing relationship type: ' . print_r($relationshipType, TRUE));
+
+    if (empty($relationshipType)) {
+      throw new \Exception("Relationship type not specified");
+    }
+
+    // Handle string format "123_a_b" or "123_b_a"
+    if (is_string($relationshipType) && strpos($relationshipType, '_') !== FALSE) {
+      $parts = explode('_', $relationshipType);
+      if (count($parts) >= 3 && is_numeric($parts[0])) {
+        return [(int)$parts[0], $parts[1] . '_' . $parts[2]];
+      }
+    }
+
+    // Handle direct numeric ID - default to "a_b" direction
+    if (is_numeric($relationshipType)) {
+      return [(int)$relationshipType, 'a_b'];
+    }
+
+    throw new \Exception("Invalid relationship type format: " . print_r($relationshipType, TRUE));
   }
 }

@@ -1,19 +1,19 @@
 <?php
+// file: Civi/Mascode/CiviRules/Trigger/MailingUnsubscribe.php
 
 namespace Civi\Mascode\CiviRules\Trigger;
 
 if (!class_exists('\CRM_Civirules_Trigger_Post')) {
-    // \Civi::log()->warning("MailingUnsubscribe loaded before CRM_Civirules_Trigger_Post is available!");
+    \Civi::log()->warning("MailingUnsubscribe loaded before \CRM_Civirules_Trigger_Post is available!");
 } else {
-    // \Civi::log()->info("Parent class CRM_Civirules_Trigger_Post is ready.");
+    \Civi::log()->info("Parent class \CRM_Civirules_Trigger_Post is ready.");
 }
 
 // Workaround to ensure base class is loaded before this class is parsed.
-if (!class_exists('CRM_Civirules_Trigger_Post')) {
+if (!class_exists('\CRM_Civirules_Trigger_Post')) {
     require_once 'CRM/Civirules/Trigger/Post.php'; // Relative to CiviCRM base
-    // \Civi::log()->warning("I have manually required it");
+    \Civi::log()->warning("I have manually required it");
 }
-
 
 /**
  * @method void triggerRuleEvaluation(int $contactId, array $context = [])
@@ -50,7 +50,6 @@ class MailingUnsubscribe extends \CRM_Civirules_Trigger_Post
         if (!isset($this->triggerData) || empty($this->triggerData['contact_id'])) {
             return;
         }
-        xdebug_break();
         $entity = $this->triggerData;
 
         $contactId = $entity['contact_id'] ?? null;

@@ -13,10 +13,10 @@ class CRM_Mascode_Upgrader extends CRM_Extension_Upgrader_Base {
   /**
    * Example: Run an external SQL script when the module is installed.
    *
-   * Not required for install.mysql.sql
+   * Note that if a file is present sql\auto_install that will run regardless of this hook.
    */
   // public function install(): void {
-  //   $this->executeSqlFile('sql/install.mysql.sql');
+  //   $this->executeSqlFile('sql/my_install.sql');
   // }
 
   /**
@@ -40,10 +40,10 @@ class CRM_Mascode_Upgrader extends CRM_Extension_Upgrader_Base {
   /**
    * Example: Run an external SQL script when the module is uninstalled.
    *
-   * Not required for uninstall.mysql.sql
+   * Note that if a file is present sql\auto_uninstall that will run regardless of this hook.
    */
   // public function uninstall(): void {
-  //   $this->executeSqlFile('sql/uninstall.mysql.sql');
+  //   $this->executeSqlFile('sql/my_uninstall.sql');
   // }
 
   /**

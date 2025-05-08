@@ -22,25 +22,18 @@ use Civi\Mascode\CompilerPass;
  */
 function mascode_civicrm_container(ContainerBuilder $container)
 {
+  // Commented out for now, as we are using CiviRules instead.
   // This can be removed once we move service definitions to YAML.
-  if (function_exists('xdebug_break')) {
-    xdebug_break();
-  }
-  // Register CaseEventListener
- $container->register('mascode.case_event_listener', \Civi\Mascode\Event\CaseEventListener::class)
-    ->setPublic(true)
-    ->addTag('event_subscriber');
+  // Register AfformPrefillSubscriber
+  // $container->register('mascode.afform_prefill_subscriber', \Civi\Mascode\Event\AfformPrefillSubscriber::class)
+  //   ->setPublic(true)
+  //   ->addTag('event_subscriber');
 
-  // Register CaseAccessValidator
-  $container->register('mascode.case_access_validator', \Civi\Mascode\Event\CaseAccessValidator::class)
-    ->setPublic(true)
-    ->addTag('event_subscriber');
+  // Register CasePostSubscriber
+  // $container->register('mascode.case_post_subscriber', \Civi\Mascode\Event\CasePostSubscriber::class)
+  //   ->setPublic(true)
+  //   ->addTag('event_subscriber');
 
-  // Register FormPrefillSubscriber
-  $container->register('mascode.form_prefill_subscriber', \Civi\Mascode\Event\FormPrefillSubscriber::class)
-    ->setPublic(true)
-    ->addTag('event_subscriber');
-  
   // other services like form actions may need to wait until the container is built
   $container->addCompilerPass(new CompilerPass());
 
@@ -68,6 +61,9 @@ function mascode_civicrm_install(): void
   _mascode_civix_civicrm_install();
 
   \Civi\Mascode\Hook\InstallHook::handle();
+
+  // Apply patches
+  \Civi\Mascode\Patches\GenericHookEventPatch::apply();
 }
 
 /**
@@ -78,6 +74,9 @@ function mascode_civicrm_install(): void
 function mascode_civicrm_enable(): void
 {
   _mascode_civix_civicrm_enable();
+
+  // Apply patches
+  \Civi\Mascode\Patches\GenericHookEventPatch::apply();
 }
 
 // Need to handle caseSummary as a traditional hook for now as it is expecting a return value

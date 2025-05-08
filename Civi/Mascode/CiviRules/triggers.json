@@ -1,10 +1,18 @@
 [
     {
-        "name": "mailingevent_unsubscribe",
-        "label": "MailingEvent is Unsubscribed from",
-        "object_name": "MailingEvent/Unsubscribe",
-        "op": "create",
+        "name": "unsubscribe_mailingevent",
+        "label": "mas: MailingEvent is Unsubscribed from",
+        "object_name": null,
+        "op": null,
         "class_name": "Civi\\Mascode\\CiviRules\\Trigger\\MailingUnsubscribe",
+        "cron": "0"
+    },
+    {
+        "name": "new_case", 
+        "label": "mas: Case is created",
+        "object_name": "Case",
+        "op": "create",
+        "class_name": "CRM_CivirulesPostTrigger_Case",
         "cron": "0"
     }
 ]

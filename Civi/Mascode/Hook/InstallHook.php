@@ -1,4 +1,5 @@
 <?php
+// file: Civi/Mascode/Hook/InstallHook.php
 
 /**
  * Install CiviRules triggers, actions, & conditions.
@@ -7,17 +8,15 @@
 
 namespace Civi\Mascode\Hook;
 
-use CRM_Civirules_Utils_Upgrader;
-
 class InstallHook
 {
   public static function handle(): void
   {
     self::createOptionGroupAndValues();
     // self::registerCiviRuleAction();
-    CRM_Civirules_Utils_Upgrader::insertTriggersFromJson('../CiviRules/triggers.json');
-    CRM_Civirules_Utils_Upgrader::insertActionsFromJson('../CiviRules/actions.json');
-    CRM_Civirules_Utils_Upgrader::insertConditionsFromJson('../CiviRules/conditions.json');
+    \CRM_Civirules_Utils_Upgrader::insertTriggersFromJson('../CiviRules/triggers.json');
+    \CRM_Civirules_Utils_Upgrader::insertActionsFromJson('../CiviRules/actions.json');
+    \CRM_Civirules_Utils_Upgrader::insertConditionsFromJson('../CiviRules/conditions.json');
   }
   private static function createOptionGroupAndValues(): void
   {

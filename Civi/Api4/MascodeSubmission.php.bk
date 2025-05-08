@@ -9,5 +9,5 @@ namespace Civi\Api4;
  * @package Civi\Api4
  */
 class MascodeSubmission extends Generic\DAOEntity {
-    protected string $daoClass = \CRM_Mascode_DAO_MascodeSubmission::class;
+//    protected string $daoClass = \CRM_Mascode_DAO_MascodeSubmission::class;
 }

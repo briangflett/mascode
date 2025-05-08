@@ -5,8 +5,8 @@
         "class_name": "Civi\\Mascode\\CiviRules\\Action\\ServiceRequestToProject"
     },
     {
-        "name": "mas_example_civirules_action",
-        "label": "mas: Example CiviRules Action",
-        "class_name": "Civi\\Mascode\\CiviRules\\Action\\ExampleCiviRulesAction"
+        "name": "mas_generate_mas_code",
+        "label": "mas: Generate MAS Code for service request or project",
+        "class_name": "Civi\\Mascode\\CiviRules\\Action\\GenerateMasCode"
     }
 ]
