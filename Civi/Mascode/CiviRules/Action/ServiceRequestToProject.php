@@ -5,6 +5,8 @@ namespace Civi\Mascode\CiviRules\Action;
 
 use Civi\Mascode\Util\CodeGenerator;
 
+use function ElementorProDeps\DI\get;
+
 class ServiceRequestToProject extends \CRM_Civirules_Action
 {
 
@@ -22,21 +24,16 @@ class ServiceRequestToProject extends \CRM_Civirules_Action
 
         // I had lots of issues with forms, so I am hard coding the action parameters.
         // $actionParameters = $this->getActionParameters();
-        $adminContact = \Civi\Api4\Contact::get(TRUE)
-            ->addSelect('id')
-            ->addWhere('contact_sub_type', '=', 'MAS_Rep')
-            ->addWhere('email_primary.email', '=', 'info@masadvise.org')
-            ->execute()
-            ->first();
-        $adminId = $adminContact['id'] ?? null;
+        $adminId = \Civi::settings(get('mascode_admin_contact_id')) ?? null;
 
         // Log the $srCase and $adminId using Civi::log
         \Civi::log()->info('Service Request Case Data:', ['srCase' => $srCase]);
         \Civi::log()->info('Admin Contact ID:', ['adminId' => $adminId]);
 
-        if (empty($srCaseId)) {
-            throw new \Exception("Service Request ID missing.");
+        if (empty($srCaseId) || empty($adminId)) {
+            throw new \Exception("Service Request ID or Admin Contact ID missing.");
         }
+
         // CiviCase already...
         // Checked if it is a case of type service request
         // Checked if the status has changed to "Project Created"
@@ -101,7 +98,7 @@ class ServiceRequestToProject extends \CRM_Civirules_Action
         if (empty($pCaseId)) {
             throw new \Exception("Project case creation failed.");
         }
-        
+
         // Update the service request
         $civiCase = \Civi\Api4\CiviCase::update(TRUE)
             ->addValue('Cases_SR_Projects_.Related_Project_Case_Code', $pCaseCode)
@@ -111,7 +108,7 @@ class ServiceRequestToProject extends \CRM_Civirules_Action
         // Create a Link Cases activity, and link it to one case
         $civiActivity = \Civi\Api4\Activity::create(TRUE)
             ->addValue('activity_type_id:label', 'Link Cases')
-            ->addValue('source_contact_id', $adminContactId)
+            ->addValue('source_contact_id', $adminId)
             ->addValue('target_contact_id', [
                 $clientContactId,
             ])
@@ -124,11 +121,30 @@ class ServiceRequestToProject extends \CRM_Civirules_Action
 
         // Then link the activity to the other case
         $civiCaseActivity = \Civi\Api4\CaseActivity::create(TRUE)
-            ->addValue('case_id', $srCaseid)
+            ->addValue('case_id', $srCaseId)
             ->addValue('activity_id', $activity_id)
             ->execute();
-    }
 
+        // Set the project client rep to the service request client rep
+        if ($clientRepContactId) {
+            try {
+                $civiRelationship = \Civi\Api4\Relationship::create(TRUE)
+                    ->addValue('contact_id_a', $clientRepContactId)     // client rep
+                    ->addValue('contact_id_b', $clientContactId)     // client
+                    ->addValue('relationship_type_id:label', 'Case Client Rep is')
+                    ->addValue('is_active', TRUE)  // depends on project
+                    ->addValue('case_id', $pCaseId)
+                    ->execute();
+            } catch (\Exception $e) {
+                // Handle duplicate error or log the message
+                \Civi::log()->error("Error creating Client relationship: " . $e->getMessage() . " for Case:$pCaseId Client:$clientContactId Client Rep:$clientRepContactId<br>");
+            }
+        }
+
+        // Not sure if we should set the project case coordinator to the service request case coordinator (MAS Rep)
+        if ($coordinatorContactId) {
+        }
+    }
     /**
      * Provide an extra data input URL if needed for this action
      *
@@ -157,8 +173,8 @@ class ServiceRequestToProject extends \CRM_Civirules_Action
      */
     public function userFriendlyConditionParams()
     {
-        $params = $this->getActionParameters();
-        $label = ts('Set MAS administrator to: ' . $params['mas_admin']);
+        // $params = $this->getActionParameters();
+        $label = ts('Set MAS administrator to ID: ' . \Civi::settings(get('mascode_admin_contact_id')));
         return $label;
     }
 }

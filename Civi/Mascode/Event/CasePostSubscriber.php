@@ -1,6 +1,9 @@
 <?php
 // File: Civi/Mascode/Event/CasePostSubscriber.php
 
+// This is never executed, but is here for reference.
+// I am now using CiviRules for this.
+
 namespace Civi\Mascode\Event;
 
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;

@@ -5,6 +5,7 @@
  * config, install, and enable happen before the container is built, so I need to use the traditional hooks.
  * caseSummary is expecting a return value, so I need to use the traditional hook.
  */
+
 require_once 'mascode.civix.php';
 
 // Load Composer autoload if it exists
@@ -22,13 +23,13 @@ use Civi\Mascode\CompilerPass;
  */
 function mascode_civicrm_container(ContainerBuilder $container)
 {
-  // Commented out for now, as we are using CiviRules instead.
   // This can be removed once we move service definitions to YAML.
   // Register AfformPrefillSubscriber
   // $container->register('mascode.afform_prefill_subscriber', \Civi\Mascode\Event\AfformPrefillSubscriber::class)
   //   ->setPublic(true)
   //   ->addTag('event_subscriber');
 
+  // Commented out for now, as we are using CiviRules instead.
   // Register CasePostSubscriber
   // $container->register('mascode.case_post_subscriber', \Civi\Mascode\Event\CasePostSubscriber::class)
   //   ->setPublic(true)
@@ -59,11 +60,29 @@ function mascode_civicrm_config(&$config)
 function mascode_civicrm_install(): void
 {
   _mascode_civix_civicrm_install();
+}
 
-  \Civi\Mascode\Hook\InstallHook::handle();
-
+/**
+ * Implements hook_civicrm_postInstall().
+ */
+function mascode_civicrm_postInstall() {
+  \Civi\Mascode\Hook\PostInstallOrUpgradeHook::handle();
   // Apply patches
   \Civi\Mascode\Patches\GenericHookEventPatch::apply();
+}
+
+/**
+ * Implements hook_civicrm_postUpgrade().
+ */
+function mascode_civicrm_postUpgrade($op, $queue) {
+  if ($op == 'check') {
+    return TRUE;
+  }
+  elseif ($op == 'finish') {
+    \Civi\Mascode\Hook\PostInstallOrUpgradeHook::handle();
+    // Apply patches
+    \Civi\Mascode\Patches\GenericHookEventPatch::apply();
+  }
 }
 
 /**
