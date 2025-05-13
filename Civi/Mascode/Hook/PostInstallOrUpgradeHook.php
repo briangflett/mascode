@@ -12,7 +12,7 @@ class PostInstallOrUpgradeHook
 {
   public static function handle(): void
   {
-    self::createMascodSettings();
+    self::createMascodeSettings();
     \CRM_Civirules_Utils_Upgrader::insertTriggersFromJson('../CiviRules/triggers.json');
     \CRM_Civirules_Utils_Upgrader::insertActionsFromJson('../CiviRules/actions.json');
     \CRM_Civirules_Utils_Upgrader::insertConditionsFromJson('../CiviRules/conditions.json');

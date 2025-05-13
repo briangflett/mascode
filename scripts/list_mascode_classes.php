@@ -81,31 +81,72 @@ echo "\nMethod 4: Check class autoloader paths\n";
 echo "==================================\n";
 
 if (class_exists('Civi')) {
-    echo "Checking Civi::$classLoader path mappings:\n";
+    echo "Checking CiviCRM autoloader information:\n";
     
-    // Get CiviCRM's class loader
-    $loader = \Civi::$classLoader;
-    
-    if ($loader) {
-        // Check PSR-4 prefixes
-        $prefixes = $loader->getPrefixesPsr4();
-        echo "PSR-4 Prefixes:\n";
-        foreach ($prefixes as $prefix => $paths) {
-            if (strpos($prefix, 'Civi\\') === 0) {
-                echo "  $prefix => " . implode(', ', $paths) . "\n";
+    try {
+        // Use reflection to find information about the Civi class
+        $reflection = new ReflectionClass('Civi');
+        echo "  Civi class is defined in: " . $reflection->getFileName() . "\n";
+        
+        // Get autoloader information from Composer's registered autoloaders
+        $autoloaders = spl_autoload_functions();
+        echo "  Found " . count($autoloaders) . " registered autoloaders\n";
+        
+        $composerLoaders = [];
+        foreach ($autoloaders as $idx => $autoloader) {
+            if (is_array($autoloader) && 
+                isset($autoloader[0]) && 
+                is_object($autoloader[0]) && 
+                $autoloader[0] instanceof \Composer\Autoload\ClassLoader) {
+                
+                $composerLoaders[] = $autoloader[0];
+                echo "  Found Composer ClassLoader #" . count($composerLoaders) . "\n";
+                
+                // Check if this loader has Civi namespaces
+                $prefixes = $autoloader[0]->getPrefixesPsr4();
+                $civiPrefixes = [];
+                foreach ($prefixes as $prefix => $paths) {
+                    if (strpos($prefix, 'Civi\\') === 0) {
+                        $civiPrefixes[$prefix] = $paths;
+                    }
+                }
+                
+                if (!empty($civiPrefixes)) {
+                    echo "  ClassLoader #" . count($composerLoaders) . " contains Civi namespaces:\n";
+                    foreach ($civiPrefixes as $prefix => $paths) {
+                        echo "    $prefix => " . implode(', ', $paths) . "\n";
+                    }
+                }
             }
         }
         
-        // Check PSR-0 prefixes
-        $prefixes = $loader->getPrefixes();
-        echo "\nPSR-0 Prefixes:\n";
-        foreach ($prefixes as $prefix => $paths) {
-            if (strpos($prefix, 'Civi\\') === 0) {
-                echo "  $prefix => " . implode(', ', $paths) . "\n";
+        if (empty($composerLoaders)) {
+            echo "  No Composer ClassLoader instances found in autoloaders\n";
+        }
+        
+        // Try alternate method - check if Container can provide loader info
+        if (method_exists('Civi', 'container') && \Civi::container()->has('civi_container_factory')) {
+            echo "  Checking Container for class loading information...\n";
+            $containerFactory = \Civi::container()->get('civi_container_factory');
+            if (method_exists($containerFactory, 'getClassLoader')) {
+                echo "  Container factory has getClassLoader method\n";
             }
         }
-    } else {
-        echo "Could not access CiviCRM's class loader.\n";
+        
+        // Get extension directories as another reference point
+        $extensionSystem = \CRM_Extension_System::singleton();
+        $extensionMapper = $extensionSystem->getMapper();
+        $extensionDirs = $extensionMapper->getActiveModuleFiles();
+        
+        echo "  Active extension directories:\n";
+        foreach ($extensionDirs as $key => $path) {
+            if (strpos($key, 'mascode') !== false) {
+                echo "    $key => $path\n";
+            }
+        }
+        
+    } catch (Throwable $e) {
+        echo "  Error inspecting autoloader: " . $e->getMessage() . "\n";
     }
 } else {
     echo "Civi class not available.\n";

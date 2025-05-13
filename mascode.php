@@ -67,8 +67,6 @@ function mascode_civicrm_install(): void
  */
 function mascode_civicrm_postInstall() {
   \Civi\Mascode\Hook\PostInstallOrUpgradeHook::handle();
-  // Apply patches
-  \Civi\Mascode\Patches\GenericHookEventPatch::apply();
 }
 
 /**
@@ -80,8 +78,6 @@ function mascode_civicrm_postUpgrade($op, $queue) {
   }
   elseif ($op == 'finish') {
     \Civi\Mascode\Hook\PostInstallOrUpgradeHook::handle();
-    // Apply patches
-    \Civi\Mascode\Patches\GenericHookEventPatch::apply();
   }
 }
 
@@ -93,9 +89,6 @@ function mascode_civicrm_postUpgrade($op, $queue) {
 function mascode_civicrm_enable(): void
 {
   _mascode_civix_civicrm_enable();
-
-  // Apply patches
-  \Civi\Mascode\Patches\GenericHookEventPatch::apply();
 }
 
 // Need to handle caseSummary as a traditional hook for now as it is expecting a return value
