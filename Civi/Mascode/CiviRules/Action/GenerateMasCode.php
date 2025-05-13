@@ -32,16 +32,27 @@ class GenerateMasCode extends \CRM_Civirules_Action
         if ($caseType == 'service_request') {
             $fieldId = CodeGenerator::getFieldId('Cases_SR_Projects_', 'MAS_SR_Case_Code');
 
-            // Generate the MAS code
-            $masCode = CodeGenerator::generate($caseType);
-            
-            // Update the case with the MAS Code
-            if ($fieldId) {
-                \Civi\Api4\CiviCase::update()
-                    ->addValue('id', $case['id'])
-                    ->addValue("custom_{$fieldId}", $masCode)
-                    ->execute();
+            // Check if the MAS SR code already exists
+            $masSrCaseCode = \Civi\Api4\CiviCase::get()
+                ->addSelect("custom_{$fieldId}")
+                ->addWhere('id', '=', $caseId)
+                ->execute()
+                ->first()["custom_{$fieldId}"] ?? null;
+
+            // If the MAS SR code is empty, generate a new one
+            if (empty($masSrCaseCode)) {
+                // Generate the MAS code
+                $masCode = CodeGenerator::generate($caseType);
+                
+                // Update the case with the MAS Code
+                if ($fieldId) {
+                    $result = \Civi\Api4\CiviCase::update()
+                        ->addValue('id', $case['id'])
+                        ->addValue("custom_{$fieldId}", $masCode)
+                        ->execute();
+                }
             }
+
         } else {
 
             if ($caseType ==  'project') {
@@ -61,7 +72,7 @@ class GenerateMasCode extends \CRM_Civirules_Action
                     
                     // Update the case with the MAS Code
                     if ($fieldId) {
-                        \Civi\Api4\CiviCase::update()
+                        $result = \Civi\Api4\CiviCase::update()
                             ->addValue('id', $case['id'])
                             ->addValue("custom_{$fieldId}", $masCode)
                             ->execute();

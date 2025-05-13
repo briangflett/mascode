@@ -17,7 +17,6 @@ class CaseSummaryHook
      */
     public static function handle($caseId): array
     {
-        xdebug_break();
         if (empty($caseId)) {
             return [];
         }
