@@ -18,13 +18,23 @@ class ServiceRequestToProject extends \CRM_Civirules_Action
      */
     public function processAction(\CRM_Civirules_TriggerData_TriggerData $triggerData)
     {
-        // Retrieve the entity data and the action parameters if applicable
+        // Retrieve the entity data
         $srCase = $triggerData->getEntityData('Case');
         $srCaseId = $srCase['id'];
-
+        $pCaseCode =  \Civi\Api4\CiviCase::get(TRUE)
+            ->addSelect('Cases_SR_Projects_.Related_Project_Case_Code')
+            ->addWhere('id', '=', $srCaseId)  
+            ->execute()
+            ->first()['Cases_SR_Projects_.Related_Project_Case_Code'] ?? null;
+        
+        // If already triggered, return
+        if (!empty($pCaseCode)) {
+            return;
+        }
+    
         // I had lots of issues with forms, so I am hard coding the action parameters.
         // $actionParameters = $this->getActionParameters();
-        $adminId = \Civi::settings(get('mascode_admin_contact_id')) ?? null;
+        $adminId = \Civi::settings()->get('mascode_admin_contact_id') ?? null;
 
         // Log the $srCase and $adminId using Civi::log
         \Civi::log()->info('Service Request Case Data:', ['srCase' => $srCase]);
@@ -60,7 +70,7 @@ class ServiceRequestToProject extends \CRM_Civirules_Action
                 } elseif ($contact['role'] === 'Case Coordinator for' && !$coordinatorContactId) {
                     $coordinatorContactId = $contact['contact_id'] ?? null;
                 } elseif ($contact['role'] === 'Case Client Rep for' && !$clientRepContactId) {
-                    $coordinatorContactId = $contact['contact_id'] ?? null;
+                    $clientRepContactId = $contact['contact_id'] ?? null;
                 }
                 // Break the loop if we've found all three contacts
                 if ($clientContactId && $coordinatorContactId && $clientRepContactId) {
