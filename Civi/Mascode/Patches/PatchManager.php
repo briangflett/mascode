@@ -74,8 +74,8 @@ class PatchManager {
         ];
       }
       
-      // Apply the patch using git apply
-      return self::applyPatchWithGit($patchFile, $civiRoot);
+      // Apply the patch using patch command
+      return self::applyPatchWithPatchCommand($patchFile, $civiRoot);
     } 
     catch (\Exception $e) {
       \Civi::log()->error('Cannot apply patch ' . basename($patchFile) . ': ' . $e->getMessage());
@@ -103,15 +103,15 @@ class PatchManager {
       return FALSE;
     }
     
-    // Parse the patch and find new files being created
-    $newFiles = [];
+    // Parse the patch and find files being modified
+    $modifiedFiles = [];
     if (preg_match_all('/\+\+\+ b\/(.+)\n/m', $patchContent, $matches)) {
-      $newFiles = $matches[1];
+      $modifiedFiles = $matches[1];
     }
     
-    // For each new file in the patch, check if it exists
-    foreach ($newFiles as $newFile) {
-      $fullPath = $targetDir . '/' . $newFile;
+    // For each file in the patch, check if it exists and has the changes
+    foreach ($modifiedFiles as $modifiedFile) {
+      $fullPath = $targetDir . '/' . $modifiedFile;
       
       // If the file doesn't exist, the patch hasn't been applied
       if (!file_exists($fullPath)) {
@@ -119,7 +119,6 @@ class PatchManager {
       }
       
       // If the file exists, we need to check file content to make sure it has the changes
-      // For simplicity, we just look for a few unique lines from the patch
       $fileContent = file_get_contents($fullPath);
       if (preg_match_all('/^\+([^+].*)$/m', $patchContent, $addedLines)) {
         // Sample a few added lines from the patch
@@ -138,12 +137,12 @@ class PatchManager {
     if (preg_match_all('/^\+\s*(private|protected|public|function|class)\s+(\w+)/m', $patchContent, $newFunctions)) {
       foreach ($newFunctions[2] as $i => $newFunction) {
         // Find the target file for this function
-        if (empty($newFiles)) {
+        if (empty($modifiedFiles)) {
           continue;
         }
         
         // Just check the first file - this is a simplification
-        $fullPath = $targetDir . '/' . $newFiles[0];
+        $fullPath = $targetDir . '/' . $modifiedFiles[0];
         if (!file_exists($fullPath)) {
           return FALSE;
         }
@@ -160,46 +159,62 @@ class PatchManager {
   }
   
   /**
-   * Apply a patch file using the git apply command
+   * Apply a patch file using the standard UNIX patch command
    *
    * @param string $patchFile
    *   Full path to the patch file
    * @param string $targetDir
    *   Directory to apply the patch to (usually CiviCRM root)
+   * @param int $stripPrefix
+   *   Number of path components to strip from patch paths (default: 1)
    * @return array
    *   Result of the patch operation
    */
-  // Add an optional parameter for path prefix stripping
-  protected static function applyPatchWithGit($patchFile, $targetDir, $stripPrefix = 1) {
+  protected static function applyPatchWithPatchCommand($patchFile, $targetDir, $stripPrefix = 1) {
     $patchFilename = basename($patchFile);
     
-    // Check if patch would apply cleanly
-    $command = "cd " . escapeshellarg($targetDir) . " && git apply -p{$stripPrefix} --check " . 
+    // First, use --dry-run to check if the patch would apply cleanly
+    $command = "cd " . escapeshellarg($targetDir) . " && patch -p{$stripPrefix} --dry-run < " . 
         escapeshellarg($patchFile) . " 2>&1";
     $checkResult = shell_exec($command);
     
-    if (!empty($checkResult)) {
+    // Check for failure in the dry run
+    if (strpos($checkResult, 'FAILED') !== FALSE) {
         return [
             'success' => FALSE,
-            'message' => "Patch $patchFilename check failed: $checkResult",
+            'message' => "Patch $patchFilename check failed: " . trim($checkResult),
         ];
     }
     
-    // Apply the patch
-    $command = "cd " . escapeshellarg($targetDir) . " && git apply -p{$stripPrefix} " . 
+    // Apply the patch for real
+    $command = "cd " . escapeshellarg($targetDir) . " && patch -p{$stripPrefix} < " . 
         escapeshellarg($patchFile) . " 2>&1";
     $applyResult = shell_exec($command);
     
+    // Check for failure in the actual application
+    $success = strpos($applyResult, 'FAILED') === FALSE;
+    
     return [
-        'success' => empty($applyResult),
-        'message' => empty($applyResult) 
-            ? "Patch $patchFilename applied successfully" 
-            : "Patch $patchFilename application failed: $applyResult",
+        'success' => $success,
+        'message' => $success
+            ? "Patch $patchFilename applied successfully"
+            : "Patch $patchFilename application failed: " . trim($applyResult),
     ];
   }
 
   /**
-   * Check if git is available
+   * Check if the patch command is available
+   *
+   * @return bool
+   *   TRUE if patch is available
+   */
+  public static function isPatchAvailable() {
+    exec('patch --version 2>&1', $output, $returnCode);
+    return $returnCode === 0;
+  }
+  
+  /**
+   * Check if git is available (for backward compatibility)
    *
    * @return bool
    *   TRUE if git is available
