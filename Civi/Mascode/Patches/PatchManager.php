@@ -17,9 +17,6 @@ class PatchManager {
   public static function applyAll() {
     $results = [];
     
-    // Apply the GenericHookEvent patch using the existing class
-    $results['GenericHookEvent'] = GenericHookEventPatch::apply();
-    
     // Apply all patches in the files directory
     $patchFiles = self::getAvailablePatches();
     foreach ($patchFiles as $patchFile) {
