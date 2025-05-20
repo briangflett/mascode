@@ -172,32 +172,35 @@ class PatchManager {
    * @return array
    *   Result of the patch operation
    */
-  protected static function applyPatchWithGit($patchFile, $targetDir) {
+  // Add an optional parameter for path prefix stripping
+  protected static function applyPatchWithGit($patchFile, $targetDir, $stripPrefix = 1) {
     $patchFilename = basename($patchFile);
     
-    // First check if the patch would apply cleanly
-    $command = "cd " . escapeshellarg($targetDir) . " && git apply --check " . escapeshellarg($patchFile) . " 2>&1";
+    // Check if patch would apply cleanly
+    $command = "cd " . escapeshellarg($targetDir) . " && git apply -p{$stripPrefix} --check " . 
+        escapeshellarg($patchFile) . " 2>&1";
     $checkResult = shell_exec($command);
     
     if (!empty($checkResult)) {
-      return [
-        'success' => FALSE,
-        'message' => "Patch $patchFilename check failed: $checkResult",
-      ];
+        return [
+            'success' => FALSE,
+            'message' => "Patch $patchFilename check failed: $checkResult",
+        ];
     }
     
-    // If the check passed, apply the patch
-    $command = "cd " . escapeshellarg($targetDir) . " && git apply " . escapeshellarg($patchFile) . " 2>&1";
+    // Apply the patch
+    $command = "cd " . escapeshellarg($targetDir) . " && git apply -p{$stripPrefix} " . 
+        escapeshellarg($patchFile) . " 2>&1";
     $applyResult = shell_exec($command);
     
     return [
-      'success' => empty($applyResult),
-      'message' => empty($applyResult) 
-        ? "Patch $patchFilename applied successfully" 
-        : "Patch $patchFilename application failed: $applyResult",
+        'success' => empty($applyResult),
+        'message' => empty($applyResult) 
+            ? "Patch $patchFilename applied successfully" 
+            : "Patch $patchFilename application failed: $applyResult",
     ];
   }
-  
+
   /**
    * Check if git is available
    *
