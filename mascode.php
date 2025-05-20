@@ -25,9 +25,9 @@ function mascode_civicrm_container(ContainerBuilder $container)
 {
   // This can be removed once we move service definitions to YAML.
   // Register AfformPrefillSubscriber
-  // $container->register('mascode.afform_prefill_subscriber', \Civi\Mascode\Event\AfformPrefillSubscriber::class)
-  //   ->setPublic(true)
-  //   ->addTag('event_subscriber');
+  $container->register('mascode.afform_prefill_subscriber', \Civi\Mascode\Event\AfformPrefillSubscriber::class)
+    ->setPublic(true)
+    ->addTag('event_subscriber');
 
   // Commented out for now, as we are using CiviRules instead.
   // Register CasePostSubscriber
@@ -65,18 +65,19 @@ function mascode_civicrm_install(): void
 /**
  * Implements hook_civicrm_postInstall().
  */
-function mascode_civicrm_postInstall() {
+function mascode_civicrm_postInstall()
+{
   \Civi\Mascode\Hook\PostInstallOrUpgradeHook::handle();
 }
 
 /**
  * Implements hook_civicrm_postUpgrade().
  */
-function mascode_civicrm_postUpgrade($op, $queue) {
+function mascode_civicrm_postUpgrade($op, $queue)
+{
   if ($op == 'check') {
     return TRUE;
-  }
-  elseif ($op == 'finish') {
+  } elseif ($op == 'finish') {
     \Civi\Mascode\Hook\PostInstallOrUpgradeHook::handle();
   }
 }

@@ -4,9 +4,12 @@
 /**
  * Install mascode settings.
  * Install CiviRules triggers, actions, & conditions.
+ * Apply patches to CiviCRM core.
  */
 
 namespace Civi\Mascode\Hook;
+
+use Civi\Mascode\Patches\PatchManager;
 
 class PostInstallOrUpgradeHook
 {
@@ -16,7 +19,11 @@ class PostInstallOrUpgradeHook
     \CRM_Civirules_Utils_Upgrader::insertTriggersFromJson('../CiviRules/triggers.json');
     \CRM_Civirules_Utils_Upgrader::insertActionsFromJson('../CiviRules/actions.json');
     \CRM_Civirules_Utils_Upgrader::insertConditionsFromJson('../CiviRules/conditions.json');
+    
+    // Apply patches
+    self::applyPatches();
   }
+  
   /**
    * Create settings for code generation
    */
@@ -40,5 +47,19 @@ class PostInstallOrUpgradeHook
     }
       // Don't initialize mascode_last_project or mascode_last_service_request
       // CodeGenerator::generate() will create them if they don't exist
+  }
+  
+  /**
+   * Apply patches to CiviCRM core
+   */
+  private static function applyPatches(): void
+  {
+    $results = PatchManager::applyAll();
+    
+    foreach ($results as $patchName => $result) {
+      $status = $result['success'] ? 'SUCCESS' : 'FAILED';
+      $message = $result['message'] ?? '';
+      \Civi::log()->info("Patch {$patchName}: {$status} - {$message}");
+    }
   }
 }
