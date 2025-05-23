@@ -1,0 +1,10 @@
+{
+    "type": "form",
+    "title": "MAS RCS Form",
+    "description": "MAS Request for Consulting Assistance form.",
+    "is_public": true,
+    "create_submission": true,
+    "permission": [
+        "*always allow*"
+    ]
+}
