@@ -34,15 +34,45 @@ class AfformPrefillSubscriber implements EventSubscriberInterface
 
     /**
      * Pre-fill form data before display
+     * Gets triggered once for each entity in the form.
      *
      * @param \Civi\Afform\Event\AfformPrefillEvent $event
+     *   Event object with the following methods:
+     *   - getAfform(): array - Returns the form definition
+     *   - getFormDataModel(): \Civi\Afform\FormDataModel - Returns the form data model
+     *   - getApiRequest(): \Civi\Api4\Action\Afform\Prefill - Returns the API request object
+     *   - getEntityType(): string - Returns the entity type (e.g., 'Case', 'Contact')
+     *   - getEntityName(): string - Returns the entity name within the form
+     *   - getSecureApi4(): \Civi\Api4\Generic\AbstractAction - Returns a secure API4 object
+     *   - getEntity(): array - Returns the entity definition
+     *   - getEntityId(): ?int - Returns the entity ID if available
      */
     public function onFormPrefill(AfformPrefillEvent $event): void
     {
-        $formName = $event->getFormName();
+        // in the docs
+        $afform = $event->getAfform();
+        $formDataModel = $event->getFormDataModel();
+        $apiRequest = $event->getApiRequest();
+        $entityType = $event->getEntityType();
+        $entityName = $event->getEntityName();
+        $secureApi4 = $event->getSecureApi4();
+
+        // others
+        $entity = $event->getEntity();
+        $entityId = $event->getEntityId();
+        $entityIds = $event->getEntityIds();
+
+        // $organizationForCase = $event->getOrganizationForCase();
+
+        $formRoute = $afform['server_route'] ?? NULL;
+        \Civi::log()->debug('FormPrefillSubscriber: Form Server Route: {formRoute}, Entity: {entity}, ID: {entityId}', [
+            'formRoute' => $formRoute,
+            'entity' => $entity,
+            'entityId' => $entityId,
+        ]);
 
         // Check if this is our target form
-        if ($formName === 'mas_anonymous_case_form') {
+        if ($formRoute === 'civicrm/mas-request-for-assistance-core') {
             $this->prefillAnonymousCaseForm($event);
         }
     }
@@ -51,41 +81,51 @@ class AfformPrefillSubscriber implements EventSubscriberInterface
      * Prepopulate fields for anonymous case form with authorization check
      *
      * @param \Civi\Afform\Event\AfformPrefillEvent $event
+     *   Event object with the following methods:
+     *   - getAfform(): array - Returns the form definition
+     *   - getFormDataModel(): \Civi\Afform\FormDataModel - Returns the form data model
+     *   - getApiRequest(): \Civi\Api4\Action\Afform\Prefill - Returns the API request object
+     *   - getEntityType(): string - Returns the entity type (e.g., 'Case', 'Contact')
+     *   - getEntityName(): string - Returns the entity name within the form
+     *   - getSecureApi4(): \Civi\Api4\Generic\AbstractAction - Returns a secure API4 object
+     *   - getEntity(): array - Returns the entity definition
+     *   - getEntityId(): ?int - Returns the entity ID if available
+     * 
      */
     protected function prefillAnonymousCaseForm(AfformPrefillEvent $event): void
     {
-        try {
-            $data = $event->getData();
+        // try {
+        //     $data = $event->getData();
 
-            // Get URL parameters - this could be how you identify the case and validate access
-            $checksum = $_GET['cs'] ?? NULL;
-            $contactId = $_GET['cid'] ?? NULL;
-            $caseId = $_GET['caseid'] ?? NULL;
+        //     // Get URL parameters - this could be how you identify the case and validate access
+        //     $checksum = $_GET['cs'] ?? NULL;
+        //     $contactId = $_GET['cid'] ?? NULL;
+        //     $caseId = $_GET['caseid'] ?? NULL;
 
-            // Check if this is a valid anonymous access request
-            if (!$this->validateAnonymousAccess($contactId, $checksum, $caseId)) {
-                $data['access_denied'] = TRUE;
-                $event->setData($data);
-                return;
-            }
+        //     // Check if this is a valid anonymous access request
+        //     if (!$this->validateAnonymousAccess($contactId, $checksum, $caseId)) {
+        //         $data['access_denied'] = TRUE;
+        //         $event->setData($data);
+        //         return;
+        //     }
 
-            // If we get here, access is validated
-            $data = $this->loadOrganizationData($data, $caseId);
-            $data = $this->loadIndividualData($data, $contactId);
-            $data = $this->loadCaseData($data, $caseId);
+        //     // If we get here, access is validated
+        //     $data = $this->loadOrganizationData($data, $caseId);
+        //     $data = $this->loadIndividualData($data, $contactId);
+        //     $data = $this->loadCaseData($data, $caseId);
 
-            $event->setData($data);
-        } catch (\Exception $e) {
-            \Civi::log()->error('Error in FormPrefillSubscriber::prefillAnonymousCaseForm: {message}', [
-                'message' => $e->getMessage(),
-                'exception' => $e,
-            ]);
-            
-            // Set error state in form data
-            $data = $event->getData();
-            $data['error_occurred'] = TRUE;
-            $event->setData($data);
-        }
+        //     $event->setData($data);
+        // } catch (\Exception $e) {
+        //     \Civi::log()->error('Error in FormPrefillSubscriber::prefillAnonymousCaseForm: {message}', [
+        //         'message' => $e->getMessage(),
+        //         'exception' => $e,
+        //     ]);
+
+        //     // Set error state in form data
+        //     $data = $event->getData();
+        //     $data['error_occurred'] = TRUE;
+        //     $event->setData($data);
+        // }
     }
 
     /**
@@ -113,7 +153,7 @@ class AfformPrefillSubscriber implements EventSubscriberInterface
                 'exception' => $e,
             ]);
         }
-        
+
         return $data;
     }
 
@@ -151,7 +191,7 @@ class AfformPrefillSubscriber implements EventSubscriberInterface
                 'exception' => $e,
             ]);
         }
-        
+
         return $data;
     }
 
@@ -188,7 +228,7 @@ class AfformPrefillSubscriber implements EventSubscriberInterface
                 'exception' => $e,
             ]);
         }
-        
+
         return $data;
     }
 

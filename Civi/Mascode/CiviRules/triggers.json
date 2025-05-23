@@ -1,6 +1,6 @@
 [
     {
-        "name": "unsubscribe_mailingevent",
+        "name": "mas_unsubscribe_mailingevent",
         "label": "mas: MailingEvent is Unsubscribed from",
         "object_name": null,
         "op": null,
@@ -8,7 +8,7 @@
         "cron": "0"
     },
     {
-        "name": "new_case", 
+        "name": "mas_new_case", 
         "label": "mas: Case is created",
         "object_name": "Case",
         "op": "create",

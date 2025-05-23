@@ -23,9 +23,15 @@ use Civi\Mascode\CompilerPass;
  */
 function mascode_civicrm_container(ContainerBuilder $container)
 {
-  // This can be removed once we move service definitions to YAML.
+  // These registrations can be removed once we move service definitions to YAML.
+
   // Register AfformPrefillSubscriber
   $container->register('mascode.afform_prefill_subscriber', \Civi\Mascode\Event\AfformPrefillSubscriber::class)
+    ->setPublic(true)
+    ->addTag('event_subscriber');
+
+  // Register AfformSubmitSubscriber
+  $container->register('mascode.afform_submit_subscriber', \Civi\Mascode\Event\AfformSubmitSubscriber::class)
     ->setPublic(true)
     ->addTag('event_subscriber');
 
