@@ -26,4 +26,4 @@ This is an [extension for CiviCRM](https://docs.civicrm.org/sysadmin/en/latest/c
 
 ## Context (for AI LLM's)
 
-[Context](./CONTEXT.md)
+[Context](./CLAUDE.md)
