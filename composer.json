@@ -1,7 +1,14 @@
 {
     "name": "masadvise/mascode",
-    "description": "MAS custom automation and logic",
+    "description": "MAS custom automation and logic for CiviCRM",
     "type": "civicrm-extension",
+    "license": "AGPL-3.0",
+    "authors": [
+        {
+            "name": "Brian Flett",
+            "email": "brian.flett@masadvise.org"
+        }
+    ],
     "autoload": {
         "psr-0": {
             "CRM_": "."
@@ -10,8 +17,43 @@
             "Civi\\": "Civi/"
         }
     },
+    "autoload-dev": {
+        "psr-4": {
+            "Civi\\Mascode\\Test\\": "tests/"
+        }
+    },
     "require": {
-        "php": ">=7.4"
+        "php": ">=8.1"
+    },
+    "require-dev": {
+        "phpunit/phpunit": "^9.5",
+        "phpstan/phpstan": "^1.0",
+        "squizlabs/php_codesniffer": "^3.7",
+        "mockery/mockery": "^1.5",
+        "civicrm/cv": "^0.3"
+    },
+    "scripts": {
+        "test": "phpunit",
+        "test:unit": "phpunit --testsuite=unit",
+        "test:integration": "phpunit --testsuite=integration",
+        "test:coverage": "phpunit --coverage-html=coverage",
+        "lint": "phpcs --standard=PSR12 Civi/ CRM/",
+        "lint:fix": "phpcbf --standard=PSR12 Civi/ CRM/",
+        "analyze": "phpstan analyse Civi/ CRM/ --level=5",
+        "quality": [
+            "@lint",
+            "@analyze",
+            "@test"
+        ],
+        "ci": [
+            "@quality"
+        ]
+    },
+    "config": {
+        "sort-packages": true,
+        "allow-plugins": {
+            "composer/installers": true
+        }
     },
     "extra": {
         "civicrm": {

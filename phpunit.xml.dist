@@ -1,18 +1,52 @@
-<?xml version="1.0"?>
-<phpunit backupGlobals="false" backupStaticAttributes="false" colors="true" convertErrorsToExceptions="true" convertNoticesToExceptions="true" convertWarningsToExceptions="true" convertDeprecationsToExceptions="true" processIsolation="false" stopOnFailure="false" cacheResult="false" bootstrap="tests/phpunit/bootstrap.php">
-  <testsuites>
-    <testsuite name="My Test Suite">
-      <directory>./tests/phpunit</directory>
-    </testsuite>
-  </testsuites>
-  <filter>
-    <whitelist>
-      <directory suffix=".php">./</directory>
-    </whitelist>
-  </filter>
-  <listeners>
-    <listener class="Civi\Test\CiviTestListener">
-      <arguments/>
-    </listener>
-  </listeners>
+<?xml version="1.0" encoding="UTF-8"?>
+<phpunit xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:noNamespaceSchemaLocation="https://schema.phpunit.de/9.5/phpunit.xsd"
+         bootstrap="tests/bootstrap.php"
+         cacheResultFile=".phpunit.result.cache"
+         executionOrder="depends,defects"
+         forceCoversAnnotation="false"
+         beStrictAboutCoversAnnotation="true"
+         beStrictAboutOutputDuringTests="true"
+         beStrictAboutTodoAnnotatedTests="true"
+         failOnRisky="true"
+         failOnWarning="true"
+         verbose="true"
+         colors="true">
+    <testsuites>
+        <testsuite name="unit">
+            <directory>tests/Unit</directory>
+        </testsuite>
+        <testsuite name="integration">
+            <directory>tests/Integration</directory>
+        </testsuite>
+        <testsuite name="e2e">
+            <directory>tests/E2E</directory>
+        </testsuite>
+    </testsuites>
+
+    <coverage processUncoveredFiles="true">
+        <include>
+            <directory suffix=".php">Civi/</directory>
+            <directory suffix=".php">CRM/</directory>
+        </include>
+        <exclude>
+            <directory>tests/</directory>
+            <directory>vendor/</directory>
+            <file>mascode.civix.php</file>
+        </exclude>
+        <report>
+            <html outputDirectory="coverage-html"/>
+            <text outputFile="coverage.txt"/>
+            <clover outputFile="coverage.xml"/>
+        </report>
+    </coverage>
+
+    <logging>
+        <junit outputFile="junit.xml"/>
+    </logging>
+
+    <php>
+        <env name="CIVICRM_UF" value="UnitTests"/>
+        <env name="CIVICRM_LOGGING_DSN" value=""/>
+    </php>
 </phpunit>

@@ -285,7 +285,37 @@ class AIService {
 
 ## AI Instructions
 
-Please provide links to further resources available on the internet when applicable. Use CiviCRM API4 instead of API3, BAO, DAO, etc whenever possible. Use Symfony EventDispatcher instead of traditional hooks.
+### Development Preferences
+- **API Usage**: Always use CiviCRM API4 instead of API3, BAO, DAO, etc.
+- **Event Handling**: Use Symfony EventDispatcher instead of traditional hooks when possible
+- **Forms**: Use FormBuilder (Afform) instead of traditional Smarty forms
+- **Reports**: Use SearchKit instead of traditional custom reports
+- **Code Style**: Follow PSR-4, use modern PHP features, maintain CiviCRM conventions
+- **Testing**: Write unit tests for business logic, test all changes in development environment
+
+### Common Commands
+```bash
+# Clear CiviCRM cache after changes
+cv flush
+
+# Run development scripts with debugging
+XDEBUG_SESSION=1 cv scr <script-name>
+
+# Check extension status
+cv ext:list | grep mascode
+```
+
+### Documentation Maintenance
+- Update CLAUDE.md for AI assistant instructions
+- Update this CONTEXT.md for architectural changes
+- Update CHANGELOG.md for version changes
+- Regularly update documentation to pass context between conversations
+
+### Resource Links
+- [CiviCRM API4 Documentation](https://docs.civicrm.org/dev/en/latest/api/v4/)
+- [CiviCRM Extension Development](https://docs.civicrm.org/dev/en/latest/extensions/)
+- [Symfony EventDispatcher](https://symfony.com/doc/current/components/event_dispatcher.html)
+- [CiviRules Documentation](https://civirules.org/)
 
 ---
 
