@@ -1,16 +1,15 @@
 # BACKLOG
 
-*  Clean up data conversion programs
-*  Clean up the reference field - convert to drop down list
-*  Put leading zeros back in project numbers
-*  Make case coordinator the MAS rep
-*  Store the project and service request start and end dates
-*  Create monthly dashboard searchkit menu item & reports
-*  Create a project when a service request is closed with "Project Created" status
-*  For contacts, remove legal name, nickname, sic code, bulk mailings, instant messanger, IM location, IM type add formerly known as
-*  automatically put http:// in web
-*  Add project number to the subject
+## In Progress
+
+| Description                                                                                                                           | Links                                                                                      |
+| :------------------------------------------------------------------------------------------------------------------------------------ | :----------------------------------------------------------------------------------------- |
+| Create a project when a service request is closed with "Project Created" status                                                       | [ServiceReuqestToProject.php](./Civi/Mascode/CiviRules/Action/ServiceRequestToProject.php) |
+| For contacts, remove legal name, nickname, sic code, bulk mailings, <br>instant messanger, IM location, IM type add formerly known as |                                                                                            |
+| automatically put http:// in web                                                                                                      |                                                                                            |
+| Integrate with web service request form                                                                                               | [AfformSubmitSubscriber.php](./Civi/Mascode/Event/AfformSubmitSubscriber.php)              |
 
 ## Future
-*  Integrate with web service request form
-*  Integrate with web project completion form
+
+- Integrate with web project completion form
+- Create subset of CiviCRM available to all VC's

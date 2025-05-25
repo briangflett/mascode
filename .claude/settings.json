@@ -1,0 +1,48 @@
+{
+  "name": "Mascode CiviCRM Extension",
+  "description": "Development environment for MAS CiviCRM extension",
+  "workingDirectory": ".",
+  "readOnlyPaths": [
+    "/home/brian/buildkit/build/masdemo/web/wp-content/plugins/civicrm/civicrm",
+    "/home/brian/buildkit/build/masdemo/web/wp-content/uploads/civicrm/ext",
+    "/home/brian/buildkit/build/masdemo/web/wp-content/plugins/elementor-pro"
+  ],
+  "allowedPaths": [
+    "."
+  ],
+  "contextFiles": [
+    "CONTEXT.md",
+    "README.md", 
+    "info.xml",
+    "composer.json"
+  ],
+  "filePatterns": {
+    "include": [
+      "**/*.php",
+      "**/*.js",
+      "**/*.json",
+      "**/*.xml",
+      "**/*.md",
+      "**/*.sql",
+      "**/*.tpl",
+      "**/*.yml",
+      "**/*.yaml"
+    ],
+    "exclude": [
+      "**/vendor/**",
+      "**/node_modules/**",
+      "**/.git/**",
+      "**/cache/**",
+      "**/tmp/**"
+    ]
+  },
+  "phpSettings": {
+    "version": "8.3",
+    "framework": "civicrm"
+  },
+  "preferences": {
+    "codeStyle": "PSR-12",
+    "maxFileSize": "1MB",
+    "autoSave": false
+  }
+}

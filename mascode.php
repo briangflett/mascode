@@ -15,7 +15,6 @@ if (file_exists(__DIR__ . '/vendor/autoload.php')) {
 
 use CRM_Mascode_ExtensionUtil as E;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
-use Symfony\Component\DependencyInjection\Definition;
 use Civi\Mascode\CompilerPass;
 
 /**
@@ -24,22 +23,10 @@ use Civi\Mascode\CompilerPass;
 function mascode_civicrm_container(ContainerBuilder $container)
 {
   // These registrations can be removed once we move service definitions to YAML.
-
-  // Register AfformPrefillSubscriber
-  $container->register('mascode.afform_prefill_subscriber', \Civi\Mascode\Event\AfformPrefillSubscriber::class)
-    ->setPublic(true)
-    ->addTag('event_subscriber');
-
   // Register AfformSubmitSubscriber
   $container->register('mascode.afform_submit_subscriber', \Civi\Mascode\Event\AfformSubmitSubscriber::class)
     ->setPublic(true)
     ->addTag('event_subscriber');
-
-  // Commented out for now, as we are using CiviRules instead.
-  // Register CasePostSubscriber
-  // $container->register('mascode.case_post_subscriber', \Civi\Mascode\Event\CasePostSubscriber::class)
-  //   ->setPublic(true)
-  //   ->addTag('event_subscriber');
 
   // other services like form actions may need to wait until the container is built
   $container->addCompilerPass(new CompilerPass());

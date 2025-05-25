@@ -26,21 +26,31 @@ class AfformSubmitSubscriber implements EventSubscriberInterface
      */
     public function onFormSubmit(AfformSubmitEvent $event): void
     {
+        // in the docs
         $afform = $event->getAfform();
         $formDataModel = $event->getFormDataModel();
         $apiRequest = $event->getApiRequest();
+        $entityType = $event->getEntityType();
+        $entityName = $event->getEntityName();
+        $secureApi4 = $event->getSecureApi4();
+
+        // others
         $entity = $event->getEntity();
         $entityId = $event->getEntityId();
         $entityIds = $event->getEntityIds();
-        $entityName = $event->getEntityName();
-        $entityType = $event->getEntityType();
-        $organizationForCase = $event->getOrganizationForCase();
 
-        $formName = 'test';
+        // $organizationForCase = $event->getOrganizationForCase();
 
-        // Only process your specific form
-        // Replace 'my_organization_form' with your actual form name
-        if ($formName === 'mas_request_for_consulting_assistance_form_-_from_core_objects') {
+        $formRoute = $afform['server_route'] ?? NULL;
+        \Civi::log()->debug('AfformSubmitSubscriber: Form Server Route: {formRoute}, Entity: {entity}, EntityId: {entityId}, EntityIds: {entityIds}', [
+            'formRoute' => $formRoute,
+            'entity' => print_r($entity, true),
+            'entityId' => $entityId,
+            'entityIds' => print_r($entityIds, true),
+        ]);
+
+        // Check if this is our target form
+        if ($formRoute === 'civicrm/mas-request-for-assistance-core') {
             $this->createRelationships($event);
         }
     }

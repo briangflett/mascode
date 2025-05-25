@@ -1,0 +1,53 @@
+# Claude Code Commands for Mascode Extension
+
+# Project Overview
+/overview
+Read CONTEXT.md and show current project status and file structure
+
+# Code Analysis
+/analyze
+Analyze the current codebase for issues, improvements, and CiviCRM best practices
+
+/structure
+Show the extension directory structure and explain the architecture
+
+# Development Tasks
+/civirules
+List and analyze current CiviRules actions, triggers, and conditions
+
+/hooks  
+Review hook implementations and suggest EventDispatcher alternatives
+
+/api4
+Find any API3/BAO/DAO usage and suggest API4 alternatives
+
+# Code Quality
+/psr12
+Check code for PSR-12 compliance issues
+
+/security
+Review code for security best practices and potential vulnerabilities
+
+/performance
+Analyze code for performance improvements
+
+# Testing & Debugging
+/test
+Suggest test cases for current functionality
+
+/debug
+Help debug issues with specific files or functions
+
+# Documentation
+/docs
+Generate or update documentation for classes and methods
+
+/readme
+Update README.md with current functionality
+
+# Quick Fixes
+/cleanup
+Clean up unused imports, fix formatting, remove dead code
+
+/modernize
+Update old PHP patterns to modern equivalents
