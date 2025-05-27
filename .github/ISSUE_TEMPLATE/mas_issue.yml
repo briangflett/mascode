@@ -1,7 +1,5 @@
 name: 🎯 MAS Issue Report
 description: Report a problem or request a feature for MAS staff
-title: Sample title
-labels: ["new", "in-progress", "bug", "enhancement", "help", "documentation"]
 body:
   - type: markdown
     attributes:
@@ -16,8 +14,8 @@ body:
     attributes:
       label: What type of issue is this?
       options:
-        - "🐛 Something isn't working (Bug)"
         - "💡 I need a new feature (Enhancement)"
+        - "🐛 Something isn't working (Bug)"
         - "❓ I have a question (Help)"
         - "📝 Documentation needs improvement"
     validations:
@@ -29,10 +27,10 @@ body:
       label: How urgent is this for your work?
       description: This helps us prioritize fixes
       options:
-        - "🔥 Critical - Blocks my work completely"
-        - "🚨 High - Makes my work much harder"
-        - "⚠️ Medium - Annoying but I can work around it"
         - "📋 Low - Would be nice to fix someday"
+        - "⚠️ Medium - Annoying but I can work around it"
+        - "🚨 High - Makes my work much harder"
+        - "🔥 Critical - Blocks my work completely"
     validations:
       required: true
 
@@ -40,19 +38,9 @@ body:
     id: what_happened
     attributes:
       label: What happened?
-      description: Describe the problem in your own words
+      description: Describe the problem or enhancement in your own words
       placeholder: |
         Example: "When I try to create a new service request case, the MAS code doesn't appear automatically like it used to."
-    validations:
-      required: true
-
-  - type: textarea
-    id: what_expected
-    attributes:
-      label: What did you expect to happen?
-      description: What should have happened instead?
-      placeholder: |
-        Example: "The case should automatically get a code like R25003 when I create it."
     validations:
       required: true
 
