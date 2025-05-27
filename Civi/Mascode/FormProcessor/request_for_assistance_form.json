@@ -1,0 +1,588 @@
+{
+    "title": "Request for Assistance Form",
+    "name": "request_for_assistance_form",
+    "is_active": "1",
+    "description": "Elementor form to request assistance (generates a service request)",
+    "output_handler": "OutputAllActionOutput",
+    "output_handler_configuration": [],
+    "enable_default_data": "0",
+    "permission": "",
+    "inputs": [
+        {
+            "weight": "1",
+            "include_formatted_params": "0",
+            "title": "organization_name",
+            "name": "organization_name",
+            "type": "String",
+            "is_required": "0",
+            "default_value": "",
+            "configuration": [],
+            "parameter_mapping": [],
+            "default_data_parameter_mapping": [],
+            "validators": []
+        },
+        {
+            "weight": "2",
+            "include_formatted_params": "0",
+            "title": "organization_phone",
+            "name": "organization_phone",
+            "type": "String",
+            "is_required": "0",
+            "default_value": "",
+            "configuration": [],
+            "parameter_mapping": [],
+            "default_data_parameter_mapping": [],
+            "validators": []
+        },
+        {
+            "weight": "3",
+            "include_formatted_params": "0",
+            "title": "organization_street_address",
+            "name": "organization_street_address",
+            "type": "String",
+            "is_required": "0",
+            "default_value": "",
+            "configuration": [],
+            "parameter_mapping": [],
+            "default_data_parameter_mapping": [],
+            "validators": []
+        },
+        {
+            "weight": "4",
+            "include_formatted_params": "0",
+            "title": "organization_city",
+            "name": "organization_city",
+            "type": "String",
+            "is_required": "0",
+            "default_value": "",
+            "configuration": [],
+            "parameter_mapping": [],
+            "default_data_parameter_mapping": [],
+            "validators": []
+        },
+        {
+            "weight": "5",
+            "include_formatted_params": "0",
+            "title": "organization_province",
+            "name": "organization_province",
+            "type": "String",
+            "is_required": "0",
+            "default_value": "",
+            "configuration": [],
+            "parameter_mapping": [],
+            "default_data_parameter_mapping": [],
+            "validators": []
+        },
+        {
+            "weight": "6",
+            "include_formatted_params": "0",
+            "title": "organization_postal_code",
+            "name": "organization_postal_code",
+            "type": "String",
+            "is_required": "0",
+            "default_value": "",
+            "configuration": [],
+            "parameter_mapping": [],
+            "default_data_parameter_mapping": [],
+            "validators": []
+        },
+        {
+            "weight": "7",
+            "include_formatted_params": "0",
+            "title": "website",
+            "name": "website",
+            "type": "String",
+            "is_required": "0",
+            "default_value": "",
+            "configuration": [],
+            "parameter_mapping": [],
+            "default_data_parameter_mapping": [],
+            "validators": []
+        },
+        {
+            "weight": "8",
+            "include_formatted_params": "0",
+            "title": "first_name",
+            "name": "first_name",
+            "type": "String",
+            "is_required": "0",
+            "default_value": "",
+            "configuration": [],
+            "parameter_mapping": [],
+            "default_data_parameter_mapping": [],
+            "validators": []
+        },
+        {
+            "weight": "9",
+            "include_formatted_params": "0",
+            "title": "last_name",
+            "name": "last_name",
+            "type": "String",
+            "is_required": "0",
+            "default_value": "",
+            "configuration": [],
+            "parameter_mapping": [],
+            "default_data_parameter_mapping": [],
+            "validators": []
+        },
+        {
+            "weight": "10",
+            "include_formatted_params": "0",
+            "title": "role",
+            "name": "role",
+            "type": "String",
+            "is_required": "0",
+            "default_value": "",
+            "configuration": [],
+            "parameter_mapping": [],
+            "default_data_parameter_mapping": [],
+            "validators": []
+        },
+        {
+            "weight": "11",
+            "include_formatted_params": "0",
+            "title": "email",
+            "name": "email",
+            "type": "String",
+            "is_required": "0",
+            "default_value": "",
+            "configuration": [],
+            "parameter_mapping": [],
+            "default_data_parameter_mapping": [],
+            "validators": [
+                {
+                    "validator": "email",
+                    "configuration": []
+                }
+            ]
+        },
+        {
+            "weight": "12",
+            "include_formatted_params": "0",
+            "title": "phone",
+            "name": "phone",
+            "type": "String",
+            "is_required": "0",
+            "default_value": "",
+            "configuration": [],
+            "parameter_mapping": [],
+            "default_data_parameter_mapping": [],
+            "validators": []
+        },
+        {
+            "weight": "13",
+            "include_formatted_params": "0",
+            "title": "repeat_client",
+            "name": "repeat_client",
+            "type": "String",
+            "is_required": "0",
+            "default_value": "",
+            "configuration": [],
+            "parameter_mapping": [],
+            "default_data_parameter_mapping": [],
+            "validators": []
+        },
+        {
+            "weight": "14",
+            "include_formatted_params": "0",
+            "title": "referral1",
+            "name": "referral1",
+            "type": "String",
+            "is_required": "0",
+            "default_value": "",
+            "configuration": [],
+            "parameter_mapping": [],
+            "default_data_parameter_mapping": [],
+            "validators": []
+        },
+        {
+            "weight": "15",
+            "include_formatted_params": "0",
+            "title": "referral2",
+            "name": "referral2",
+            "type": "String",
+            "is_required": "0",
+            "default_value": "",
+            "configuration": [],
+            "parameter_mapping": [],
+            "default_data_parameter_mapping": [],
+            "validators": []
+        },
+        {
+            "weight": "16",
+            "include_formatted_params": "0",
+            "title": "request",
+            "name": "request",
+            "type": "Text",
+            "is_required": "0",
+            "default_value": "",
+            "configuration": [],
+            "parameter_mapping": [],
+            "default_data_parameter_mapping": [],
+            "validators": []
+        },
+        {
+            "weight": "17",
+            "include_formatted_params": "0",
+            "title": "expertise",
+            "name": "expertise",
+            "type": "String",
+            "is_required": "0",
+            "default_value": "",
+            "configuration": [],
+            "parameter_mapping": [],
+            "default_data_parameter_mapping": [],
+            "validators": []
+        }
+    ],
+    "actions": [
+        {
+            "title": "Explode list of expertise \/ practice area",
+            "name": "explode_list_of_expertise_practice_area",
+            "type": "ExplodeList",
+            "configuration": {
+                "separator": ","
+            },
+            "mapping": {
+                "value": "input.expertise"
+            },
+            "condition_configuration": "",
+            "delay_configuration": ""
+        },
+        {
+            "title": "Default the country to Canada",
+            "name": "default_the_country_to_canada",
+            "type": "SetValue",
+            "configuration": {
+                "value": "Canada"
+            },
+            "mapping": [],
+            "condition_configuration": "",
+            "delay_configuration": ""
+        },
+        {
+            "title": "Get country ID",
+            "name": "get_country_id",
+            "type": "GetCountryId",
+            "configuration": {
+                "use_iso_code": "0"
+            },
+            "mapping": {
+                "country": "action.default_the_country_to_canada.value"
+            },
+            "condition_configuration": "",
+            "delay_configuration": ""
+        },
+        {
+            "title": "Get province ID",
+            "name": "get_province_id",
+            "type": "GetStateProvinceId",
+            "configuration": {
+                "use_abbreviation": "2"
+            },
+            "mapping": {
+                "country_id": "action.get_country_id.country_id",
+                "state_province": "input.organization_province"
+            },
+            "condition_configuration": "",
+            "delay_configuration": ""
+        },
+        {
+            "title": "Get or create organization by name",
+            "name": "get_or_create_organization_by_name",
+            "type": "FindOrCreateOrganizationByName",
+            "configuration": {
+                "contact_sub_type": ""
+            },
+            "mapping": {
+                "organization_name": "input.organization_name"
+            },
+            "condition_configuration": "",
+            "delay_configuration": ""
+        },
+        {
+            "title": "Update organization core fields",
+            "name": "update_organization_core_fields",
+            "type": "CreateUpdateOrganization",
+            "configuration": {
+                "address_is_primary": "1",
+                "address_location_type": "3",
+                "address_update_existing": "1",
+                "email_is_primary": "0",
+                "email_is_bulk": "0",
+                "email_location_type": "3",
+                "email_update_existing": "0",
+                "phone_is_primary": "1",
+                "phone_location_type": "3",
+                "phone_phone_type": "1",
+                "phone_update_existing": "1"
+            },
+            "mapping": {
+                "contact_id": "action.get_or_create_organization_by_name.contact_id",
+                "external_identifier": "",
+                "contact_sub_type": [],
+                "organization_name": "",
+                "legal_name": "",
+                "nick_name": "",
+                "sic_code": "",
+                "source": "",
+                "created_date": "",
+                "do_not_mail": "",
+                "do_not_email": "",
+                "do_not_phone": "",
+                "do_not_sms": "",
+                "preferred_language": "",
+                "name": "",
+                "street_address": "input.organization_street_address",
+                "supplemental_address_1": "",
+                "supplemental_address_2": "",
+                "supplemental_address_3": "",
+                "street_name": "",
+                "street_number": "",
+                "street_unit": "",
+                "postal_code": "input.organization_postal_code",
+                "city": "input.organization_city",
+                "state_province_id": "action.get_province_id.state_province_id",
+                "country_id": "action.get_country_id.country_id",
+                "manual_geo_code": "",
+                "latitude": "",
+                "longitude": "",
+                "email": "",
+                "phone": "input.organization_phone"
+            },
+            "condition_configuration": "",
+            "delay_configuration": ""
+        },
+        {
+            "title": "Update website",
+            "name": "update_website",
+            "type": "CreateUpdateWebsite",
+            "configuration": {
+                "website_type": "2"
+            },
+            "mapping": {
+                "contact_id": "action.get_or_create_organization_by_name.contact_id",
+                "url": "input.website"
+            },
+            "condition_configuration": "",
+            "delay_configuration": ""
+        },
+        {
+            "title": "Get or create Individual by email and names",
+            "name": "get_or_create_individual_by_email_and_names",
+            "type": "FindOrCreateContactByEmailAndName",
+            "configuration": {
+                "contact_type": "1"
+            },
+            "mapping": {
+                "email": "input.email",
+                "first_name": "input.first_name",
+                "last_name": "input.last_name",
+                "organization_name": "",
+                "household_name": ""
+            },
+            "condition_configuration": "",
+            "delay_configuration": ""
+        },
+        {
+            "title": "Set individual employer",
+            "name": "set_individual_employer",
+            "type": "SetContactEmployer",
+            "configuration": [],
+            "mapping": {
+                "contact_id": "action.get_or_create_individual_by_email_and_names.contact_id",
+                "employer_id": "action.get_or_create_organization_by_name.contact_id"
+            },
+            "condition_configuration": "",
+            "delay_configuration": ""
+        },
+        {
+            "title": "Update Individual core fields",
+            "name": "update_individual_core_fields",
+            "type": "CreateUpdateIndividual",
+            "configuration": {
+                "address_is_primary": "0",
+                "address_location_type": "3",
+                "address_update_existing": "0",
+                "email_is_primary": "0",
+                "email_is_bulk": "0",
+                "email_location_type": "3",
+                "email_update_existing": "0",
+                "phone_is_primary": "1",
+                "phone_location_type": "3",
+                "phone_phone_type": "1",
+                "phone_update_existing": "1"
+            },
+            "mapping": {
+                "contact_id": "action.get_or_create_individual_by_email_and_names.contact_id",
+                "external_identifier": "",
+                "contact_sub_type": [],
+                "individual_prefix": "",
+                "first_name": "",
+                "last_name": "",
+                "middle_name": "",
+                "nick_name": "",
+                "individual_suffix": "",
+                "formal_title": "",
+                "job_title": "input.role",
+                "birth_date": "",
+                "is_deceased": "",
+                "deceased_date": "",
+                "gender_id": "",
+                "source": "",
+                "created_date": "",
+                "do_not_mail": "",
+                "do_not_email": "",
+                "do_not_phone": "",
+                "do_not_sms": "",
+                "is_opt_out": "",
+                "preferred_language": "",
+                "preferred_communication_method": [],
+                "name": "",
+                "street_address": "",
+                "supplemental_address_1": "",
+                "supplemental_address_2": "",
+                "supplemental_address_3": "",
+                "street_name": "",
+                "street_number": "",
+                "street_unit": "",
+                "postal_code": "",
+                "city": "",
+                "state_province_id": "",
+                "country_id": "",
+                "manual_geo_code": "",
+                "latitude": "",
+                "longitude": "",
+                "email": "",
+                "phone": "input.phone"
+            },
+            "condition_configuration": "",
+            "delay_configuration": ""
+        },
+        {
+            "title": "Create Service Request",
+            "name": "create_service_request",
+            "type": "CreateCase",
+            "configuration": {
+                "case_type_id": "3",
+                "subject": "New request from web form",
+                "creator_id": "9480",
+                "case_status": "1"
+            },
+            "mapping": {
+                "contact_id": "action.get_or_create_organization_by_name.contact_id",
+                "creator_id": "",
+                "case_status": "",
+                "subject": "",
+                "created_date": "",
+                "start_date": "",
+                "end_date": "",
+                "case_type_id": ""
+            },
+            "condition_configuration": "",
+            "delay_configuration": ""
+        },
+        {
+            "title": "Update Case custom fields - Used MAS = Yes",
+            "name": "update_case_custom_fields_used_mas_yes",
+            "type": "CaseUpdateCustomData",
+            "configuration": [],
+            "mapping": {
+                "case_id": "action.create_service_request.case_id",
+                "custom_Cases_SR_Projects__Practice_Area": [
+                    "action.explode_list_of_expertise_practice_area.value"
+                ],
+                "custom_Cases_SR_Projects__Referral": "input.referral1",
+                "custom_Cases_SR_Projects__Notes": "input.request",
+                "custom_Cases_SR_Projects__Link_to_RCS_Document": "",
+                "custom_Cases_SR_Projects__Link_to_SAS_Document": "",
+                "custom_Cases_SR_Projects__Link_to_Signed_T_C_s": "",
+                "custom_Cases_SR_Projects__MAS_SR_Case_Code": "",
+                "custom_Cases_SR_Projects__Related_Project_Case_Code": "",
+                "custom_Projects_Practice_Area": "",
+                "custom_Projects_Project_Type": "",
+                "custom_Projects_Hours": "",
+                "custom_Projects_Notes": "",
+                "custom_Projects_Link_to_Project_Definition_Document": "",
+                "custom_Projects_Link_to_Project_Completion": "",
+                "custom_Projects_MAS_Project_Case_Code": "",
+                "custom_Projects_Related_SR_Case_Code": ""
+            },
+            "condition_configuration": {
+                "name": "CompareParameterValue",
+                "configuration": {
+                    "value": "Yes",
+                    "comparison": "="
+                },
+                "parameter_mapping": {
+                    "parameter": "input.repeat_client"
+                },
+                "output_mapping": []
+            },
+            "delay_configuration": ""
+        },
+        {
+            "title": "Update Case custom data - Used MAS = No",
+            "name": "update_case_custom_data_used_mas_no",
+            "type": "CaseUpdateCustomData",
+            "configuration": [],
+            "mapping": {
+                "case_id": "action.create_service_request.case_id",
+                "custom_Cases_SR_Projects__Practice_Area": [
+                    "action.explode_list_of_expertise_practice_area.value"
+                ],
+                "custom_Cases_SR_Projects__Referral": "input.referral2",
+                "custom_Cases_SR_Projects__Notes": "input.request",
+                "custom_Cases_SR_Projects__Link_to_RCS_Document": "",
+                "custom_Cases_SR_Projects__Link_to_SAS_Document": "",
+                "custom_Cases_SR_Projects__Link_to_Signed_T_C_s": "",
+                "custom_Cases_SR_Projects__MAS_SR_Case_Code": "",
+                "custom_Cases_SR_Projects__Related_Project_Case_Code": "",
+                "custom_Projects_Practice_Area": "",
+                "custom_Projects_Project_Type": "",
+                "custom_Projects_Hours": "",
+                "custom_Projects_Notes": "",
+                "custom_Projects_Link_to_Project_Definition_Document": "",
+                "custom_Projects_Link_to_Project_Completion": "",
+                "custom_Projects_MAS_Project_Case_Code": "",
+                "custom_Projects_Related_SR_Case_Code": ""
+            },
+            "condition_configuration": {
+                "name": "CompareParameterValue",
+                "configuration": {
+                    "value": "No",
+                    "comparison": "="
+                },
+                "parameter_mapping": {
+                    "parameter": "input.repeat_client"
+                },
+                "output_mapping": []
+            },
+            "delay_configuration": ""
+        },
+        {
+            "title": "Add a case role for the client rep",
+            "name": "add_a_case_role_for_the_client_rep",
+            "type": "MasAddRole",
+            "configuration": {
+                "relationship_type": "17_b_a",
+                "activity_source_contact_id": "9480"
+            },
+            "mapping": {
+                "contact_id": "action.get_or_create_individual_by_email_and_names.contact_id",
+                "case_id": "action.create_service_request.case_id",
+                "source_contact_id": ""
+            },
+            "condition_configuration": "",
+            "delay_configuration": ""
+        }
+    ],
+    "default_data_inputs": [],
+    "default_data_actions": [],
+    "validate_actions": [],
+    "validate_validators": [],
+    "calculate_actions": [],
+    "default_data_output_configuration": [],
+    "calculation_output_configuration": [],
+    "calculations_configuration_url": "https:\/\/masdemo.localhost\/wp-admin\/admin.php?page=CiviCRM&q=civicrm%2Fadmin%2Fautomation%2Fformprocessor%2Fcalculationconfiguration&action=update&reset=1&id=2"
+}

@@ -8,6 +8,11 @@ use Civi\Afform\Event\AfformSubmitEvent;
 
 class AfformSubmitSubscriber implements EventSubscriberInterface
 {
+    /**
+     * Store entity IDs during form submission processing
+     * Structure: [session_id => ['organization_id' => X, 'president_id' => Y, 'executive_director_id' => Z]]
+     */
+    private static array $submissionData = [];
 
     /**
      * {@inheritdoc}
@@ -20,72 +25,108 @@ class AfformSubmitSubscriber implements EventSubscriberInterface
     }
 
     /**
-     * Process form submission to create relationships
+     * Process form submission to collect entity IDs and create relationships
      *
      * @param \Civi\Afform\Event\AfformSubmitEvent $event
      */
     public function onFormSubmit(AfformSubmitEvent $event): void
     {
-        // in the docs
         $afform = $event->getAfform();
-        $formDataModel = $event->getFormDataModel();
-        $apiRequest = $event->getApiRequest();
-        $entityType = $event->getEntityType();
-        $entityName = $event->getEntityName();
-        $secureApi4 = $event->getSecureApi4();
-
-        // others
-        $entity = $event->getEntity();
-        $entityId = $event->getEntityId();
-        $entityIds = $event->getEntityIds();
-
-        // $organizationForCase = $event->getOrganizationForCase();
-
-        $formRoute = $afform['server_route'] ?? NULL;
-        \Civi::log()->debug('AfformSubmitSubscriber: Form Server Route: {formRoute}, Entity: {entity}, EntityId: {entityId}, EntityIds: {entityIds}', [
-            'formRoute' => $formRoute,
-            'entity' => print_r($entity, true),
-            'entityId' => $entityId,
-            'entityIds' => print_r($entityIds, true),
-        ]);
+        $formRoute = $afform['server_route'] ?? null;
 
         // Check if this is our target form
-        if ($formRoute === 'civicrm/mas-request-for-assistance-core') {
-            $this->createRelationships($event);
+        if ($formRoute !== 'civicrm/mas-rcs-form') {
+            return;
         }
+
+        $entityName = $event->getEntityName();
+        $entityId = $event->getEntityId();
+
+        // *** EntityId is null if the entity is being created by this submission ***
+
+        \Civi::log()->debug('AfformSubmitSubscriber: Processing entity', [
+            'entity_name' => $entityName,
+            'entity_id' => $entityId
+        ]);
+
+        // Get or create submission tracking data
+        $sessionId = $this->getSessionId();
+        if (!isset(self::$submissionData[$sessionId])) {
+            self::$submissionData[$sessionId] = [];
+        }
+
+        // Store entity IDs based on entity name
+        switch ($entityName) {
+            case 'Organization1':
+                self::$submissionData[$sessionId]['organization_id'] = $entityId;
+                break;
+            case 'Individual1': // President
+                self::$submissionData[$sessionId]['president_id'] = $entityId;
+                break;
+            case 'Individual2': // Executive Director
+                self::$submissionData[$sessionId]['executive_director_id'] = $entityId;
+                break;
+            case 'Case1':
+                // Create relationships when processing Case1 (last entity processed)
+                $this->createRelationships($sessionId);
+                // Clean up after processing
+                unset(self::$submissionData[$sessionId]);
+                break;
+        }
+    }
+
+    /**
+     * Get unique session identifier for this submission
+     */
+    private function getSessionId(): string
+    {
+        $sessionId = session_id();
+        if (!$sessionId) {
+            // Fallback if no session (e.g., in testing)
+            $sessionId = 'no-session-' . getmypid() . '-' . time();
+        }
+        return $sessionId;
     }
 
     /**
      * Create relationships between organization and individuals
      * 
-     * @param \Civi\Afform\Event\AfformSubmitEvent $event
+     * @param string $sessionId
      */
-    protected function createRelationships(AfformSubmitEvent $event): void
+    protected function createRelationships(string $sessionId): void
     {
-        $formData = $event->getValues();
+        if (!isset(self::$submissionData[$sessionId])) {
+            \Civi::log()->warning('AfformSubmitSubscriber: No submission data found', [
+                'session_id' => $sessionId
+            ]);
+            return;
+        }
+
+        $data = self::$submissionData[$sessionId];
 
         try {
-            // Get the organization ID - adjust these paths based on your form structure
-            $organizationId = $formData['org'][0]['id'] ?? null;
-
-            // Get the president ID
-            $presidentId = $formData['president'][0]['id'] ?? null;
-
-            // Get the executive director ID
-            $executiveDirectorId = $formData['executive_director'][0]['id'] ?? null;
+            $organizationId = $data['organization_id'] ?? null;
+            $presidentId = $data['president_id'] ?? null;
+            $executiveDirectorId = $data['executive_director_id'] ?? null;
 
             if (!$organizationId) {
-                \Civi::log()->error('Organization ID not found in form submission');
+                \Civi::log()->warning('AfformSubmitSubscriber: Organization ID not found in submission data');
                 return;
             }
+
+            \Civi::log()->info('AfformSubmitSubscriber: Creating relationships', [
+                'organization_id' => $organizationId,
+                'president_id' => $presidentId,
+                'executive_director_id' => $executiveDirectorId
+            ]);
 
             // Create President relationship if we have both contacts
             if ($presidentId) {
                 $this->createRelationship(
                     $presidentId,
                     $organizationId,
-                    'Employee of', // Replace with your actual relationship type
-                    'President' // Optional relationship description
+                    'President of',
+                    'President relationship created via MAS RCS Form'
                 );
             }
 
@@ -94,14 +135,15 @@ class AfformSubmitSubscriber implements EventSubscriberInterface
                 $this->createRelationship(
                     $executiveDirectorId,
                     $organizationId,
-                    'Employee of', // Replace with your actual relationship type
-                    'Executive Director' // Optional relationship description
+                    'Executive Director of',
+                    'Executive Director relationship created via MAS RCS Form'
                 );
             }
         } catch (\Exception $e) {
-            \Civi::log()->error('Error creating relationships: {message}', [
+            \Civi::log()->error('AfformSubmitSubscriber: Error creating relationships', [
                 'message' => $e->getMessage(),
                 'exception' => $e,
+                'session_id' => $sessionId
             ]);
         }
     }
@@ -109,8 +151,8 @@ class AfformSubmitSubscriber implements EventSubscriberInterface
     /**
      * Create a relationship between two contacts
      * 
-     * @param int $contactIdA First contact
-     * @param int $contactIdB Second contact
+     * @param int $contactIdA First contact (individual)
+     * @param int $contactIdB Second contact (organization)
      * @param string $relationshipType Name or label of relationship type
      * @param string $description Optional description
      * @return int|null ID of created relationship or null on failure
@@ -122,7 +164,27 @@ class AfformSubmitSubscriber implements EventSubscriberInterface
         string $description = ''
     ): ?int {
         try {
-            // First find the relationship type ID
+            // Check if relationship already exists
+            $existing = \Civi\Api4\Relationship::get(FALSE)
+                ->addSelect('id')
+                ->addWhere('contact_id_a', '=', $contactIdA)
+                ->addWhere('contact_id_b', '=', $contactIdB)
+                ->addWhere('relationship_type_id.name_a_b', '=', $relationshipType)
+                ->addWhere('is_active', '=', TRUE)
+                ->execute()
+                ->first();
+
+            if ($existing) {
+                \Civi::log()->info('AfformSubmitSubscriber: Relationship already exists', [
+                    'relationship_id' => $existing['id'],
+                    'type' => $relationshipType,
+                    'contact_a' => $contactIdA,
+                    'contact_b' => $contactIdB
+                ]);
+                return $existing['id'];
+            }
+
+            // Find the relationship type ID
             $relType = \Civi\Api4\RelationshipType::get(FALSE)
                 ->addSelect('id')
                 ->addWhere('name_a_b', '=', $relationshipType)
@@ -131,7 +193,7 @@ class AfformSubmitSubscriber implements EventSubscriberInterface
                 ->first();
 
             if (empty($relType['id'])) {
-                \Civi::log()->error('Relationship type not found: {type}', [
+                \Civi::log()->error('AfformSubmitSubscriber: Relationship type not found', [
                     'type' => $relationshipType,
                 ]);
                 return null;
@@ -147,16 +209,20 @@ class AfformSubmitSubscriber implements EventSubscriberInterface
                 ->execute()
                 ->first();
 
-            \Civi::log()->info('Created relationship: {type} between contacts {a} and {b}', [
+            \Civi::log()->info('AfformSubmitSubscriber: Created relationship', [
+                'relationship_id' => $rel['id'],
                 'type' => $relationshipType,
-                'a' => $contactIdA,
-                'b' => $contactIdB,
+                'contact_a' => $contactIdA,
+                'contact_b' => $contactIdB
             ]);
 
             return $rel['id'] ?? null;
         } catch (\Exception $e) {
-            \Civi::log()->error('Failed to create relationship: {message}', [
+            \Civi::log()->error('AfformSubmitSubscriber: Failed to create relationship', [
                 'message' => $e->getMessage(),
+                'type' => $relationshipType,
+                'contact_a' => $contactIdA,
+                'contact_b' => $contactIdB,
                 'exception' => $e,
             ]);
 
