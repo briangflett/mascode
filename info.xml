@@ -9,14 +9,13 @@
     <email>brian.flett@masadvise.org</email>
   </maintainer>
   <urls>
-    <url desc="Main Extension Page">http://FIXME</url>
-    <url desc="Documentation">http://FIXME</url>
-    <url desc="Support">http://FIXME</url>
+    <url desc="Main Extension Page">https://github.com/briangflett/mascode</url>
+    <url desc="Documentation">https://github.com/briangflett/mascode/blob/master/README.md</url>
     <url desc="Licensing">http://www.gnu.org/licenses/agpl-3.0.html</url>
   </urls>
   <releaseDate>2025-05-07</releaseDate>
-  <version>1.0.0</version>
-  <develStage>beta</develStage>
+  <version>1.0.1</version>
+  <develStage>production</develStage>
   <compatibility>
     <ver>6.1</ver>
   </compatibility>
