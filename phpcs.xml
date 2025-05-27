@@ -2,8 +2,8 @@
 <ruleset name="Mascode Coding Standards">
     <description>Coding standards for Mascode CiviCRM extension</description>
 
-    <!-- Include PSR-12 as base standard -->
-    <rule ref="PSR12"/>
+    <!-- Include PER Coding Style as base standard (replaces PSR-12) -->
+    <rule ref="PER"/>
     
     <!-- Additional rules for better code quality -->
     <rule ref="Generic.Arrays.DuplicateArrayKey"/>

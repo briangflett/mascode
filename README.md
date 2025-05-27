@@ -1,31 +1,55 @@
-# mascode
+# Mascode CiviCRM Extension
 
-This extension is used by Management Advisory Services (MAS) to customize their implementation of CiviCRM, providing custom automation and logic for nonprofit case management and form processing.
+Custom automation and logic for Management Advisory Services (MAS), providing enhanced case management, form processing, and future AI integration capabilities for nonprofit organizations.
 
-This is an [extension for CiviCRM](https://docs.civicrm.org/sysadmin/en/latest/customize/extensions/), licensed under [AGPL-3.0](LICENSE.txt).
+[![CI Status](https://github.com/briangflett/mascode/workflows/CI/badge.svg)](https://github.com/briangflett/mascode/actions)
+[![PHP 8.1+](https://img.shields.io/badge/PHP-8.1+-blue.svg)](https://php.net)
+[![CiviCRM 6.1+](https://img.shields.io/badge/CiviCRM-6.1+-green.svg)](https://civicrm.org)
 
-## Documentation
+## Quick Start
 
-- **[Development Setup](docs/DEVELOPMENT.md)** - Getting started for developers
-- **[Architecture & Technical Roadmap](docs/ARCHITECTURE.md)** - Technical decisions and development plan
-- **[Change Log](CHANGELOG.md)** - Release notes and version history
-- **[Feature Backlog](BACKLOG.md)** - Functional enhancements and requests
+### For Users
 
-## Getting Started
+- **Documentation**: See [User Guide](docs/USER-GUIDE.md)
+- **Support**: Create issues using our [user-friendly templates](https://github.com/briangflett/mascode/issues/new/choose)
 
-For development setup and contribution guidelines, see [docs/DEVELOPMENT.md](docs/DEVELOPMENT.md).
+### For Developers
 
-### Key Features
+- **Installation**: See [Installation Guide](docs/INSTALLATION.md)
+- **Setup**: See [Development Guide](docs/DEVELOPMENT.md)
+- **Architecture**: See [Technical Documentation](docs/ARCHITECTURE.md)
+- **Contributing**: See [Contributing Guide](docs/CONTRIBUTING.md)
+- **Testing**: See [Testing](docs/TESTING.md)
 
-- **Case Management Enhancement**: Automatic MAS code generation (R25001, P25001 format)
-- **Service Request to Project Conversion**: Automated workflow via CiviRules
-- **Form Processing**: Enhanced anonymous form access with security validation
-- **AI Integration Ready**: Architecture designed for future AI-powered features
+## AI Integration
 
-## AI Integration Roadmap
+- **LLM Context**: See [Claude Instructions](.claude/context.md)
+- **AI Roadmap**: See [AI Roadmap](docs/AI-ROADMAP.md)
 
-This extension is being developed with future AI integration in mind. Our vision includes AI-powered contact intelligence, automated report generation, and donor behavior prediction. See [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) for detailed technical planning.
+## Key Features
 
-## Context for AI Assistants
+- **Automatic MAS Code Generation** (R25001, P25001 format)
+- **Service Request → Project Conversion** via CiviRules automation
+- **Enhanced Form Processing** with secure anonymous access
+- **AI-Ready Architecture** for future intelligent features
 
-Development context and guidelines for AI assistants can be found in [.claude/context.md](.claude/context.md).
+## Support & Community
+
+- **Bug Reports**: Use our [issue templates](https://github.com/briangflett/mascode/issues/new/choose)
+- **Feature Requests**: [Feature request template](https://github.com/briangflett/mascode/issues/new?template=feature_request.yml)
+- **mascode Discussion**: [Mascode Discussion](https://github.com/briangflett/mascode/discussions)
+- **CiviCRM Chat**: [CiviCRM Mattermost Chat](https:/chat.civicrm.org/)
+- **CiviCRM Documentation**: [CiviCRM Docs](https:/docs.civicrm.org/)
+
+## Project Status
+
+- **Backlog**: See [Backlog](BACKLOG.md)
+- **Changelog**: See [Changelog](CHANGELOG.md)
+
+## License
+
+Licensed under [AGPL-3.0](LICENSE.txt) - see license file for details.
+
+---
+
+_Built by [Management Advisory Services](https://masadvise.org) to enhance nonprofit effectiveness through technology._

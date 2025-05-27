@@ -37,8 +37,8 @@
         "test:unit": "phpunit --testsuite=unit",
         "test:integration": "phpunit --testsuite=integration",
         "test:coverage": "phpunit --coverage-html=coverage",
-        "lint": "phpcs --standard=PSR12 Civi/ CRM/",
-        "lint:fix": "phpcbf --standard=PSR12 Civi/ CRM/",
+        "lint": "phpcs --standard=PER Civi/ CRM/",
+        "lint:fix": "phpcbf --standard=PER Civi/ CRM/",
         "analyze": "phpstan analyse Civi/ CRM/ --level=5",
         "quality": [
             "@lint",

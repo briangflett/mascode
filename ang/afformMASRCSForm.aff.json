@@ -2,6 +2,8 @@
     "type": "form",
     "title": "MAS RCS Form",
     "description": "MAS Request for Consulting Assistance form.",
+    "server_route": "civicrm/mas-rcs-form",
+    "redirect": "https://masdemo.localhost/thank-you/",
     "is_public": true,
     "create_submission": true,
     "permission": [

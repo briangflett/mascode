@@ -1,0 +1,107 @@
+name: 🎯 MAS Issue Report
+description: Report a problem or request a feature for MAS staff
+title: "[MAS] "
+labels: ["new", "in-progress", "bug", "enhancement", "help", "documentation"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## Thanks for helping improve our CiviCRM system! 
+        Please fill out this form to help us understand and fix the issue.
+        
+        **Don't worry about technical details** - just describe what happened in your own words.
+
+  - type: dropdown
+    id: issue_type
+    attributes:
+      label: What type of issue is this?
+      options:
+        - "🐛 Something isn't working (Bug)"
+        - "💡 I need a new feature (Enhancement)"
+        - "❓ I have a question (Help)"
+        - "📝 Documentation needs improvement"
+    validations:
+      required: true
+
+  - type: textarea
+    id: what_happened
+    attributes:
+      label: What happened?
+      description: Describe the problem in your own words
+      placeholder: |
+        Example: "When I try to create a new service request case, the MAS code doesn't appear automatically like it used to."
+    validations:
+      required: true
+
+  - type: textarea
+    id: what_expected
+    attributes:
+      label: What did you expect to happen?
+      description: What should have happened instead?
+      placeholder: |
+        Example: "The case should automatically get a code like R25003 when I create it."
+    validations:
+      required: true
+
+  - type: textarea
+    id: steps_to_reproduce
+    attributes:
+      label: How can we recreate this problem?
+      description: Step-by-step instructions (if applicable)
+      placeholder: |
+        Example:
+        1. Go to Cases > New Case
+        2. Select "Service Request" as case type
+        3. Fill in client information
+        4. Save the case
+        5. Notice the MAS code field is empty
+
+  - type: dropdown
+    id: how_often
+    attributes:
+      label: How often does this happen?
+      options:
+        - "Every time"
+        - "Sometimes"
+        - "Just happened once"
+        - "Not sure"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: urgency
+    attributes:
+      label: How urgent is this for your work?
+      description: This helps us prioritize fixes
+      options:
+        - "🔥 Critical - Blocks my work completely"
+        - "🚨 High - Makes my work much harder"
+        - "⚠️ Medium - Annoying but I can work around it"
+        - "📋 Low - Would be nice to fix someday"
+    validations:
+      required: true
+
+  - type: input
+    id: your_name
+    attributes:
+      label: Your name (optional)
+      description: So we can follow up if needed
+      placeholder: "Your name"
+
+  - type: textarea
+    id: additional_info
+    attributes:
+      label: Anything else we should know?
+      description: Screenshots, error messages, or other details
+      placeholder: |
+        - Were you working with a specific client?
+        - Did you see any error messages?
+        - Attach screenshots if helpful (drag and drop them here)
+
+  - type: checkboxes
+    id: terms
+    attributes:
+      label: Confirmation
+      options:
+        - label: I understand this will be visible to other MAS staff and volunteers
+          required: true

@@ -1,19 +1,21 @@
 # AI Extension Architecture Roadmap
 
-## Vision
+## Strategy
 
-Create a user-friendly CiviCRM extension modeled on Claude Code that empowers nonprofit users to leverage AI and their CiviCRM data to:
+This mascode repository contains code specific to MAS. It is structured to provide context and direction to AI LLM's (eg. Claude Pro and Claude Code) that will be heavily leveraged in code development.
+
+A separate repository will likely be created for a new CiviCRM extension that will be generalized for use by many potential CiviCRM user organizations. It will empower nonprofit users to leverage AI and their CiviCRM data to:
 
 - **Capture Insights**: Automated data analysis and pattern recognition
 - **Improve Operations**: Streamlined workflows and intelligent automation
 - **Grow Awareness**: Enhanced communication and outreach strategies
 
-## Strategic Approach
-
 ### Phase 1: Foundation (Current - 6 months)
+
 **Goal**: Establish robust testing, automation, and architecture foundations
 
 #### Completed ✅
+
 - Modern testing framework with PHPUnit
 - GitHub Actions CI/CD pipeline
 - Code quality tools (PHPStan, PHPCS)
@@ -21,26 +23,32 @@ Create a user-friendly CiviCRM extension modeled on Claude Code that empowers no
 - Claude Code integration
 
 #### In Progress 🔄
+
 - Core feature testing and refinement
 - Performance optimization
 - Security hardening
 
-#### Next Steps 📋
+#### Next Steps (new extension) 📋
+
 - API standardization for future AI integration
 - Data pipeline architecture design
 - User interface planning
 
 ### Phase 2: Data Intelligence (6-12 months)
+
 **Goal**: Implement AI-powered data analysis and insights
 
 #### Core Features
+
 1. **Contact Intelligence**
+
    - Automated contact categorization and scoring
    - Duplicate detection and merging suggestions
    - Relationship mapping and visualization
    - Engagement pattern analysis
 
 2. **Donor Analytics**
+
    - Predictive modeling for donor behavior
    - Optimal ask amount suggestions
    - Retention risk assessment
@@ -83,16 +91,20 @@ Create a user-friendly CiviCRM extension modeled on Claude Code that empowers no
 ```
 
 ### Phase 3: Intelligent Automation (12-18 months)
+
 **Goal**: Implement AI-driven workflow automation and decision support
 
 #### Features
+
 1. **Smart Workflows**
+
    - AI-powered CiviRules conditions and actions
    - Dynamic form generation based on context
    - Intelligent email timing and content
    - Automated follow-up recommendations
 
 2. **Communication Intelligence**
+
    - AI-generated newsletter content
    - Personalized donor communications
    - Grant application assistance
@@ -105,15 +117,19 @@ Create a user-friendly CiviCRM extension modeled on Claude Code that empowers no
    - Impact measurement and reporting
 
 ### Phase 4: User-Friendly AI Interface (18-24 months)
+
 **Goal**: Create intuitive, no-code AI tools for nonprofit staff
 
 #### User Experience Design
+
 1. **Natural Language Interface**
+
    - Chat-based data queries
    - Plain English automation rules
    - Voice-activated commands (future)
 
 2. **Visual AI Dashboard**
+
    - Drag-and-drop AI workflow builder
    - Real-time insights and recommendations
    - Customizable AI-powered reports
@@ -129,7 +145,7 @@ Create a user-friendly CiviCRM extension modeled on Claude Code that empowers no
 
 ```php
 // Example AI service interface
-interface AIServiceInterface 
+interface AIServiceInterface
 {
     public function analyzeContact(int $contactId): ContactInsights;
     public function predictDonation(int $contactId, float $amount): PredictionResult;
@@ -138,21 +154,21 @@ interface AIServiceInterface
 }
 
 // Implementation with multiple AI providers
-class AIServiceManager implements AIServiceInterface 
+class AIServiceManager implements AIServiceInterface
 {
     private OpenAIService $openai;
     private ClaudeService $claude;
     private LocalModelService $local;
-    
-    public function analyzeContact(int $contactId): ContactInsights 
+
+    public function analyzeContact(int $contactId): ContactInsights
     {
         $contactData = $this->loadContactData($contactId);
-        
+
         // Use different AI services based on task complexity
         if ($this->isComplexAnalysis($contactData)) {
             return $this->claude->analyzeContact($contactData);
         }
-        
+
         return $this->openai->analyzeContact($contactData);
     }
 }
@@ -162,9 +178,9 @@ class AIServiceManager implements AIServiceInterface
 
 ```php
 // ETL pipeline for AI data preparation
-class AIDataPipeline 
+class AIDataPipeline
 {
-    public function extractCiviCRMData(array $criteria): array 
+    public function extractCiviCRMData(array $criteria): array
     {
         // Extract data using CiviCRM API4
         return civicrm_api4('Contact', 'get', [
@@ -176,8 +192,8 @@ class AIDataPipeline
             ]
         ])->getArrayCopy();
     }
-    
-    public function transformForAI(array $rawData): array 
+
+    public function transformForAI(array $rawData): array
     {
         // Clean, normalize, and prepare data for AI consumption
         return array_map(function($record) {
@@ -189,8 +205,8 @@ class AIDataPipeline
             ];
         }, $rawData);
     }
-    
-    public function loadToAIContext(array $transformedData): string 
+
+    public function loadToAIContext(array $transformedData): string
     {
         // Format data for AI model consumption
         return json_encode([
@@ -206,28 +222,28 @@ class AIDataPipeline
 ### Security and Privacy Framework
 
 ```php
-class AIPrivacyManager 
+class AIPrivacyManager
 {
-    public function sanitizeForAI(array $data): array 
+    public function sanitizeForAI(array $data): array
     {
         // Remove or hash PII before sending to external AI services
         return array_map(function($record) {
             $sanitized = $record;
-            
+
             // Hash email addresses
             if (isset($sanitized['email'])) {
                 $sanitized['email_hash'] = hash('sha256', $sanitized['email']);
                 unset($sanitized['email']);
             }
-            
+
             // Remove sensitive fields
             unset($sanitized['ssn'], $sanitized['credit_card']);
-            
+
             return $sanitized;
         }, $data);
     }
-    
-    public function auditAIUsage(string $feature, array $context): void 
+
+    public function auditAIUsage(string $feature, array $context): void
     {
         // Log AI usage for compliance and monitoring
         \Civi::log()->info('AI feature used', [
@@ -243,36 +259,42 @@ class AIPrivacyManager
 ## Development Milestones
 
 ### Q1 2025: Foundation Completion
+
 - [ ] Core testing framework validated
 - [ ] CI/CD pipeline optimized
 - [ ] API standardization completed
 - [ ] Security framework designed
 
 ### Q2 2025: AI Integration Prototype
+
 - [ ] OpenAI API integration
 - [ ] Claude API integration
 - [ ] Basic contact analysis features
 - [ ] Data pipeline implementation
 
 ### Q3 2025: Core AI Features
+
 - [ ] Donor prediction models
 - [ ] Contact categorization
 - [ ] Automated insights generation
 - [ ] Performance optimization
 
 ### Q4 2025: User Interface Development
+
 - [ ] AI dashboard design
 - [ ] Natural language query interface
 - [ ] Workflow automation tools
 - [ ] User testing and feedback
 
 ### Q1 2026: Beta Release
+
 - [ ] Feature-complete beta version
 - [ ] Documentation and training materials
 - [ ] Community feedback integration
 - [ ] Performance and security validation
 
 ### Q2 2026: Production Release
+
 - [ ] Stable 1.0 release
 - [ ] Marketplace distribution
 - [ ] Support infrastructure
@@ -281,18 +303,21 @@ class AIPrivacyManager
 ## Technology Stack Evolution
 
 ### Current Stack (Mascode Foundation)
+
 - **Backend**: PHP 8.3+, CiviCRM 6.1+
 - **Testing**: PHPUnit, PHPStan, PHPCS
 - **Automation**: GitHub Actions
 - **Database**: MySQL 8.0+
 
 ### AI-Enhanced Stack (Phase 2+)
+
 - **AI Services**: OpenAI GPT-4, Anthropic Claude
 - **Data Processing**: PHP data pipelines, JSON processing
 - **Caching**: Redis for AI response caching
 - **Monitoring**: Application performance monitoring
 
 ### Future Considerations (Phase 3+)
+
 - **Local AI**: Ollama or similar for on-premise deployment
 - **Vector Database**: ChromaDB or Pinecone for semantic search
 - **Real-time Processing**: Queue systems for background AI tasks
@@ -301,18 +326,21 @@ class AIPrivacyManager
 ## Success Metrics
 
 ### Technical Metrics
+
 - **Performance**: AI responses < 3 seconds
 - **Accuracy**: >85% user satisfaction with AI insights
 - **Reliability**: 99.9% uptime for AI features
 - **Security**: Zero data breaches, full audit compliance
 
 ### User Adoption Metrics
+
 - **Engagement**: >70% of users use AI features weekly
 - **Efficiency**: 30% reduction in manual data analysis time
 - **Growth**: 50% improvement in donor retention insights
 - **Satisfaction**: >4.5/5 user satisfaction rating
 
 ### Business Impact Metrics
+
 - **Nonprofit Effectiveness**: Measurable improvement in mission outcomes
 - **Cost Savings**: Reduced time spent on routine tasks
 - **Revenue Growth**: Improved fundraising effectiveness
@@ -321,12 +349,14 @@ class AIPrivacyManager
 ## Risk Mitigation
 
 ### Technical Risks
+
 - **AI Service Dependency**: Multiple provider fallbacks
 - **Data Privacy**: Robust anonymization and encryption
 - **Performance Impact**: Asynchronous processing and caching
 - **Cost Management**: Usage monitoring and optimization
 
 ### Business Risks
+
 - **Market Competition**: Rapid development and unique features
 - **User Adoption**: Extensive documentation and training
 - **Regulatory Compliance**: Proactive privacy and security measures
@@ -335,12 +365,14 @@ class AIPrivacyManager
 ## Community and Ecosystem
 
 ### Open Source Strategy
+
 - **Core Extension**: Free and open source
 - **Premium Features**: Advanced AI capabilities as paid add-ons
 - **Community Contributions**: Plugin architecture for third-party enhancements
 - **Documentation**: Comprehensive developer and user guides
 
 ### Partnership Opportunities
+
 - **CiviCRM Community**: Core team collaboration
 - **AI Providers**: Partnership agreements for nonprofit pricing
 - **Nonprofit Networks**: Early adopter programs
@@ -348,6 +380,6 @@ class AIPrivacyManager
 
 ---
 
-*This roadmap will be updated quarterly based on technical progress, user feedback, and market conditions.*
+_This roadmap will be updated quarterly based on technical progress, user feedback, and market conditions._
 
-*For current development status, see the project issues and milestones in the GitHub repository.*
+_For current development status, see the project issues and milestones in the GitHub repository._
