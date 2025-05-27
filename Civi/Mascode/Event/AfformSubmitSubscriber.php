@@ -19,8 +19,12 @@ class AfformSubmitSubscriber implements EventSubscriberInterface
      */
     public static function getSubscribedEvents(): array
     {
+        // Subscriptions with a priority of > 0 happen before the data is saved to the database.
+        // Subscriptions with a priority of < 0 happen after the data is saved to the database.
+        // Data is saved to the database in 
+        //     civicrm/ext/afform/core/afform.php:  $dispatcher->addListener('civi.afform.submit', ['\Civi\Api4\Action\Afform\Submit', 'processGenericEntity'], 0);
         return [
-            'civi.afform.submit' => ['onFormSubmit', 0],
+            'civi.afform.submit' => ['onFormSubmit', -100],
         ];
     }
 
@@ -187,8 +191,7 @@ class AfformSubmitSubscriber implements EventSubscriberInterface
             // Find the relationship type ID
             $relType = \Civi\Api4\RelationshipType::get(FALSE)
                 ->addSelect('id')
-                ->addWhere('name_a_b', '=', $relationshipType)
-                ->orWhere('label_a_b', '=', $relationshipType)
+                ->addClause('OR', ['name_a_b', '=', $relationshipType], ['label_a_b', '=', $relationshipType])
                 ->execute()
                 ->first();
 
@@ -206,6 +209,12 @@ class AfformSubmitSubscriber implements EventSubscriberInterface
                 ->addValue('contact_id_b', $contactIdB)
                 ->addValue('is_active', TRUE)
                 ->addValue('description', $description)
+                ->execute()
+                ->first();
+
+            $ind = \Civi\Api4\Individual::update(TRUE)
+                ->addValue('employer_id', $contactIdB)
+                ->addWhere('id', '=', $contactIdA)
                 ->execute()
                 ->first();
 
