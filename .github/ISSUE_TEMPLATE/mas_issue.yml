@@ -1,6 +1,6 @@
 name: 🎯 MAS Issue Report
 description: Report a problem or request a feature for MAS staff
-title: "[MAS] "
+title: Sample title
 labels: ["new", "in-progress", "bug", "enhancement", "help", "documentation"]
 body:
   - type: markdown
@@ -20,6 +20,19 @@ body:
         - "💡 I need a new feature (Enhancement)"
         - "❓ I have a question (Help)"
         - "📝 Documentation needs improvement"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: priority
+    attributes:
+      label: How urgent is this for your work?
+      description: This helps us prioritize fixes
+      options:
+        - "🔥 Critical - Blocks my work completely"
+        - "🚨 High - Makes my work much harder"
+        - "⚠️ Medium - Annoying but I can work around it"
+        - "📋 Low - Would be nice to fix someday"
     validations:
       required: true
 
@@ -56,31 +69,6 @@ body:
         4. Save the case
         5. Notice the MAS code field is empty
 
-  - type: dropdown
-    id: how_often
-    attributes:
-      label: How often does this happen?
-      options:
-        - "Every time"
-        - "Sometimes"
-        - "Just happened once"
-        - "Not sure"
-    validations:
-      required: true
-
-  - type: dropdown
-    id: urgency
-    attributes:
-      label: How urgent is this for your work?
-      description: This helps us prioritize fixes
-      options:
-        - "🔥 Critical - Blocks my work completely"
-        - "🚨 High - Makes my work much harder"
-        - "⚠️ Medium - Annoying but I can work around it"
-        - "📋 Low - Would be nice to fix someday"
-    validations:
-      required: true
-
   - type: input
     id: your_name
     attributes:
@@ -97,11 +85,3 @@ body:
         - Were you working with a specific client?
         - Did you see any error messages?
         - Attach screenshots if helpful (drag and drop them here)
-
-  - type: checkboxes
-    id: terms
-    attributes:
-      label: Confirmation
-      options:
-        - label: I understand this will be visible to other MAS staff and volunteers
-          required: true
