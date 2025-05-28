@@ -1,0 +1,22 @@
+{
+    "1.0.0": {
+      "version": "1.0.0",
+      "releaseDate": "2025-01-28",
+      "downloadUrl": "https://github.com/briangflett/mascode/archive/refs/tags/v1.0.0.tar.gz",
+      "compatibility": {
+        "ver": "6.1"
+      },
+      "status": "stable",
+      "description": "Initial release"
+    },
+    "1.0.1": {
+        "version": "1.0.1",
+        "releaseDate": "2025-05-28",
+        "downloadUrl": "https://github.com/briangflett/mascode/archive/refs/tags/v1.0.1.tar.gz",
+        "compatibility": {
+          "ver": "6.1"
+        },
+        "status": "stable",
+        "description": "Mailing list, service request, and RCS forms"
+      }
+    }
