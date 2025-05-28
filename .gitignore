@@ -11,7 +11,6 @@ zz_delete/
 
 # Composer
 vendor/
-composer.lock
 
 # PHPUnit and testing
 .phpunit.result.cache

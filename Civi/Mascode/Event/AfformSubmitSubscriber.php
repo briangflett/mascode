@@ -1,4 +1,5 @@
 <?php
+
 // File: Civi/Mascode/Event/AfformSubmitSubscriber.php
 
 namespace Civi\Mascode\Event;
@@ -21,8 +22,9 @@ class AfformSubmitSubscriber implements EventSubscriberInterface
     {
         // Subscriptions with a priority of > 0 happen before the data is saved to the database.
         // Subscriptions with a priority of < 0 happen after the data is saved to the database.
-        // Data is saved to the database in 
-        //     civicrm/ext/afform/core/afform.php:  $dispatcher->addListener('civi.afform.submit', ['\Civi\Api4\Action\Afform\Submit', 'processGenericEntity'], 0);
+        // Data is saved to the database in
+        //     civicrm/ext/afform/core/afform.php:  $dispatcher->addListener('civi.afform.submit',
+        //          ['\Civi\Api4\Action\Afform\Submit', 'processGenericEntity'], 0);
         return [
             'civi.afform.submit' => ['onFormSubmit', -100],
         ];
@@ -94,7 +96,7 @@ class AfformSubmitSubscriber implements EventSubscriberInterface
 
     /**
      * Create relationships between organization and individuals
-     * 
+     *
      * @param string $sessionId
      */
     protected function createRelationships(string $sessionId): void
@@ -154,7 +156,7 @@ class AfformSubmitSubscriber implements EventSubscriberInterface
 
     /**
      * Create a relationship between two contacts
-     * 
+     *
      * @param int $contactIdA First contact (individual)
      * @param int $contactIdB Second contact (organization)
      * @param string $relationshipType Name or label of relationship type
@@ -169,12 +171,12 @@ class AfformSubmitSubscriber implements EventSubscriberInterface
     ): ?int {
         try {
             // Check if relationship already exists
-            $existing = \Civi\Api4\Relationship::get(FALSE)
+            $existing = \Civi\Api4\Relationship::get(false)
                 ->addSelect('id')
                 ->addWhere('contact_id_a', '=', $contactIdA)
                 ->addWhere('contact_id_b', '=', $contactIdB)
                 ->addWhere('relationship_type_id.name_a_b', '=', $relationshipType)
-                ->addWhere('is_active', '=', TRUE)
+                ->addWhere('is_active', '=', true)
                 ->execute()
                 ->first();
 
@@ -189,7 +191,7 @@ class AfformSubmitSubscriber implements EventSubscriberInterface
             }
 
             // Find the relationship type ID
-            $relType = \Civi\Api4\RelationshipType::get(FALSE)
+            $relType = \Civi\Api4\RelationshipType::get(false)
                 ->addSelect('id')
                 ->addClause('OR', ['name_a_b', '=', $relationshipType], ['label_a_b', '=', $relationshipType])
                 ->execute()
@@ -203,16 +205,16 @@ class AfformSubmitSubscriber implements EventSubscriberInterface
             }
 
             // Create the relationship
-            $rel = \Civi\Api4\Relationship::create(FALSE)
+            $rel = \Civi\Api4\Relationship::create(false)
                 ->addValue('relationship_type_id', $relType['id'])
                 ->addValue('contact_id_a', $contactIdA)
                 ->addValue('contact_id_b', $contactIdB)
-                ->addValue('is_active', TRUE)
+                ->addValue('is_active', true)
                 ->addValue('description', $description)
                 ->execute()
                 ->first();
 
-            $ind = \Civi\Api4\Individual::update(TRUE)
+            $ind = \Civi\Api4\Individual::update(true)
                 ->addValue('employer_id', $contactIdB)
                 ->addWhere('id', '=', $contactIdA)
                 ->execute()

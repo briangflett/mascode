@@ -1,4 +1,5 @@
 <?php
+
 // file: Civi/Mascode/CiviRules/Form/FormBase.php
 
 namespace Civi\Mascode\CiviRules\Form;
