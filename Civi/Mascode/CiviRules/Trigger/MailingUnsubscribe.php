@@ -1,4 +1,5 @@
 <?php
+
 // file: Civi/Mascode/CiviRules/Trigger/MailingUnsubscribe.php
 
 namespace Civi\Mascode\CiviRules\Trigger;

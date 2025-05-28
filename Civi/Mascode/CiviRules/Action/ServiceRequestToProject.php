@@ -1,4 +1,5 @@
 <?php
+
 // file: Civi/Mascode/CiviRules/Action/ServiceRequestToProject.php
 
 namespace Civi\Mascode\CiviRules\Action;
@@ -9,7 +10,6 @@ use function ElementorProDeps\DI\get;
 
 class ServiceRequestToProject extends \CRM_Civirules_Action
 {
-
     /**
      * The method called when this action is triggered by Civirules
      *
@@ -21,17 +21,17 @@ class ServiceRequestToProject extends \CRM_Civirules_Action
         // Retrieve the entity data
         $srCase = $triggerData->getEntityData('Case');
         $srCaseId = $srCase['id'];
-        $pCaseCode =  \Civi\Api4\CiviCase::get(TRUE)
+        $pCaseCode =  \Civi\Api4\CiviCase::get(true)
             ->addSelect('Cases_SR_Projects_.Related_Project_Case_Code')
-            ->addWhere('id', '=', $srCaseId)  
+            ->addWhere('id', '=', $srCaseId)
             ->execute()
             ->first()['Cases_SR_Projects_.Related_Project_Case_Code'] ?? null;
-        
+
         // If already triggered, return
         if (!empty($pCaseCode)) {
             return;
         }
-    
+
         // I had lots of issues with forms, so I am hard coding the action parameters.
         // $actionParameters = $this->getActionParameters();
         $adminId = \Civi::settings()->get('mascode_admin_contact_id') ?? null;
@@ -87,7 +87,7 @@ class ServiceRequestToProject extends \CRM_Civirules_Action
         $pCaseCode = CodeGenerator::generate('project');
 
         // Create the project
-        $civiCase = \Civi\Api4\CiviCase::create(TRUE)
+        $civiCase = \Civi\Api4\CiviCase::create(true)
             ->addValue('case_type_id.name', 'project')
             ->addValue('subject', $pSubject)
             ->addValue('creator_id', $adminId)
@@ -110,13 +110,13 @@ class ServiceRequestToProject extends \CRM_Civirules_Action
         }
 
         // Update the service request
-        $civiCase = \Civi\Api4\CiviCase::update(TRUE)
+        $civiCase = \Civi\Api4\CiviCase::update(true)
             ->addValue('Cases_SR_Projects_.Related_Project_Case_Code', $pCaseCode)
             ->addWhere('id', '=', $srCaseId)
             ->execute();
 
         // Create a Link Cases activity, and link it to one case
-        $civiActivity = \Civi\Api4\Activity::create(TRUE)
+        $civiActivity = \Civi\Api4\Activity::create(true)
             ->addValue('activity_type_id:label', 'Link Cases')
             ->addValue('source_contact_id', $adminId)
             ->addValue('target_contact_id', [
@@ -124,13 +124,16 @@ class ServiceRequestToProject extends \CRM_Civirules_Action
             ])
             ->addValue('case_id', $pCaseId)
             ->addValue('status_id:label', 'Completed')
-            ->addValue('subject', 'Create link between - Service Request (' . $srCaseCode . ') and Project (' . $pCaseCode . ').')
+            ->addValue(
+                'subject',
+                'Create link between - Service Request (' . $srCaseCode . ') and Project (' . $pCaseCode . ').'
+            )
             ->execute();
 
         $activity_id = $civiActivity[0]['id'];
 
         // Then link the activity to the other case
-        $civiCaseActivity = \Civi\Api4\CaseActivity::create(TRUE)
+        $civiCaseActivity = \Civi\Api4\CaseActivity::create(true)
             ->addValue('case_id', $srCaseId)
             ->addValue('activity_id', $activity_id)
             ->execute();
@@ -138,16 +141,18 @@ class ServiceRequestToProject extends \CRM_Civirules_Action
         // Set the project client rep to the service request client rep
         if ($clientRepContactId) {
             try {
-                $civiRelationship = \Civi\Api4\Relationship::create(TRUE)
+                $civiRelationship = \Civi\Api4\Relationship::create(true)
                     ->addValue('contact_id_a', $clientRepContactId)     // client rep
                     ->addValue('contact_id_b', $clientContactId)     // client
                     ->addValue('relationship_type_id:label', 'Case Client Rep is')
-                    ->addValue('is_active', TRUE)  // depends on project
+                    ->addValue('is_active', true)  // depends on project
                     ->addValue('case_id', $pCaseId)
                     ->execute();
             } catch (\Exception $e) {
                 // Handle duplicate error or log the message
-                \Civi::log()->error("Error creating Client relationship: " . $e->getMessage() . " for Case:$pCaseId Client:$clientContactId Client Rep:$clientRepContactId<br>");
+                \Civi::log()->error("Error creating Client relationship: " .
+                    $e->getMessage() .
+                    " for Case:$pCaseId Client:$clientContactId Client Rep:$clientRepContactId<br>");
             }
         }
 
@@ -171,7 +176,7 @@ class ServiceRequestToProject extends \CRM_Civirules_Action
         //     'civicrm/mascode/form/mascodeselectadmin',
         //     'rule_action_id=' . $ruleActionId
         // );
-        return FALSE;
+        return false;
     }
 
     /**

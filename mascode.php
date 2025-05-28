@@ -8,10 +8,7 @@
 
 require_once 'mascode.civix.php';
 
-// Load Composer autoload if it exists
-if (file_exists(__DIR__ . '/vendor/autoload.php')) {
-  require_once __DIR__ . '/vendor/autoload.php';
-}
+// CiviCRM autoloads via the classloader section in info.xml
 
 use CRM_Mascode_ExtensionUtil as E;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
@@ -22,17 +19,17 @@ use Civi\Mascode\CompilerPass;
  */
 function mascode_civicrm_container(ContainerBuilder $container)
 {
-  // These registrations can be removed once we move service definitions to YAML.
-  // Register AfformSubmitSubscriber
-  $container->register('mascode.afform_submit_subscriber', \Civi\Mascode\Event\AfformSubmitSubscriber::class)
-    ->setPublic(true)
-    ->addTag('event_subscriber');
+    // These registrations can be removed once we move service definitions to YAML.
+    // Register AfformSubmitSubscriber
+    $container->register('mascode.afform_submit_subscriber', \Civi\Mascode\Event\AfformSubmitSubscriber::class)
+      ->setPublic(true)
+      ->addTag('event_subscriber');
 
-  // other services like form actions may need to wait until the container is built
-  $container->addCompilerPass(new CompilerPass());
+    // other services like form actions may need to wait until the container is built
+    $container->addCompilerPass(new CompilerPass());
 
-  // I don't need to define CiviRule actions as services, 
-  // as those methods are called directly by CiviRules based on rows in the CiviRules tables.
+    // I don't need to define CiviRule actions as services,
+    // as those methods are called directly by CiviRules based on rows in the CiviRules tables.
 }
 
 /**
@@ -42,7 +39,7 @@ function mascode_civicrm_container(ContainerBuilder $container)
  */
 function mascode_civicrm_config(&$config)
 {
-  _mascode_civix_civicrm_config($config);
+    _mascode_civix_civicrm_config($config);
 }
 
 /**
@@ -52,7 +49,7 @@ function mascode_civicrm_config(&$config)
  */
 function mascode_civicrm_install(): void
 {
-  _mascode_civix_civicrm_install();
+    _mascode_civix_civicrm_install();
 }
 
 /**
@@ -60,7 +57,7 @@ function mascode_civicrm_install(): void
  */
 function mascode_civicrm_postInstall()
 {
-  \Civi\Mascode\Hook\PostInstallOrUpgradeHook::handle();
+    \Civi\Mascode\Hook\PostInstallOrUpgradeHook::handle();
 }
 
 /**
@@ -68,11 +65,11 @@ function mascode_civicrm_postInstall()
  */
 function mascode_civicrm_postUpgrade($op, $queue)
 {
-  if ($op == 'check') {
-    return TRUE;
-  } elseif ($op == 'finish') {
-    \Civi\Mascode\Hook\PostInstallOrUpgradeHook::handle();
-  }
+    if ($op == 'check') {
+        return true;
+    } elseif ($op == 'finish') {
+        \Civi\Mascode\Hook\PostInstallOrUpgradeHook::handle();
+    }
 }
 
 /**
@@ -82,12 +79,12 @@ function mascode_civicrm_postUpgrade($op, $queue)
  */
 function mascode_civicrm_enable(): void
 {
-  _mascode_civix_civicrm_enable();
+    _mascode_civix_civicrm_enable();
 }
 
 // Need to handle caseSummary as a traditional hook for now as it is expecting a return value
-// 
+//
 function mascode_civicrm_caseSummary($caseId)
 {
-  return \Civi\Mascode\Hook\CaseSummaryHook::handle($caseId);
+    return \Civi\Mascode\Hook\CaseSummaryHook::handle($caseId);
 }

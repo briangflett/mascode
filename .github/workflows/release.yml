@@ -64,6 +64,36 @@ jobs:
           echo "Release ${{ steps.version.outputs.version }}" > release-notes.md
         fi
 
+    - name: Update releases.json
+      run: |
+        # Create or update releases.json
+        VERSION="${{ steps.version.outputs.version }}"
+        DATE=$(date +%Y-%m-%d)
+        
+        # Create new release entry
+        cat > release-entry.json << EOF
+        {
+          "${VERSION}": {
+            "version": "${VERSION}",
+            "releaseDate": "${DATE}",
+            "downloadUrl": "https://github.com/briangflett/mascode/archive/refs/tags/v${VERSION}.tar.gz",
+            "compatibility": {
+              "ver": "6.1"
+            },
+            "status": "stable",
+            "description": "Production release"
+          }
+        }
+        EOF
+        
+        # Update releases.json (create if doesn't exist)
+        if [ -f releases.json ]; then
+          jq -s '.[0] * .[1]' releases.json release-entry.json > releases-updated.json
+          mv releases-updated.json releases.json
+        else
+          mv release-entry.json releases.json
+        fi
+
     - name: Create GitHub Release
       uses: softprops/action-gh-release@v1
       with:

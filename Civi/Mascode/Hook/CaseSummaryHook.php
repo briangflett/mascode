@@ -1,4 +1,5 @@
 <?php
+
 // file: Civi/Mascode/Hook/CaseSummaryHook.php
 
 /**
@@ -45,7 +46,8 @@ class CaseSummaryHook
         //   \CRM_Core_Resources::singleton()->addStyleFile('mascode', 'css/extras.css');
 
         $html = '<table class="report crm-entity case-summary" style="margin-top: 1em;"><tbody><tr>';
-        $html .= '<td class="label"><span class="crm-case-summary-label">End Date:</span>&nbsp;' . $formattedEndDate . '</td>';
+        $html .= '<td class="label"><span class="crm-case-summary-label">End Date:</span>&nbsp;' .
+                    $formattedEndDate . '</td>';
         $html .= '</tr></tbody></table>';
         return [
             [

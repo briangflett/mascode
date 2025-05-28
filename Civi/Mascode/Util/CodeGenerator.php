@@ -1,4 +1,5 @@
 <?php
+
 // file: Civi/Mascode/Util/CodeGenerator.php
 
 namespace Civi\Mascode\Util;
@@ -7,7 +8,7 @@ class CodeGenerator
 {
     /**
      * Generate a unique code for the given case type
-     * 
+     *
      * @param string $caseType The case type ('service_request' or 'project')
      * @return string The generated code
      */
@@ -23,9 +24,9 @@ class CodeGenerator
             } else {
                 \Civi::settings()->set('mascode_last_service_request' . $year, 1);
                 \Civi::settings()->revert('mascode_last_service_request' . ($year - 1));
-                return 'R' . $year . '001';              
+                return 'R' . $year . '001';
             }
-        } else { 
+        } else {
             if ($caseType == 'project') {
                 $lastProject = \Civi::settings()->get('mascode_last_project' . $year);
                 if ($lastProject) {
@@ -40,12 +41,12 @@ class CodeGenerator
             } else {
                 throw new \Exception("Invalid case type: $caseType");
             }
-        } 
+        }
     }
 
     /**
      * Get the ID of a custom field by group name and field name
-     * 
+     *
      * @param string $groupName Name of the custom group
      * @param string $fieldName Name of the custom field
      * @return int|null ID of the custom field or null if not found

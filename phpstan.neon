@@ -19,13 +19,6 @@ parameters:
         - '#Class CRM_.* not found#'
         - '#Function civicrm_.* not found#'
         
-    # Include doctrine annotations for better analysis
-    doctrine:
-        objectManagerLoader: tests/doctrine-object-manager.php
-        
-    # Memory limit for analysis
-    memoryLimitFile: .phpstan-memory-limit
-    
     # Check for dead code (optional, can be enabled later)
     checkGenericClassInNonGenericObjectType: false
     checkMissingIterableValueType: false
