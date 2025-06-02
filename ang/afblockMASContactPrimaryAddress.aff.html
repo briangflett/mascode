@@ -1,0 +1,10 @@
+<div class="af-container af-layout-inline">
+  <af-field name="street_address" defn="{&quot;required&quot;:true,&quot;input_attrs&quot;:[]}"></af-field>
+  <af-field name="is_primary" defn="{&quot;afform_default&quot;:&quot;1&quot;}" af-if="([[&amp;quot;Organization1[0][fields][organization_name]&amp;quot;,&amp;quot;=&amp;quot;,&amp;quot;\&amp;quot;Always hide this field\&amp;quot;&amp;quot;]])"></af-field>
+</div>
+<div class="af-container af-layout-inline">
+  <af-field name="city"></af-field>
+  <af-field name="state_province_id" defn="{&quot;afform_default&quot;:1108,&quot;input_attrs&quot;:[],&quot;input_type&quot;:&quot;Select&quot;}"></af-field>
+  <af-field name="country_id" defn="{&quot;afform_default&quot;:&quot;1039&quot;,&quot;input_attrs&quot;:[]}" af-if="([[&amp;quot;Organization1[0][fields][organization_name]&amp;quot;,&amp;quot;=&amp;quot;,&amp;quot;\&amp;quot;Always hide this field\&amp;quot;&amp;quot;]])"></af-field>
+  <af-field name="postal_code"></af-field>
+</div>

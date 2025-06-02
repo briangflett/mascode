@@ -83,9 +83,9 @@
 echo "=== CiviRules Export Tool ===\n\n";
 
 // CONFIGURATION
-$RULE_TO_EXPORT = 'mas_create_project_from_sr';  // Change this to export different rules
+$RULE_TO_EXPORT = '';  // Change this to export different rules
 $EXPORT_ALL = false;                              // Set to true to export all MAS rules
-$LIST_ONLY = false;                               // Set to true to just list available rules
+$LIST_ONLY = true;                               // Set to true to just list available rules
 
 // Get available MAS rules
 try {

@@ -1,0 +1,8 @@
+{
+    "type": "block",
+    "title": "MAS Contact Primary Phone",
+    "is_public": false,
+    "permission": [
+        "access CiviCRM"
+    ]
+}

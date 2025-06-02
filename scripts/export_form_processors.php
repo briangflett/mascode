@@ -40,10 +40,10 @@
 echo "=== FormProcessor Export Tool (Corrected) ===\n\n";
 
 // CONFIGURATION
-$PROCESSOR_TO_EXPORT = 'request_for_assistance_form';  // Change this to export different processors
+$PROCESSOR_TO_EXPORT = '';  // Change this to export different processors
 $EXPORT_ALL = false;                                   // Set to true to export all (or filtered) processors
 $FILTER_PREFIX = '';                                   // Filter prefix when $EXPORT_ALL is true (empty = all)
-$LIST_ONLY = false;                                    // Set to true to just list available processors
+$LIST_ONLY = true;                                    // Set to true to just list available processors
 
 // Check if FormProcessor extension is available
 if (!function_exists('civicrm_api3')) {

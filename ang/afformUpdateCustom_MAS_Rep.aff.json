@@ -1,0 +1,9 @@
+{
+    "type": "form",
+    "title": "Update MAS Rep",
+    "server_route": "civicrm/af/custom/MAS_Rep/update",
+    "is_public": false,
+    "permission": [
+        "access CiviCRM"
+    ]
+}

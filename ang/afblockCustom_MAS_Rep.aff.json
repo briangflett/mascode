@@ -1,0 +1,8 @@
+{
+    "type": "form",
+    "title": "MAS Rep block",
+    "is_public": false,
+    "permission": [
+        "access CiviCRM"
+    ]
+}
