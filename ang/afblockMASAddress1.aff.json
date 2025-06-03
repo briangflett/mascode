@@ -1,6 +1,6 @@
 {
     "type": "block",
-    "title": "MAS Contact Primary Address",
+    "title": "MAS Address",
     "is_public": false,
     "create_submission": false,
     "permission": [
