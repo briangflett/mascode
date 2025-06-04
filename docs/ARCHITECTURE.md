@@ -1,207 +1,142 @@
-# Mascode Extension Documentation
+# Mascode Extension Architecture
 
 ## Overview
+The Mascode extension provides custom automation and workflow enhancements for Management Advisory Services (MAS), a nonprofit providing pro bono consulting services. Built as a modern CiviCRM extension using event-driven architecture and dependency injection.
 
-The Mascode extension provides custom automation and logic for Management Advisory Services (MAS), a nonprofit providing pro bono consulting services to other nonprofits. This extension enhances CiviCRM functionality with custom case management and form processing. In the future AI integration capabilities will be added, either through this extension or a separate one.
+## Core Architecture
 
-## Technology Stack
+### Technology Stack
+- **CiviCRM Extension**: Built with Civix framework
+- **PHP**: 8.3+ required
+- **Container**: Symfony Dependency Injection
+- **Events**: Symfony EventDispatcher for decoupled architecture
+- **Integration**: CiviRules for business logic automation
+- **Forms**: FormBuilder (Afform) preferred over legacy Smarty
 
-### Core Architecture
+### Design Principles
+- **API-First**: CiviCRM API4 for all data operations
+- **Event-Driven**: Loose coupling via EventDispatcher
+- **Service-Oriented**: Dependency injection for service management
+- **Modern PHP**: PSR-4 autoloading, PHP 8.3+ features
+- **Automation-Focused**: Business logic via CiviRules where possible
 
-- **CiviCRM Extension**: Built using Civix framework
-- **PHP Version**: 8.3+ required
-- **Framework Components**:
-  - Symfony Container (Dependency Injection)
-  - Symfony EventDispatcher (Event-driven architecture)
-  - CiviRules integration for business logic
-  - FormProcessor/Action Provider integration
-  - FormBuilder (Afform) & Searchkit CiviCRM core components
-
-### Development Environment
-
-- **Platform**: Windows 11 + WSL2 + Ubuntu 22.04
-- **Web Stack**: Apache 2.4.52, PHP 8.3.11, MySQL 8.0.39
-- **Tools**: CiviCRM Buildkit, XDebug, VS Code
-- **CMS Integration**: WordPress + CiviCRM
-
-## Extension Architecture
+## Extension Components
 
 ### Container Services
-
-The extension uses Symfony's Dependency Injection Container for service management:
-
-```php
-// Services registered in mascode_civicrm_container()
-- mascode.afform_prefill_subscriber: Event subscriber for form prefilling with anonymous access validation
-- mascode.afform_submit_subscriber: Event subscriber for form post-submit processing with anonymous access validation
-```
+Services registered in `mascode_civicrm_container()`:
+- `mascode.afform_prefill_subscriber`: Form prefilling with anonymous access validation
+- `mascode.afform_submit_subscriber`: Post-submit processing with anonymous access validation
 
 ### CiviRules Integration
 
-Business logic implemented via CiviRules for maintainability:
+#### Actions
+- `mas_create_project_from_sr`: Convert service requests to projects
+- `mas_generate_mas_code`: Generate unique MAS codes for cases
+- `mas_preident_relationship`: Create president relationships with employers
+- `mas_ed_relationship`: Create executive director relationships with employers
+- `mas_add_relationship_to_employer`: Create configurable relationships with employers
 
 #### Triggers
-
 - `mas_unsubscribe_mailingevent`: Mailing unsubscribe events
 - `mas_new_case`: Case creation events
 
-#### Actions
-
-- `mas_create_project_from_sr`: Convert service requests to projects
-- `mas_generate_mas_code`: Generate MAS codes for cases
-
-#### Custom Components
-
-- **ServiceRequestToProject**: Automated project creation from service requests
-- **GenerateMasCode**: Automatic code generation for case tracking
-- **MasAddRole**: FormProcessor action for case role assignment
-
 ### Core Utilities
-
-- **CodeGenerator**: Generates unique MAS codes (R25001, P25001 format)
-- **PatchManager**: Applies core CiviCRM patches for enhanced functionality
+- **CodeGenerator**: Generates sequential MAS codes (R25001, P25001 format)
+- **PatchManager**: Automatic application of CiviCRM core patches
 - **ErrorHandler**: Custom error handling and logging
 
 ## Key Features
 
-### 1. Case Management Enhancement
+### Case Management Enhancement
+- **Automatic Code Generation**: Sequential codes for service requests (R) and projects (P)
+- **Workflow Automation**: Service Request → Project conversion via CiviRules
+- **Relationship Management**: Enhanced contact-organization relationships
+- **Status Tracking**: Custom case status workflows
 
-- **Automatic Code Generation**: Service requests get codes like R25001, projects get P25001
-- **Service Request to Project Conversion**: Automated workflow when Service Request status changes to Project Created
-- **Case Role Management**: Enhanced relationship management for cases
-- **Case Summary Enhancement**: Additional end date display
+### Form Processing
+- **Anonymous Access**: Secure form access with checksum validation
+- **Dynamic Prefilling**: Complex form prefill scenarios beyond core FormBuilder
+- **Custom Actions**: Post-submission processing for complex workflows
+- **Validation**: Enhanced form validation and error handling
 
-### 2. Form Processing
+### AI Integration Strategy
 
-- **Anonymous Form Access**: Secure form access with checksum validation
-- **Afform Prefilling**: Validate URL parameters and prefill forms with data not handled by FormBuilder (if required)
-- **Afform Submission**: Create data not automatically handled by FormBuilder (eg. contact relationships)
-- **Contact Form Customization**: Hide/modify contact form fields (WIP)
+#### Phase 1: Direct API Integration (Planned)
+- **Primary LLM**: OpenAI GPT-4 for function calling and cost efficiency
+- **Secondary LLM**: Anthropic Claude for complex analysis tasks
+- **Architecture**: PHP-native integration with existing stack
+- **Use Cases**: Contact enhancement, report generation, donor analysis
 
-### 3. AI Integration Strategy
+#### Phase 2: Advanced Features (Future)
+- **Intelligent Routing**: AI-powered case assignment
+- **Predictive Analytics**: Donor behavior modeling
+- **Content Generation**: Automated report narratives
+- **Form Optimization**: AI-driven form improvement suggestions
 
-#### Phase 1: API-First Approach (Current Planning)
-
-- **Primary LLM**: OpenAI GPT-4 (better function calling, lower cost)
-- **Secondary LLM**: Anthropic Claude (complex analysis tasks)
-- **Architecture**: Direct API integration with existing PHP stack
-- **Integration Points**:
-  - CiviCRM contact enhancement
-  - Form analysis and optimization
-  - Automated report generation
-  - Donor behavior prediction
-
-#### Phase 2: Advanced AI Features (Future)
-
-- **LangChain Patterns**: Implement chain-of-thought processing in PHP
-- **Simple AI Agents**: CiviCRM query agents, donor analysis agents
-- **Document Processing**: AI-powered report generation
-
-#### Phase 3: Microservices (If Needed)
-
-- **Python Service**: Only if advanced ML features required
-- **Hybrid Architecture**: PHP main app + Python AI microservice
-- **API Bridge**: RESTful interface between PHP and Python components
-
-### 4. Patch Management
-
-Automated application of CiviCRM core patches:
-
+### Patch Management
+Automated application of CiviCRM core enhancements:
 - **32599.patch**: Afform context enhancement for token generation
-- **32600.patch**: Case autofill behavior for form builder
-
-## Installation & Configuration
-
-### Requirements
-
-- CiviCRM 6.1+
-- PHP 8.3+
-- CiviRules extension
-- Action Provider extension (for FormProcessor integration)
-- FormProcessor extension (for enhanced form actions)
-
-### Installation Process
-
-1. Install via CiviCRM extension manager
-2. Extension automatically:
-   - Creates required settings
-   - Registers CiviRules components
-   - Applies core patches
-   - Sets up event subscribers
-
-### Configuration
-
-- **Admin Contact**: Automatically detected MAS Rep contact for project creation
-- **Code Generation**: Automatic generation of Service Request and Project codes (Ryynnn & Pyynnn)
-- **Patch Application**: Automatic during install/upgrade
+- **32600.patch**: Case autofill behavior improvements
+- Applied automatically during install/upgrade
 
 ## File Structure
 
-### Core Classes
-
+### Modern PSR-4 Classes (`Civi/Mascode/`)
 ```
-Civi/Mascode/               # psr4 PHP namespaces
-├── CiviRules/                    # CiviRules components
-│   ├── Action/
-│   ├── Trigger/
-│   └── Form/
-├── Event/                        # Event subscribers
+├── CiviRules/
+│   ├── Action/           # Business logic actions
+│   ├── Trigger/          # Custom event triggers
+│   └── Form/             # Configuration forms (when needed)
+├── Event/
 │   ├── AfformPrefillSubscriber.php
 │   └── AfformSubmitSubscriber.php
-├── FormProcessor/Action/         # FormProcessor actions
-├── Hook/                         # Hook implementations
-│   ├── PostInstallOrUpgradeHook.php
-│   └── CaseSummaryHook.php
-├── Patches/                      # Patch management
+├── FormProcessor/Action/ # FormProcessor integration
+├── Hook/                 # CiviCRM hook implementations
+├── Patches/             # Core patch management
 │   ├── PatchManager.php
-│   └── files/                    # Patch files
-├── Util/                         # Utility classes
+│   └── files/           # Patch files
+├── Util/
 │   └── CodeGenerator.php
-└── CompilerPass.php              # Container configuration
-
-CRM/Mascode/                # psr0 PEAR style class naming - use psr4 whenever possible
-├── Contact/Form/Contact.php      # Contact form customization (WIP)
-├── Form/                         # Form controllers (pre FormBuilder) - use FormBuilder whenever possible
-├── Report/                       # Custom reports (pre Searchkit) - use Searchkit whenever possible
-├── ErrorHandler.php              # Custom error handling
-└── Upgrader.php                  # Extension upgrade logic
+└── CompilerPass.php     # Container configuration
 ```
 
-### Configuration Files
-
+### Legacy PSR-0 Classes (`CRM/Mascode/`)
 ```
-templates/                        # Smarty templates - use FormBuilder whenever possible
-xml/Menu/                         # Menu definitions (WIP)
-composer.json                     # Dependencies
-info.xml                          # Extension metadata
-mascode.php                       # Main extension file
-services.yml                      # May use this to define services (Future)
+├── CiviRules/Form/      # CiviRules form controllers (required for compatibility)
+├── Contact/Form/        # Contact form customization
+├── Form/                # Legacy form controllers (minimize use)
+├── Report/              # Custom reports (prefer SearchKit)
+├── ErrorHandler.php     # Custom error handling
+└── Upgrader.php         # Extension upgrade logic
 ```
 
-### Other Functions
-
+### Configuration & Templates
 ```
-extern/                           # Inital data conversion was done by executing these functions from the browser
-scripts/                          # Now scripts are executed from the terminal using "XDEBUG_SESSION=1 cv scr <file in scripts directory>"
+templates/               # Smarty templates (minimize use)
+├── CRM/Mascode/CiviRules/Form/  # CiviRules form templates
+xml/Menu/                # Menu definitions
+ang/                     # Angular/Afform definitions
+info.xml                 # Extension metadata
+mascode.php              # Main extension file
 ```
 
 ## Development Patterns
 
-### Event-Driven Architecture
-
+### Event Subscriber Pattern
 ```php
-// Modern event subscriber pattern
 class MySubscriber implements EventSubscriberInterface {
     public static function getSubscribedEvents(): array {
         return ['event.name' => 'methodName'];
+    }
+    
+    public function methodName(Event $event): void {
+        // Event handling logic
     }
 }
 ```
 
 ### Service Registration
-
 ```php
-// Dependency injection container usage
 function mascode_civicrm_container(ContainerBuilder $container) {
     $container->register('service.name', ServiceClass::class)
         ->addArgument(new Reference('dependency'))
@@ -209,116 +144,69 @@ function mascode_civicrm_container(ContainerBuilder $container) {
 }
 ```
 
-### API Integration Patterns
-
+### CiviRules Action Pattern
 ```php
-// Future AI service integration
-class AIService {
-    public function enhanceContact($contactId) {
-        $contact = $this->getCiviCRMData($contactId);
-        $aiInsights = $this->llm->analyze($contact);
-        return array_merge($contact, $aiInsights);
+class MyAction extends \CRM_CivirulesActions_Generic_Api {
+    protected function getApiEntity(): string { return 'EntityName'; }
+    protected function getApiAction(): string { return 'create'; }
+    
+    protected function alterApiParameters($params, $triggerData): array {
+        // Transform parameters for API call
+        return $params;
+    }
+    
+    public function userFriendlyConditionParams(): string {
+        // Return human-readable description
     }
 }
 ```
 
-## Future Roadmap
+## Installation & Requirements
 
-### Planned AI Features
+### Dependencies
+- **CiviCRM**: 6.1+ required
+- **PHP**: 8.3+ required
+- **Extensions**: CiviRules (required), Action Provider (recommended), FormProcessor (recommended)
 
-1. **Contact Intelligence**: AI-powered contact categorization and insights
-2. **Donor Analysis**: Predictive modeling for donor behavior
-3. **Report Generation**: Automated narrative report creation
-4. **Form Optimization**: AI-driven form improvement suggestions
-5. **Case Management**: Intelligent case routing and priority assignment
+### Automatic Setup
+- CiviRules component registration
+- Core patch application
+- Event subscriber registration
+- Container service configuration
 
-### Technical Improvements
+## Performance & Maintenance
 
-1. **Testing Framework**: PHPUnit test suite implementation
-2. **Code Quality**: PHPStan/Psalm static analysis integration
-3. **Documentation**: Enhanced inline documentation
-4. **Performance**: Query optimization and caching strategies
-
-## Maintenance & Support
-
-### Cache Management
-
-- **Container Cache**: Cleared automatically on install/upgrade
+### Cache Strategy
+- **Container Cache**: Symfony DI container compilation
+- **Event Cache**: EventDispatcher listener registration
+- **Template Cache**: CiviCRM Smarty template compilation
 - **Development**: Use `cv flush` for cache clearing
-- **Template Cache**: Managed by CiviCRM core
 
-### Debugging
-
-- **Logging**: Uses CiviCRM's PSR-3 logger via `Civi::log()`
-- **Error Handling**: Custom error handler for extension-specific errors
-- **Development Mode**: Enable CiviCRM debug for detailed logging
+### Monitoring
+- **Logging**: PSR-3 compliant via `Civi::log()`
+- **Error Handling**: Custom error handler for extension-specific issues
+- **Debug Mode**: CiviCRM debug mode compatibility
 
 ### Version Control
-
-- **GitHub Repository**: https://github.com/briangflett/mascode
+- **Repository**: GitHub-based with semantic versioning
+- **Releases**: Tagged releases with migration guides
 - **Branching**: Feature branches with PR workflow
-- **Releases**: Tagged releases with semantic versioning
 
-## Contributing
+## Future Roadmap
 
-### Development Setup
+### Technical Enhancements
+- PHPUnit test suite implementation
+- Static analysis integration (PHPStan/Psalm)
+- Performance optimization and query analysis
+- Enhanced documentation and examples
 
-1. Clone repository to CiviCRM extensions directory
-2. Run `composer install` if dependencies exist
-3. Enable extension in CiviCRM
-4. Use `cv flush` after code changes
-
-### Code Standards
-
-- **PSR Standards**: Follow PSR-1, PSR-2, PSR-4
-- **CiviCRM Conventions**: Use CiviCRM coding standards
-- **Documentation**: PHPDoc blocks for all public methods
-- **Testing**: Unit tests for business logic
-
-### Pull Request Process
-
-1. Create feature branch from main
-2. Implement changes with tests
-3. Update documentation
-4. Submit PR with detailed description
-5. Code review and approval required
-
-## AI Instructions
-
-### Development Preferences
-- **API Usage**: Always use CiviCRM API4 instead of API3, BAO, DAO, etc.
-- **Event Handling**: Use Symfony EventDispatcher instead of traditional hooks when possible
-- **Forms**: Use FormBuilder (Afform) instead of traditional Smarty forms
-- **Reports**: Use SearchKit instead of traditional custom reports
-- **Code Style**: Follow PSR-4, use modern PHP features, maintain CiviCRM conventions
-- **Testing**: Write unit tests for business logic, test all changes in development environment
-
-### Common Commands
-```bash
-# Clear CiviCRM cache after changes
-cv flush
-
-# Run development scripts with debugging
-XDEBUG_SESSION=1 cv scr <script-name>
-
-# Check extension status
-cv ext:list | grep mascode
-```
-
-### Documentation Maintenance
-- Update CLAUDE.md for AI assistant instructions
-- Update this CONTEXT.md for architectural changes
-- Update CHANGELOG.md for version changes
-- Regularly update documentation to pass context between conversations
-
-### Resource Links
-- [CiviCRM API4 Documentation](https://docs.civicrm.org/dev/en/latest/api/v4/)
-- [CiviCRM Extension Development](https://docs.civicrm.org/dev/en/latest/extensions/)
-- [Symfony EventDispatcher](https://symfony.com/doc/current/components/event_dispatcher.html)
-- [CiviRules Documentation](https://civirules.org/)
+### Feature Expansion
+- Advanced AI integration capabilities
+- Enhanced reporting and analytics
+- Workflow automation improvements
+- Integration with additional CiviCRM extensions
 
 ---
-
-_Last Updated: January 2025_
-_Extension Version: 1.0.0_
-_CiviCRM Compatibility: 6.1+_
+*Last Updated: June 2025*  
+*Extension Version: 1.0.0*  
+*CiviCRM Compatibility: 6.1+*
