@@ -6,4 +6,10 @@
     <title>MascodeSelectAdmin</title>
     <access_arguments>access CiviCRM</access_arguments>
   </item>
+  <item>
+    <path>civicrm/mascode/civirule/form/action/employerrelationship</path>
+    <page_callback>CRM_Mascode_CiviRules_Form_EmployerRelationship</page_callback>
+    <title>Employer Relationship Action</title>
+    <access_arguments>access CiviCRM</access_arguments>
+  </item>
 </menu>

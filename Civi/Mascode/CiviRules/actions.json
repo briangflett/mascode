@@ -8,5 +8,20 @@
         "name": "mas_generate_mas_code",
         "label": "mas: Generate MAS Code for service request or project",
         "class_name": "Civi\\Mascode\\CiviRules\\Action\\GenerateMasCode"
+    },
+    {
+        "name": "mas_preident_relationship",
+        "label": "mas: Generate President Relationship with the Employer",
+        "class_name": "Civi\\Mascode\\CiviRules\\Action\\PresidentRelationship"
+    },
+    {
+        "name": "mas_ed_relationship",
+        "label": "mas: Generate ED Relationship with the Employer",
+        "class_name": "Civi\\Mascode\\CiviRules\\Action\\EdRelationship"
+    },
+    {
+        "name": "mas_add_relationship_to_employer",
+        "label": "mas: Add Relationship to Employer",
+        "class_name": "Civi\\Mascode\\CiviRules\\Action\\SimpleEmployerRelationship"
     }
 ]

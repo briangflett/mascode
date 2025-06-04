@@ -17,43 +17,69 @@ class PostInstallOrUpgradeHook
     public static function handle(): void
     {
         self::createMascodeSettings();
-        \CRM_Civirules_Utils_Upgrader::insertTriggersFromJson('../CiviRules/triggers.json');
-        \CRM_Civirules_Utils_Upgrader::insertActionsFromJson('../CiviRules/actions.json');
-        \CRM_Civirules_Utils_Upgrader::insertConditionsFromJson('../CiviRules/conditions.json');
+        self::installCiviRulesComponents();
 
-      // Apply patches
+        // Apply patches
         self::applyPatches();
     }
 
-  /**
-   * Create settings for code generation
-   */
+    /**
+     * Create settings for code generation
+     */
     private static function createMascodeSettings(): void
     {
-      // Set admin contact for ServiceRequestToProject action only if setting doesn't exist
-        if (
-            !\Civi::settings()->getExist('mascode_admin_contact_id') ||
-            \Civi::settings()->get('mascode_admin_contact_id') === null
-        ) {
+        // Set admin contact for ServiceRequestToProject action only if setting doesn't exist
+        $existingAdminId = \Civi::settings()->get('mascode_admin_contact_id');
+        if (empty($existingAdminId)) {
             $adminContact = \Civi\Api4\Contact::get(false)
-            ->addSelect('id')
-            ->addWhere('contact_sub_type', '=', 'MAS_Rep')
-            ->addWhere('email_primary.email', '=', 'info@masadvise.org')
-            ->execute()
-            ->first();
+                ->addSelect('id')
+                ->addWhere('contact_sub_type', '=', 'MAS_Rep')
+                ->addWhere('email_primary.email', '=', 'info@masadvise.org')
+                ->execute()
+                ->first();
 
             $adminId = $adminContact['id'] ?? null;
             if ($adminId) {
                 \Civi::settings()->set('mascode_admin_contact_id', $adminId);
             }
         }
-      // Don't initialize mascode_last_project or mascode_last_service_request
-      // CodeGenerator::generate() will create them if they don't exist
+        // Don't initialize mascode_last_project or mascode_last_service_request
+        // CodeGenerator::generate() will create them if they don't exist
     }
 
-  /**
-   * Apply patches to CiviCRM core
-   */
+    /**
+     * Install CiviRules components using correct absolute paths
+     */
+    private static function installCiviRulesComponents(): void
+    {
+        $extensionPath = \CRM_Mascode_ExtensionUtil::path();
+
+        $triggersFile = $extensionPath . '/Civi/Mascode/CiviRules/triggers.json';
+        $actionsFile = $extensionPath . '/Civi/Mascode/CiviRules/actions.json';
+        $conditionsFile = $extensionPath . '/Civi/Mascode/CiviRules/conditions.json';
+
+        if (file_exists($triggersFile)) {
+            \CRM_Civirules_Utils_Upgrader::insertTriggersFromJson($triggersFile);
+        } else {
+            \Civi::log()->warning("Triggers file not found: $triggersFile");
+        }
+
+        if (file_exists($actionsFile)) {
+            \CRM_Civirules_Utils_Upgrader::insertActionsFromJson($actionsFile);
+        } else {
+            \Civi::log()->warning("Actions file not found: $actionsFile");
+        }
+
+        if (file_exists($conditionsFile)) {
+            \CRM_Civirules_Utils_Upgrader::insertConditionsFromJson($conditionsFile);
+        } else {
+            \Civi::log()->warning("Conditions file not found: $conditionsFile");
+        }
+    }
+
+    /**
+     * Apply patches to CiviCRM core
+     */
     private static function applyPatches(): void
     {
         $results = PatchManager::applyAll();

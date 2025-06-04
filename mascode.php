@@ -21,9 +21,10 @@ function mascode_civicrm_container(ContainerBuilder $container)
 {
     // These registrations can be removed once we move service definitions to YAML.
     // Register AfformSubmitSubscriber
-    $container->register('mascode.afform_submit_subscriber', \Civi\Mascode\Event\AfformSubmitSubscriber::class)
-      ->setPublic(true)
-      ->addTag('event_subscriber');
+    // I was able to replace this with CiviRules to create President and Executive Director relationships,
+    // $container->register('mascode.afform_submit_subscriber', \Civi\Mascode\Event\AfformSubmitSubscriber::class)
+    //   ->setPublic(true)
+    //   ->addTag('event_subscriber');
 
     // other services like form actions may need to wait until the container is built
     $container->addCompilerPass(new CompilerPass());
