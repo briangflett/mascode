@@ -18,5 +18,15 @@
         },
         "status": "stable",
         "description": "Mailing list, service request, and RCS forms"
+      },
+    "1.0.2": {
+        "version": "1.0.2",
+        "releaseDate": "2025-06-04",
+        "downloadUrl": "https://github.com/briangflett/mascode/archive/refs/tags/v1.0.2.tar.gz",
+        "compatibility": {
+          "ver": "6.1"
+        },
+        "status": "stable",
+        "description": "CiviRules deployment tools and employer relationship automation"
       }
     }
