@@ -109,7 +109,7 @@ foreach ($formsToExport as $formName) {
     echo "\n--- Exporting Form: $formName ---\n";
 
     try {
-        $form = \Civi\Api4\Afform::get()
+        $form = \Civi\Api4\Afform::get(false)
             ->addWhere('name', '=', $formName)
             ->setCheckPermissions(false)
             ->execute()

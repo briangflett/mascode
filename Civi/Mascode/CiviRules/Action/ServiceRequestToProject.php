@@ -171,11 +171,6 @@ class ServiceRequestToProject extends \CRM_Civirules_Action
      */
     public function getExtraDataInputUrl($ruleActionId)
     {
-        // I had lots of issues with forms, so I am hard coding the values.
-        // return \CRM_Utils_System::url(
-        //     'civicrm/mascode/form/mascodeselectadmin',
-        //     'rule_action_id=' . $ruleActionId
-        // );
         return false;
     }
 

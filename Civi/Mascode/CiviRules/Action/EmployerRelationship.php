@@ -7,10 +7,9 @@ namespace Civi\Mascode\CiviRules\Action;
 use CRM_Mascode_ExtensionUtil as E;
 
 /**
- * Simplified action that extends the Generic API pattern
- * to create relationships with the Individual's employer
+ * Action to create relationships with the Individual's employer
  */
-class SimpleEmployerRelationship extends \CRM_CivirulesActions_Generic_Api
+class EmployerRelationship extends \CRM_CivirulesActions_Generic_Api
 {
     /**
      * Method to set the api entity
@@ -47,10 +46,35 @@ class SimpleEmployerRelationship extends \CRM_CivirulesActions_Generic_Api
         $contactId = $triggerData->getContactId();
         $actionParams = $this->getActionParameters();
 
+        if (empty($actionParams['relationship_type_id'])) {
+            throw new \Exception("Relationship type ID not configured");
+        }
+
         // Get the employer ID
         $employerId = $this->getEmployerId($contactId);
         if (empty($employerId)) {
             throw new \Exception("No employer found for contact ID: {$contactId}");
+        }
+
+        // Check if there is already an active relationship of this type
+        $existingRelationship = \Civi\Api4\Relationship::get(false)
+            ->addSelect('id', 'is_active')
+            ->addWhere('contact_id_a', '=', $contactId)
+            ->addWhere('contact_id_b', '=', $employerId)
+            ->addWhere('relationship_type_id', '=', $actionParams['relationship_type_id'])
+            ->addWhere('is_active', '=', true)
+            ->setLimit(1)
+            ->execute()
+            ->first();
+
+        if ($existingRelationship) {
+            \Civi::log()->info('EmployerRelationship: Active relationship already exists', [
+                'relationship_id' => $existingRelationship['id'],
+                'contact_id' => $contactId,
+                'employer_id' => $employerId,
+                'relationship_type_id' => $actionParams['relationship_type_id']
+            ]);
+            throw new \Exception("Relationship already exists");
         }
 
         // Set up the relationship parameters
