@@ -84,14 +84,14 @@ echo "=== CiviRules Export Tool ===\n\n";
 
 // CONFIGURATION
 $RULE_TO_EXPORT = '';  // Change this to export different rules
-$EXPORT_ALL = false;                              // Set to true to export all MAS rules
-$LIST_ONLY = true;                               // Set to true to just list available rules
+$EXPORT_ALL = true;                              // Set to true to export all MAS rules
+$LIST_ONLY = false;                               // Set to true to just list available rules
 
 // Get available MAS rules
 try {
-    $rules = \Civi\Api4\CivirulesRule::get()
-        ->addWhere('name', 'LIKE', 'mas_%')
+    $rules = \Civi\Api4\CiviRulesRule::get()
         ->addSelect('id', 'name', 'label', 'description', 'is_active')
+        ->setCheckPermissions(false)
         ->execute();
 } catch (Exception $e) {
     echo "Error fetching rules: " . $e->getMessage() . "\n";
@@ -164,20 +164,20 @@ foreach ($rulesToExport as $rule) {
 
     try {
         // Get complete rule data
-        $ruleData = \Civi\Api4\CivirulesRule::get()
+        $ruleData = \Civi\Api4\CiviRulesRule::get()
             ->addWhere('id', '=', $rule['id'])
             ->setCheckPermissions(false)
             ->execute()
             ->first();
 
         // Get rule actions
-        $ruleActions = \Civi\Api4\CivirulesRuleAction::get()
+        $ruleActions = \Civi\Api4\CiviRulesRuleAction::get()
             ->addWhere('rule_id', '=', $rule['id'])
             ->setCheckPermissions(false)
             ->execute();
 
         // Get rule conditions
-        $ruleConditions = \Civi\Api4\CivirulesRuleCondition::get()
+        $ruleConditions = \Civi\Api4\CiviRulesRuleCondition::get()
             ->addWhere('rule_id', '=', $rule['id'])
             ->setCheckPermissions(false)
             ->execute();
@@ -185,7 +185,7 @@ foreach ($rulesToExport as $rule) {
         // Get rule trigger
         $ruleTrigger = null;
         if (!empty($ruleData['trigger_id'])) {
-            $ruleTrigger = \Civi\Api4\CivirulesTrigger::get()
+            $ruleTrigger = \Civi\Api4\CiviRulesTrigger::get()
                 ->addWhere('id', '=', $ruleData['trigger_id'])
                 ->setCheckPermissions(false)
                 ->execute()
@@ -195,8 +195,9 @@ foreach ($rulesToExport as $rule) {
         // Analyze components for custom MAS components
         foreach ($ruleActions as $action) {
             if (!empty($action['action_id'])) {
-                $actionDetails = \Civi\Api4\CivirulesAction::get()
+                $actionDetails = \Civi\Api4\CiviRulesAction::get()
                     ->addWhere('id', '=', $action['action_id'])
+                    ->setCheckPermissions(false)
                     ->execute()
                     ->first();
 
@@ -209,8 +210,9 @@ foreach ($rulesToExport as $rule) {
 
         foreach ($ruleConditions as $condition) {
             if (!empty($condition['condition_id'])) {
-                $conditionDetails = \Civi\Api4\CivirulesCondition::get()
+                $conditionDetails = \Civi\Api4\CiviRulesCondition::get()
                     ->addWhere('id', '=', $condition['condition_id'])
+                    ->setCheckPermissions(false)
                     ->execute()
                     ->first();
 
