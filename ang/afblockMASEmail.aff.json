@@ -1,9 +1,0 @@
-{
-    "type": "block",
-    "title": "MAS Email",
-    "is_public": false,
-    "create_submission": false,
-    "permission": [
-        "access CiviCRM"
-    ]
-}

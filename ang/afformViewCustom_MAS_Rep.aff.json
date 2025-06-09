@@ -1,9 +1,0 @@
-{
-    "type": "form",
-    "title": "View MAS Rep",
-    "server_route": "civicrm/af/custom/MAS_Rep/view",
-    "is_public": false,
-    "permission": [
-        "access CiviCRM"
-    ]
-}

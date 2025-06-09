@@ -11,7 +11,6 @@ class AfformSubmitSubscriber implements EventSubscriberInterface
 {
     /**
      * Store entity IDs during form submission processing
-     * Structure: [session_id => ['organization_id' => X, 'president_id' => Y, 'executive_director_id' => Z]]
      */
     private static array $submissionData = [];
 
@@ -72,9 +71,13 @@ class AfformSubmitSubscriber implements EventSubscriberInterface
             case 'Individual2': // Executive Director
                 self::$submissionData[$sessionId]['executive_director_id'] = $entityId;
                 break;
+            case 'Individual3': // Primary Contact
+                self::$submissionData[$sessionId]['primary_contact_id'] = $entityId;
+                break;
             case 'Case1':
-                // Create relationships when processing Case1 (last entity processed)
-                $this->createRelationships($sessionId);
+                self::$submissionData[$sessionId]['case_id'] = $entityId;
+                // Update case status when processing Case1 (last entity processed)
+                $this->updateCaseStatus($sessionId);
                 // Clean up after processing
                 unset(self::$submissionData[$sessionId]);
                 break;
@@ -95,149 +98,60 @@ class AfformSubmitSubscriber implements EventSubscriberInterface
     }
 
     /**
-     * Create relationships between organization and individuals
+     * Update case status to "RCS Completed"
      *
      * @param string $sessionId
      */
-    protected function createRelationships(string $sessionId): void
+    protected function updateCaseStatus(string $sessionId): void
     {
-        if (!isset(self::$submissionData[$sessionId])) {
-            \Civi::log()->warning('AfformSubmitSubscriber: No submission data found', [
-                'session_id' => $sessionId
-            ]);
-            return;
-        }
-
-        $data = self::$submissionData[$sessionId];
-
         try {
-            $organizationId = $data['organization_id'] ?? null;
-            $presidentId = $data['president_id'] ?? null;
-            $executiveDirectorId = $data['executive_director_id'] ?? null;
-
-            if (!$organizationId) {
-                \Civi::log()->warning('AfformSubmitSubscriber: Organization ID not found in submission data');
+            $submissionData = self::$submissionData[$sessionId] ?? [];
+            
+            if (empty($submissionData['case_id'])) {
+                \Civi::log()->warning('AfformSubmitSubscriber: No case ID found for status update', [
+                    'session_id' => $sessionId,
+                    'submission_data' => $submissionData
+                ]);
                 return;
             }
 
-            \Civi::log()->info('AfformSubmitSubscriber: Creating relationships', [
-                'organization_id' => $organizationId,
-                'president_id' => $presidentId,
-                'executive_director_id' => $executiveDirectorId
-            ]);
+            // Get the "RCS Completed" status value
+            $caseStatus = \Civi\Api4\OptionValue::get(FALSE)
+                ->addWhere('option_group_id:name', '=', 'case_status')
+                ->addWhere('label', '=', 'RCS Completed')
+                ->addSelect('value')
+                ->execute()
+                ->first();
 
-            // Create President relationship if we have both contacts
-            if ($presidentId) {
-                $this->createRelationship(
-                    $presidentId,
-                    $organizationId,
-                    'President of',
-                    'President relationship created via MAS RCS Form'
-                );
+            if (!$caseStatus) {
+                \Civi::log()->error('AfformSubmitSubscriber: "RCS Completed" case status not found', [
+                    'session_id' => $sessionId,
+                    'case_id' => $submissionData['case_id']
+                ]);
+                return;
             }
 
-            // Create Executive Director relationship if we have both contacts
-            if ($executiveDirectorId) {
-                $this->createRelationship(
-                    $executiveDirectorId,
-                    $organizationId,
-                    'Executive Director of',
-                    'Executive Director relationship created via MAS RCS Form'
-                );
-            }
-        } catch (\Exception $e) {
-            \Civi::log()->error('AfformSubmitSubscriber: Error creating relationships', [
-                'message' => $e->getMessage(),
-                'exception' => $e,
+            // Update the case status
+            \Civi\Api4\CiviCase::update(FALSE)
+                ->addWhere('id', '=', $submissionData['case_id'])
+                ->addValue('status_id', $caseStatus['value'])
+                ->execute();
+
+            \Civi::log()->info('AfformSubmitSubscriber: Case status updated to "RCS Completed"', [
+                'case_id' => $submissionData['case_id'],
+                'status_value' => $caseStatus['value'],
                 'session_id' => $sessionId
             ]);
-        }
-    }
 
-    /**
-     * Create a relationship between two contacts
-     *
-     * @param int $contactIdA First contact (individual)
-     * @param int $contactIdB Second contact (organization)
-     * @param string $relationshipType Name or label of relationship type
-     * @param string $description Optional description
-     * @return int|null ID of created relationship or null on failure
-     */
-    protected function createRelationship(
-        int $contactIdA,
-        int $contactIdB,
-        string $relationshipType,
-        string $description = ''
-    ): ?int {
-        try {
-            // Check if relationship already exists
-            $existing = \Civi\Api4\Relationship::get(false)
-                ->addSelect('id')
-                ->addWhere('contact_id_a', '=', $contactIdA)
-                ->addWhere('contact_id_b', '=', $contactIdB)
-                ->addWhere('relationship_type_id.name_a_b', '=', $relationshipType)
-                ->addWhere('is_active', '=', true)
-                ->execute()
-                ->first();
-
-            if ($existing) {
-                \Civi::log()->info('AfformSubmitSubscriber: Relationship already exists', [
-                    'relationship_id' => $existing['id'],
-                    'type' => $relationshipType,
-                    'contact_a' => $contactIdA,
-                    'contact_b' => $contactIdB
-                ]);
-                return $existing['id'];
-            }
-
-            // Find the relationship type ID
-            $relType = \Civi\Api4\RelationshipType::get(false)
-                ->addSelect('id')
-                ->addClause('OR', ['name_a_b', '=', $relationshipType], ['label_a_b', '=', $relationshipType])
-                ->execute()
-                ->first();
-
-            if (empty($relType['id'])) {
-                \Civi::log()->error('AfformSubmitSubscriber: Relationship type not found', [
-                    'type' => $relationshipType,
-                ]);
-                return null;
-            }
-
-            // Create the relationship
-            $rel = \Civi\Api4\Relationship::create(false)
-                ->addValue('relationship_type_id', $relType['id'])
-                ->addValue('contact_id_a', $contactIdA)
-                ->addValue('contact_id_b', $contactIdB)
-                ->addValue('is_active', true)
-                ->addValue('description', $description)
-                ->execute()
-                ->first();
-
-            $ind = \Civi\Api4\Individual::update(true)
-                ->addValue('employer_id', $contactIdB)
-                ->addWhere('id', '=', $contactIdA)
-                ->execute()
-                ->first();
-
-            \Civi::log()->info('AfformSubmitSubscriber: Created relationship', [
-                'relationship_id' => $rel['id'],
-                'type' => $relationshipType,
-                'contact_a' => $contactIdA,
-                'contact_b' => $contactIdB
-            ]);
-
-            return $rel['id'] ?? null;
         } catch (\Exception $e) {
-            \Civi::log()->error('AfformSubmitSubscriber: Failed to create relationship', [
-                'message' => $e->getMessage(),
-                'type' => $relationshipType,
-                'contact_a' => $contactIdA,
-                'contact_b' => $contactIdB,
-                'exception' => $e,
+            \Civi::log()->error('AfformSubmitSubscriber: Exception while updating case status', [
+                'session_id' => $sessionId,
+                'case_id' => $submissionData['case_id'] ?? 'unknown',
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
             ]);
-
-            return null;
         }
     }
+
+
 }

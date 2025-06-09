@@ -23,7 +23,7 @@ You are helping develop the `mascode` CiviCRM extension for Management Advisory 
    - Use CiviCRM API4 instead of API3, BAO, DAO when possible
    - Follow PSR-12 coding standards
    - Use Symfony EventDispatcher instead of traditional hooks
-   - Prefer modern PHP practices (PHP 8.3+)
+   - Prefer modern object oriented PHP practices (PHP 8.3+)
 
 4. **Architecture**:
 
