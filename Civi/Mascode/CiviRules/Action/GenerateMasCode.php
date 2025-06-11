@@ -23,7 +23,7 @@ class GenerateMasCode extends \CRM_Civirules_Action
         $caseTypeId = $case['case_type_id'];
 
         // Get case type
-        $caseType = \Civi\Api4\CaseType::get()
+        $caseType = \Civi\Api4\CaseType::get(false)
             ->addSelect('name')
             ->addWhere('id', '=', $caseTypeId)
             ->execute()
@@ -31,7 +31,7 @@ class GenerateMasCode extends \CRM_Civirules_Action
 
         // Generate MAS SR codes for all new service requests
         if ($caseType == 'service_request') {
-            $masSrCaseCode = \Civi\Api4\CiviCase::get(true)
+            $masSrCaseCode = \Civi\Api4\CiviCase::get(false)
             ->addSelect('Cases_SR_Projects_.MAS_SR_Case_Code')
             ->addWhere('id', '=', $caseId)
             ->execute()
@@ -44,14 +44,14 @@ class GenerateMasCode extends \CRM_Civirules_Action
                 $masCode = CodeGenerator::generate($caseType);
 
                 // Update the case with the MAS Code
-                $result = \Civi\Api4\CiviCase::update(true)
+                $result = \Civi\Api4\CiviCase::update(false)
                     ->addValue('Cases_SR_Projects_.MAS_SR_Case_Code', $masCode)
                     ->addWhere('id', '=', $caseId)
                     ->execute();
             }
         } else {
             if ($caseType ==  'project') {
-                $masProjectCaseCode = \Civi\Api4\CiviCase::get(true)
+                $masProjectCaseCode = \Civi\Api4\CiviCase::get(false)
                 ->addSelect('Projects.MAS_Project_Case_Code')
                 ->addWhere('id', '=', $caseId)
                 ->execute()
@@ -64,7 +64,7 @@ class GenerateMasCode extends \CRM_Civirules_Action
                     $masCode = CodeGenerator::generate($caseType);
 
                     // Update the case with the MAS Code
-                    $result = \Civi\Api4\CiviCase::update(true)
+                    $result = \Civi\Api4\CiviCase::update(false)
                         ->addValue('Projects.MAS_Project_Case_Code', $masCode)
                         ->addWhere('id', '=', $caseId)
                         ->execute();

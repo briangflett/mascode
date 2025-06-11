@@ -6,7 +6,11 @@
     "redirect": "https://masdemo.localhost/thank-you/",
     "is_public": true,
     "create_submission": true,
+    "email_confirmation_template_id": 71,
     "permission": [
         "*always allow*"
-    ]
+    ],
+    "placement": [
+        "msg_token_single"
+      ]
 }

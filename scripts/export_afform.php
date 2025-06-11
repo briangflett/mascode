@@ -41,13 +41,13 @@ echo "=== Afform Export Tool ===\n\n";
 
 // CONFIGURATION
 $FORM_TO_EXPORT = 'afformMASRCSForm';  // Change this to export different forms
-$EXPORT_ALL = true;                    // Set to true to export all forms
+$EXPORT_ALL = false;                    // Set to true to export all forms
 $LIST_ONLY = false;                    // Set to true to just list available forms
 
 // Get available forms and blocks with "MAS" in title
 try {
     $forms = \Civi\Api4\Afform::get(false)
-        ->addWhere('title', 'LIKE', '%MAS%')
+        ->addWhere('name', 'LIKE', '%MAS%')
         ->addSelect('name', 'title', 'type')
         ->execute();
 } catch (Exception $e) {

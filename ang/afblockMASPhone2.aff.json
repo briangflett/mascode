@@ -1,9 +1,0 @@
-{
-    "type": "block",
-    "title": "MAS Phone",
-    "is_public": false,
-    "create_submission": false,
-    "permission": [
-        "access CiviCRM"
-    ]
-}

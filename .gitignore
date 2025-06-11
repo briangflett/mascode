@@ -43,6 +43,9 @@ dist/
 .env.local
 .env.*.local
 
+# Claude Code sensitive files
+CLAUDE.local.md
+
 # CiviCRM specific
 sites/default/files/civicrm/ConfigAndLog/
 sites/default/files/civicrm/templates_c/
