@@ -222,20 +222,10 @@ class AfformSubmitSubscriber implements EventSubscriberInterface
                 ]);
             }
 
-            // Replace template content with submission data
+            // Prepare template content with submission data
             $subject = $template['msg_subject'];
-            
-            // Extract just the header part of the template (before the placeholder content)
-            $textTemplate = $template['msg_text'];
-            $htmlTemplate = $template['msg_html'];
-            
-            // Remove the placeholder sections from the template
-            $textTemplate = $this->removeTemplatePlaceholders($textTemplate);
-            $htmlTemplate = $this->removeTemplatePlaceholders($htmlTemplate);
-            
-            // Add formatted submission data
-            $textContent = $textTemplate . "\n\n" . $submissionData;
-            $htmlContent = $htmlTemplate . "<br><br>" . nl2br($submissionData);
+            $textContent = $template['msg_text'] . "\n\n" . $submissionData;
+            $htmlContent = $template['msg_html'] . "<br><br>" . nl2br($submissionData);
 
             // Use TokenProcessor for modern token replacement
             $tokenProcessor = new TokenProcessor(\Civi::dispatcher(), [
@@ -366,27 +356,4 @@ class AfformSubmitSubscriber implements EventSubscriberInterface
         return $labels[$fieldName] ?? ucwords(str_replace('_', ' ', $fieldName));
     }
 
-    /**
-     * Remove placeholder sections from the email template
-     */
-    private function removeTemplatePlaceholders(string $template): string
-    {
-        // Find the end of the initial greeting and remove everything after until "We will contact you"
-        $patterns = [
-            '/Organization Details:.*?Request Details:.*?Details:\s*/s',
-            '/Organization Details:.*?(?=We will contact you)/s',
-            '/Key Contacts:.*?(?=We will contact you)/s',
-            '/Request Details:.*?(?=We will contact you)/s'
-        ];
-        
-        foreach ($patterns as $pattern) {
-            $template = preg_replace($pattern, '', $template);
-        }
-        
-        // Remove bold formatting from the closing section
-        $template = preg_replace('/<strong>(We will contact you.*?MAS Team)<\/strong>/s', '$1', $template);
-        $template = preg_replace('/<b>(We will contact you.*?MAS Team)<\/b>/s', '$1', $template);
-        
-        return trim($template);
-    }
 }
