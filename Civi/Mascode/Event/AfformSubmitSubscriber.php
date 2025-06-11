@@ -6,6 +6,8 @@ namespace Civi\Mascode\Event;
 
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Civi\Afform\Event\AfformSubmitEvent;
+use Civi\Api4\Email;
+use Civi\Api4\Contact;
 
 class AfformSubmitSubscriber implements EventSubscriberInterface
 {
@@ -78,6 +80,8 @@ class AfformSubmitSubscriber implements EventSubscriberInterface
                 self::$submissionData[$sessionId]['case_id'] = $entityId;
                 // Update case status when processing Case1 (last entity processed)
                 $this->updateCaseStatus($sessionId);
+                // Send confirmation email
+                $this->sendConfirmationEmail($sessionId);
                 // Clean up after processing
                 unset(self::$submissionData[$sessionId]);
                 break;
@@ -106,7 +110,7 @@ class AfformSubmitSubscriber implements EventSubscriberInterface
     {
         try {
             $submissionData = self::$submissionData[$sessionId] ?? [];
-            
+
             if (empty($submissionData['case_id'])) {
                 \Civi::log()->warning('AfformSubmitSubscriber: No case ID found for status update', [
                     'session_id' => $sessionId,
@@ -116,7 +120,7 @@ class AfformSubmitSubscriber implements EventSubscriberInterface
             }
 
             // Get the "RCS Completed" status value
-            $caseStatus = \Civi\Api4\OptionValue::get(FALSE)
+            $caseStatus = \Civi\Api4\OptionValue::get(false)
                 ->addWhere('option_group_id:name', '=', 'case_status')
                 ->addWhere('label', '=', 'RCS Completed')
                 ->addSelect('value')
@@ -132,7 +136,7 @@ class AfformSubmitSubscriber implements EventSubscriberInterface
             }
 
             // Update the case status
-            \Civi\Api4\CiviCase::update(FALSE)
+            \Civi\Api4\CiviCase::update(false)
                 ->addWhere('id', '=', $submissionData['case_id'])
                 ->addValue('status_id', $caseStatus['value'])
                 ->execute();
@@ -153,5 +157,42 @@ class AfformSubmitSubscriber implements EventSubscriberInterface
         }
     }
 
+    /**
+     * Send confirmation email
+     *
+     * @param string $sessionId
+     */
+    protected function sendConfirmationEmail(string $sessionId): void
+    {
+        try {
+            $submissionData = self::$submissionData[$sessionId] ?? [];
+            $primaryContactId = $submissionData['primary_contact_id'] ?? null;
 
+            if (empty($primaryContactId)) {
+                \Civi::log()->warning('AfformSubmitSubscriber: No primary contact ID found for RCS Form', [
+                    'session_id' => $sessionId,
+                    'submission_data' => $submissionData
+                ]);
+                return;
+            }
+
+            // Send to primary contact
+            Email::send(false)
+                ->setTemplateId(71)
+                ->setContactId($primaryContactId)
+                ->execute();
+
+            // Send to info@masadvise.org
+            Email::send(false)
+                ->setTemplateId(71)
+                ->setContactId($primaryContactId)
+                ->addValue('to_email', 'info@masadvise.org')
+                ->execute();
+
+            \Civi::log()->info('MAS RCS Form confirmation emails sent successfully');
+
+        } catch (\Exception $e) {
+            \Civi::log()->error('Failed to send MAS RCS Form confirmation emails: ' . $e->getMessage());
+        }
+    }
 }
