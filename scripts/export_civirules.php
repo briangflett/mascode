@@ -239,9 +239,15 @@ foreach ($rulesToExport as $rule) {
         ];
 
         // Export rule to JSON file
-        $ruleFile = $rulesDir . '/' . $rule['name'] . '.json';
+        $ruleFile = $rulesDir . '/' . $rule['name'] . '.get.json';
         file_put_contents($ruleFile, json_encode($ruleExport, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES));
         echo "✓ Rule exported: " . basename($ruleFile) . "\n";
+
+        // Create ID mappings for this rule
+        $mappings = createCiviRulesIdMappings($ruleExport);
+        $mappingsFile = $rulesDir . '/' . $rule['name'] . '.mappings.json';
+        file_put_contents($mappingsFile, json_encode($mappings, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES));
+        echo "✓ ID mappings: " . basename($mappingsFile) . "\n";
 
     } catch (Exception $e) {
         echo "✗ Error exporting rule {$rule['name']}: " . $e->getMessage() . "\n";
@@ -272,6 +278,317 @@ if (!empty($customActions) || !empty($customConditions) || !empty($customTrigger
 
 echo "\n=== Export Complete ===\n";
 echo "Files saved to: $baseDir\n";
+
+/**
+ * Create ID to name mappings for CiviRules data
+ */
+function createCiviRulesIdMappings($ruleExport)
+{
+    $mappings = [
+        'triggers' => [],
+        'actions' => [],
+        'conditions' => [],
+        'contact_types' => [],
+        'case_types' => [],
+        'activity_types' => [],
+        'relationship_types' => [],
+        'custom_groups' => [],
+        'custom_fields' => [],
+        'option_groups' => [],
+        'option_values' => []
+    ];
+
+    // Map trigger
+    if (!empty($ruleExport['trigger']['id'])) {
+        try {
+            $trigger = \Civi\Api4\CiviRulesTrigger::get(false)
+                ->addWhere('id', '=', $ruleExport['trigger']['id'])
+                ->addSelect('id', 'name')
+                ->execute()
+                ->first();
+            if ($trigger) {
+                $mappings['triggers'][$trigger['id']] = $trigger['name'];
+            }
+        } catch (Exception $e) {
+            echo "Warning: Could not fetch trigger mapping: " . $e->getMessage() . "\n";
+        }
+    }
+
+    // Map actions
+    foreach ($ruleExport['actions'] as $ruleAction) {
+        if (!empty($ruleAction['action_id'])) {
+            try {
+                $action = \Civi\Api4\CiviRulesAction::get(false)
+                    ->addWhere('id', '=', $ruleAction['action_id'])
+                    ->addSelect('id', 'name')
+                    ->execute()
+                    ->first();
+                if ($action) {
+                    $mappings['actions'][$action['id']] = $action['name'];
+                }
+            } catch (Exception $e) {
+                echo "Warning: Could not fetch action mapping: " . $e->getMessage() . "\n";
+            }
+        }
+
+        // Extract IDs from action parameters
+        if (!empty($ruleAction['action_params'])) {
+            $params = is_string($ruleAction['action_params']) ? 
+                json_decode($ruleAction['action_params'], true) : 
+                $ruleAction['action_params'];
+            if (is_array($params)) {
+                extractIdsFromParams($params, $mappings);
+            }
+        }
+    }
+
+    // Map conditions
+    foreach ($ruleExport['conditions'] as $ruleCondition) {
+        if (!empty($ruleCondition['condition_id'])) {
+            try {
+                $condition = \Civi\Api4\CiviRulesCondition::get(false)
+                    ->addWhere('id', '=', $ruleCondition['condition_id'])
+                    ->addSelect('id', 'name')
+                    ->execute()
+                    ->first();
+                if ($condition) {
+                    $mappings['conditions'][$condition['id']] = $condition['name'];
+                }
+            } catch (Exception $e) {
+                echo "Warning: Could not fetch condition mapping: " . $e->getMessage() . "\n";
+            }
+        }
+
+        // Extract IDs from condition parameters
+        if (!empty($ruleCondition['condition_params'])) {
+            $params = is_string($ruleCondition['condition_params']) ? 
+                json_decode($ruleCondition['condition_params'], true) : 
+                $ruleCondition['condition_params'];
+            if (is_array($params)) {
+                extractIdsFromParams($params, $mappings);
+            }
+        }
+    }
+
+    // Extract IDs from trigger parameters
+    if (!empty($ruleExport['rule']['trigger_params'])) {
+        $params = is_string($ruleExport['rule']['trigger_params']) ? 
+            json_decode($ruleExport['rule']['trigger_params'], true) : 
+            $ruleExport['rule']['trigger_params'];
+        if (is_array($params)) {
+            extractIdsFromParams($params, $mappings);
+        }
+    }
+
+    return $mappings;
+}
+
+/**
+ * Extract IDs from parameters and populate mappings
+ */
+function extractIdsFromParams($params, &$mappings)
+{
+    foreach ($params as $key => $value) {
+        if (is_array($value)) {
+            extractIdsFromParams($value, $mappings);
+            continue;
+        }
+
+        if (!is_numeric($value)) {
+            continue;
+        }
+
+        // Map common parameter patterns to their entity types
+        if (preg_match('/contact_type|contact_sub_type/', $key)) {
+            mapContactType($value, $mappings);
+        } elseif (preg_match('/case_type/', $key)) {
+            mapCaseType($value, $mappings);
+        } elseif (preg_match('/activity_type/', $key)) {
+            mapActivityType($value, $mappings);
+        } elseif (preg_match('/relationship_type/', $key)) {
+            mapRelationshipType($value, $mappings);
+        } elseif (preg_match('/custom_field|custom_/', $key)) {
+            mapCustomField($value, $mappings);
+        } elseif (preg_match('/option_group/', $key)) {
+            mapOptionGroup($value, $mappings);
+        } elseif (preg_match('/option_value/', $key)) {
+            mapOptionValue($value, $mappings);
+        }
+    }
+}
+
+/**
+ * Map contact type ID to name
+ */
+function mapContactType($id, &$mappings)
+{
+    if (isset($mappings['contact_types'][$id])) return;
+    
+    try {
+        $contactType = \Civi\Api4\ContactType::get(false)
+            ->addWhere('id', '=', $id)
+            ->addSelect('id', 'name')
+            ->execute()
+            ->first();
+        if ($contactType) {
+            $mappings['contact_types'][$contactType['id']] = $contactType['name'];
+        }
+    } catch (Exception $e) {
+        // Ignore mapping errors
+    }
+}
+
+/**
+ * Map case type ID to name
+ */
+function mapCaseType($id, &$mappings)
+{
+    if (isset($mappings['case_types'][$id])) return;
+    
+    try {
+        $caseType = \Civi\Api4\CaseType::get(false)
+            ->addWhere('id', '=', $id)
+            ->addSelect('id', 'name')
+            ->execute()
+            ->first();
+        if ($caseType) {
+            $mappings['case_types'][$caseType['id']] = $caseType['name'];
+        }
+    } catch (Exception $e) {
+        // Ignore mapping errors
+    }
+}
+
+/**
+ * Map activity type ID to name
+ */
+function mapActivityType($id, &$mappings)
+{
+    if (isset($mappings['activity_types'][$id])) return;
+    
+    try {
+        $activityType = \Civi\Api4\OptionValue::get(false)
+            ->addWhere('option_group_id:name', '=', 'activity_type')
+            ->addWhere('value', '=', $id)
+            ->addSelect('value', 'name')
+            ->execute()
+            ->first();
+        if ($activityType) {
+            $mappings['activity_types'][$activityType['value']] = $activityType['name'];
+        }
+    } catch (Exception $e) {
+        // Ignore mapping errors
+    }
+}
+
+/**
+ * Map relationship type ID to name
+ */
+function mapRelationshipType($id, &$mappings)
+{
+    if (isset($mappings['relationship_types'][$id])) return;
+    
+    try {
+        $relationshipType = \Civi\Api4\RelationshipType::get(false)
+            ->addWhere('id', '=', $id)
+            ->addSelect('id', 'name_a_b')
+            ->execute()
+            ->first();
+        if ($relationshipType) {
+            $mappings['relationship_types'][$relationshipType['id']] = $relationshipType['name_a_b'];
+        }
+    } catch (Exception $e) {
+        // Ignore mapping errors
+    }
+}
+
+/**
+ * Map custom field ID to name
+ */
+function mapCustomField($id, &$mappings)
+{
+    if (isset($mappings['custom_fields'][$id])) return;
+    
+    try {
+        $customField = \Civi\Api4\CustomField::get(false)
+            ->addWhere('id', '=', $id)
+            ->addSelect('id', 'name', 'custom_group_id')
+            ->execute()
+            ->first();
+        if ($customField) {
+            $mappings['custom_fields'][$customField['id']] = $customField['name'];
+            // Also map the custom group
+            mapCustomGroup($customField['custom_group_id'], $mappings);
+        }
+    } catch (Exception $e) {
+        // Ignore mapping errors
+    }
+}
+
+/**
+ * Map custom group ID to name
+ */
+function mapCustomGroup($id, &$mappings)
+{
+    if (isset($mappings['custom_groups'][$id])) return;
+    
+    try {
+        $customGroup = \Civi\Api4\CustomGroup::get(false)
+            ->addWhere('id', '=', $id)
+            ->addSelect('id', 'name')
+            ->execute()
+            ->first();
+        if ($customGroup) {
+            $mappings['custom_groups'][$customGroup['id']] = $customGroup['name'];
+        }
+    } catch (Exception $e) {
+        // Ignore mapping errors
+    }
+}
+
+/**
+ * Map option group ID to name
+ */
+function mapOptionGroup($id, &$mappings)
+{
+    if (isset($mappings['option_groups'][$id])) return;
+    
+    try {
+        $optionGroup = \Civi\Api4\OptionGroup::get(false)
+            ->addWhere('id', '=', $id)
+            ->addSelect('id', 'name')
+            ->execute()
+            ->first();
+        if ($optionGroup) {
+            $mappings['option_groups'][$optionGroup['id']] = $optionGroup['name'];
+        }
+    } catch (Exception $e) {
+        // Ignore mapping errors
+    }
+}
+
+/**
+ * Map option value ID to name
+ */
+function mapOptionValue($id, &$mappings)
+{
+    if (isset($mappings['option_values'][$id])) return;
+    
+    try {
+        $optionValue = \Civi\Api4\OptionValue::get(false)
+            ->addWhere('id', '=', $id)
+            ->addSelect('id', 'name', 'option_group_id')
+            ->execute()
+            ->first();
+        if ($optionValue) {
+            $mappings['option_values'][$optionValue['id']] = $optionValue['name'];
+            // Also map the option group
+            mapOptionGroup($optionValue['option_group_id'], $mappings);
+        }
+    } catch (Exception $e) {
+        // Ignore mapping errors
+    }
+}
 
 /**
  * Check if a component is a custom MAS component

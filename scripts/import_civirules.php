@@ -91,7 +91,7 @@ echo "=== CiviRules Import Tool ===\n\n";
 $RULE_TO_IMPORT = '';                        // Change this to import specific rule
 $IMPORT_ALL = true;                          // Set to true to import all available rules
 $LIST_ONLY = false;                          // Set to true to just list available rule files
-$UPDATE_EXISTING = false;                    // Set to true to update existing rules
+$UPDATE_EXISTING = true;                    // Set to true to update existing rules
 
 // Define paths
 $baseDir = \CRM_Mascode_ExtensionUtil::path('Civi/Mascode/CiviRules');
@@ -104,17 +104,17 @@ if (!is_dir($rulesDir)) {
     exit(1);
 }
 
-// Get available rule files
-$ruleFiles = glob($rulesDir . '/*.json');
+// Get available rule files (.get.json files)
+$ruleFiles = glob($rulesDir . '/*.get.json');
 if (empty($ruleFiles)) {
-    echo "No rule JSON files found in: $rulesDir\n";
+    echo "No rule .get.json files found in: $rulesDir\n";
     echo "Make sure you've exported rules first using export_civirules.php\n";
     exit(1);
 }
 
 echo "Available rule files:\n";
 foreach ($ruleFiles as $file) {
-    $ruleName = basename($file, '.json');
+    $ruleName = basename($file, '.get.json');
     echo "  - $ruleName\n";
 }
 
@@ -132,7 +132,7 @@ if ($IMPORT_ALL) {
     $filesToImport = $ruleFiles;
 } else {
     echo "\nImporting rule: {$RULE_TO_IMPORT}\n";
-    $targetFile = $rulesDir . '/' . $RULE_TO_IMPORT . '.json';
+    $targetFile = $rulesDir . '/' . $RULE_TO_IMPORT . '.get.json';
     if (file_exists($targetFile)) {
         $filesToImport[] = $targetFile;
     } else {
@@ -175,7 +175,7 @@ $skippedRules = 0;
 $errorRules = 0;
 
 foreach ($filesToImport as $ruleFile) {
-    $ruleName = basename($ruleFile, '.json');
+    $ruleName = basename($ruleFile, '.get.json');
     echo "\n--- Importing Rule: $ruleName ---\n";
 
     try {
@@ -188,6 +188,21 @@ foreach ($filesToImport as $ruleFile) {
             $errorRules++;
             continue;
         }
+
+        // Load ID mappings
+        $mappingsFile = $rulesDir . '/' . $ruleName . '.mappings.json';
+        $idMappings = [];
+        if (file_exists($mappingsFile)) {
+            $mappingsContent = file_get_contents($mappingsFile);
+            $idMappings = json_decode($mappingsContent, true);
+            if (!$idMappings) {
+                echo "⚠ Warning: Could not read mappings from: " . basename($mappingsFile) . "\n";
+                $idMappings = [];
+            }
+        }
+
+        // Apply ID mappings to convert development IDs to production IDs
+        $ruleData = applyCiviRulesIdMappings($ruleData, $idMappings);
 
         // Check if rule already exists
         $existingRule = \Civi\Api4\CiviRulesRule::get()
@@ -511,6 +526,270 @@ function importTriggers($filePath)
 
     echo "  ✓ Processed " . count($components) . " triggers\n";
     return $mappings;
+}
+
+/**
+ * Apply ID mappings to convert development IDs to production IDs
+ */
+function applyCiviRulesIdMappings($ruleData, $idMappings)
+{
+    if (empty($idMappings)) {
+        return $ruleData;
+    }
+
+    // Map trigger ID
+    if (!empty($ruleData['trigger']['id']) && !empty($idMappings['triggers'])) {
+        $devId = $ruleData['trigger']['id'];
+        if (isset($idMappings['triggers'][$devId])) {
+            $triggerName = $idMappings['triggers'][$devId];
+            $prodId = lookupCiviRulesTriggerId($triggerName);
+            if ($prodId) {
+                $ruleData['trigger']['id'] = $prodId;
+                echo "  → Mapped trigger '$triggerName': $devId → $prodId\n";
+            }
+        }
+    }
+
+    // Map action IDs
+    foreach ($ruleData['actions'] as &$action) {
+        if (!empty($action['action_id']) && !empty($idMappings['actions'])) {
+            $devId = $action['action_id'];
+            if (isset($idMappings['actions'][$devId])) {
+                $actionName = $idMappings['actions'][$devId];
+                $prodId = lookupCiviRulesActionId($actionName);
+                if ($prodId) {
+                    $action['action_id'] = $prodId;
+                    echo "  → Mapped action '$actionName': $devId → $prodId\n";
+                }
+            }
+        }
+
+        // Map IDs in action parameters
+        if (!empty($action['action_params'])) {
+            $params = is_string($action['action_params']) ?
+                json_decode($action['action_params'], true) :
+                $action['action_params'];
+            if (is_array($params)) {
+                $params = mapIdsInParams($params, $idMappings);
+                $action['action_params'] = is_string($action['action_params']) ?
+                    json_encode($params) : $params;
+            }
+        }
+    }
+
+    // Map condition IDs
+    foreach ($ruleData['conditions'] as &$condition) {
+        if (!empty($condition['condition_id']) && !empty($idMappings['conditions'])) {
+            $devId = $condition['condition_id'];
+            if (isset($idMappings['conditions'][$devId])) {
+                $conditionName = $idMappings['conditions'][$devId];
+                $prodId = lookupCiviRulesConditionId($conditionName);
+                if ($prodId) {
+                    $condition['condition_id'] = $prodId;
+                    echo "  → Mapped condition '$conditionName': $devId → $prodId\n";
+                }
+            }
+        }
+
+        // Map IDs in condition parameters
+        if (!empty($condition['condition_params'])) {
+            $params = is_string($condition['condition_params']) ?
+                json_decode($condition['condition_params'], true) :
+                $condition['condition_params'];
+            if (is_array($params)) {
+                $params = mapIdsInParams($params, $idMappings);
+                $condition['condition_params'] = is_string($condition['condition_params']) ?
+                    json_encode($params) : $params;
+            }
+        }
+    }
+
+    // Map IDs in trigger parameters
+    if (!empty($ruleData['rule']['trigger_params'])) {
+        $params = is_string($ruleData['rule']['trigger_params']) ?
+            json_decode($ruleData['rule']['trigger_params'], true) :
+            $ruleData['rule']['trigger_params'];
+        if (is_array($params)) {
+            $params = mapIdsInParams($params, $idMappings);
+            $ruleData['rule']['trigger_params'] = is_string($ruleData['rule']['trigger_params']) ?
+                json_encode($params) : $params;
+        }
+    }
+
+    return $ruleData;
+}
+
+/**
+ * Map IDs in parameters
+ */
+function mapIdsInParams($params, $idMappings)
+{
+    foreach ($params as $key => &$value) {
+        if (is_array($value)) {
+            $value = mapIdsInParams($value, $idMappings);
+            continue;
+        }
+
+        if (!is_numeric($value)) {
+            continue;
+        }
+
+        // Map based on parameter patterns
+        if (preg_match('/contact_type|contact_sub_type/', $key) && !empty($idMappings['contact_types'][$value])) {
+            $name = $idMappings['contact_types'][$value];
+            $prodId = lookupContactTypeId($name);
+            if ($prodId) {
+                $value = $prodId;
+                echo "  → Mapped contact type '$name': {$value} → $prodId\n";
+            }
+        } elseif (preg_match('/case_type/', $key) && !empty($idMappings['case_types'][$value])) {
+            $name = $idMappings['case_types'][$value];
+            $prodId = lookupCaseTypeId($name);
+            if ($prodId) {
+                $value = $prodId;
+                echo "  → Mapped case type '$name': {$value} → $prodId\n";
+            }
+        } elseif (preg_match('/activity_type/', $key) && !empty($idMappings['activity_types'][$value])) {
+            $name = $idMappings['activity_types'][$value];
+            $prodId = lookupActivityTypeId($name);
+            if ($prodId) {
+                $value = $prodId;
+                echo "  → Mapped activity type '$name': {$value} → $prodId\n";
+            }
+        } elseif (preg_match('/relationship_type/', $key) && !empty($idMappings['relationship_types'][$value])) {
+            $name = $idMappings['relationship_types'][$value];
+            $prodId = lookupRelationshipTypeId($name);
+            if ($prodId) {
+                $value = $prodId;
+                echo "  → Mapped relationship type '$name': {$value} → $prodId\n";
+            }
+        } elseif (preg_match('/custom_field|custom_/', $key) && !empty($idMappings['custom_fields'][$value])) {
+            $name = $idMappings['custom_fields'][$value];
+            $prodId = lookupCustomFieldId($name);
+            if ($prodId) {
+                $value = $prodId;
+                echo "  → Mapped custom field '$name': {$value} → $prodId\n";
+            }
+        }
+    }
+
+    return $params;
+}
+
+/**
+ * Lookup functions for CiviRules components
+ */
+function lookupCiviRulesTriggerId($triggerName)
+{
+    try {
+        $result = \Civi\Api4\CiviRulesTrigger::get(false)
+            ->addWhere('name', '=', $triggerName)
+            ->addSelect('id')
+            ->execute()
+            ->first();
+        return $result ? $result['id'] : null;
+    } catch (Exception $e) {
+        return null;
+    }
+}
+
+function lookupCiviRulesActionId($actionName)
+{
+    try {
+        $result = \Civi\Api4\CiviRulesAction::get(false)
+            ->addWhere('name', '=', $actionName)
+            ->addSelect('id')
+            ->execute()
+            ->first();
+        return $result ? $result['id'] : null;
+    } catch (Exception $e) {
+        return null;
+    }
+}
+
+function lookupCiviRulesConditionId($conditionName)
+{
+    try {
+        $result = \Civi\Api4\CiviRulesCondition::get(false)
+            ->addWhere('name', '=', $conditionName)
+            ->addSelect('id')
+            ->execute()
+            ->first();
+        return $result ? $result['id'] : null;
+    } catch (Exception $e) {
+        return null;
+    }
+}
+
+function lookupContactTypeId($contactTypeName)
+{
+    try {
+        $result = \Civi\Api4\ContactType::get(false)
+            ->addWhere('name', '=', $contactTypeName)
+            ->addSelect('id')
+            ->execute()
+            ->first();
+        return $result ? $result['id'] : null;
+    } catch (Exception $e) {
+        return null;
+    }
+}
+
+function lookupCaseTypeId($caseTypeName)
+{
+    try {
+        $result = \Civi\Api4\CaseType::get(false)
+            ->addWhere('name', '=', $caseTypeName)
+            ->addSelect('id')
+            ->execute()
+            ->first();
+        return $result ? $result['id'] : null;
+    } catch (Exception $e) {
+        return null;
+    }
+}
+
+function lookupActivityTypeId($activityTypeName)
+{
+    try {
+        $result = \Civi\Api4\OptionValue::get(false)
+            ->addWhere('option_group_id:name', '=', 'activity_type')
+            ->addWhere('name', '=', $activityTypeName)
+            ->addSelect('value')
+            ->execute()
+            ->first();
+        return $result ? $result['value'] : null;
+    } catch (Exception $e) {
+        return null;
+    }
+}
+
+function lookupRelationshipTypeId($relationshipTypeName)
+{
+    try {
+        $result = \Civi\Api4\RelationshipType::get(false)
+            ->addWhere('name_a_b', '=', $relationshipTypeName)
+            ->addSelect('id')
+            ->execute()
+            ->first();
+        return $result ? $result['id'] : null;
+    } catch (Exception $e) {
+        return null;
+    }
+}
+
+function lookupCustomFieldId($customFieldName)
+{
+    try {
+        $result = \Civi\Api4\CustomField::get(false)
+            ->addWhere('name', '=', $customFieldName)
+            ->addSelect('id')
+            ->execute()
+            ->first();
+        return $result ? $result['id'] : null;
+    } catch (Exception $e) {
+        return null;
+    }
 }
 
 /**
