@@ -3,7 +3,16 @@
     "name": "request_for_assistance_form",
     "is_active": "1",
     "description": "Elementor form to request assistance (generates a service request)",
-    "output_handler": "OutputAllActionOutput",
+    "output_handler": {
+        "name": "OutputAllActionOutput",
+        "label": "Send everything",
+        "configuration_spec": {
+            "parameter_specifications": [],
+            "default_configuration": []
+        },
+        "configuration": [],
+        "default_configuration": []
+    },
     "output_handler_configuration": [],
     "enable_default_data": "0",
     "permission": "",
@@ -13,7 +22,35 @@
             "include_formatted_params": "0",
             "title": "organization_name",
             "name": "organization_name",
-            "type": "String",
+            "type": {
+                "name": "String",
+                "label": "Short text",
+                "default_value_description": "",
+                "configuration_spec": {
+                    "parameter_specifications": [
+                        {
+                            "default_value": "",
+                            "name": "trim",
+                            "title": "Remove leading and trailing spaces",
+                            "description": "",
+                            "required": "",
+                            "options": "",
+                            "multiple": "",
+                            "data_type": "Boolean",
+                            "fk_entity": "",
+                            "type": "specification"
+                        }
+                    ],
+                    "default_configuration": {
+                        "trim": ""
+                    }
+                },
+                "parameter_spec": {
+                    "parameter_specifications": [],
+                    "default_configuration": []
+                },
+                "default_configuration": []
+            },
             "is_required": "0",
             "default_value": "",
             "configuration": [],
@@ -26,7 +63,35 @@
             "include_formatted_params": "0",
             "title": "organization_phone",
             "name": "organization_phone",
-            "type": "String",
+            "type": {
+                "name": "String",
+                "label": "Short text",
+                "default_value_description": "",
+                "configuration_spec": {
+                    "parameter_specifications": [
+                        {
+                            "default_value": "",
+                            "name": "trim",
+                            "title": "Remove leading and trailing spaces",
+                            "description": "",
+                            "required": "",
+                            "options": "",
+                            "multiple": "",
+                            "data_type": "Boolean",
+                            "fk_entity": "",
+                            "type": "specification"
+                        }
+                    ],
+                    "default_configuration": {
+                        "trim": ""
+                    }
+                },
+                "parameter_spec": {
+                    "parameter_specifications": [],
+                    "default_configuration": []
+                },
+                "default_configuration": []
+            },
             "is_required": "0",
             "default_value": "",
             "configuration": [],
@@ -39,7 +104,35 @@
             "include_formatted_params": "0",
             "title": "organization_street_address",
             "name": "organization_street_address",
-            "type": "String",
+            "type": {
+                "name": "String",
+                "label": "Short text",
+                "default_value_description": "",
+                "configuration_spec": {
+                    "parameter_specifications": [
+                        {
+                            "default_value": "",
+                            "name": "trim",
+                            "title": "Remove leading and trailing spaces",
+                            "description": "",
+                            "required": "",
+                            "options": "",
+                            "multiple": "",
+                            "data_type": "Boolean",
+                            "fk_entity": "",
+                            "type": "specification"
+                        }
+                    ],
+                    "default_configuration": {
+                        "trim": ""
+                    }
+                },
+                "parameter_spec": {
+                    "parameter_specifications": [],
+                    "default_configuration": []
+                },
+                "default_configuration": []
+            },
             "is_required": "0",
             "default_value": "",
             "configuration": [],
@@ -52,7 +145,35 @@
             "include_formatted_params": "0",
             "title": "organization_city",
             "name": "organization_city",
-            "type": "String",
+            "type": {
+                "name": "String",
+                "label": "Short text",
+                "default_value_description": "",
+                "configuration_spec": {
+                    "parameter_specifications": [
+                        {
+                            "default_value": "",
+                            "name": "trim",
+                            "title": "Remove leading and trailing spaces",
+                            "description": "",
+                            "required": "",
+                            "options": "",
+                            "multiple": "",
+                            "data_type": "Boolean",
+                            "fk_entity": "",
+                            "type": "specification"
+                        }
+                    ],
+                    "default_configuration": {
+                        "trim": ""
+                    }
+                },
+                "parameter_spec": {
+                    "parameter_specifications": [],
+                    "default_configuration": []
+                },
+                "default_configuration": []
+            },
             "is_required": "0",
             "default_value": "",
             "configuration": [],
@@ -65,7 +186,35 @@
             "include_formatted_params": "0",
             "title": "organization_province",
             "name": "organization_province",
-            "type": "String",
+            "type": {
+                "name": "String",
+                "label": "Short text",
+                "default_value_description": "",
+                "configuration_spec": {
+                    "parameter_specifications": [
+                        {
+                            "default_value": "",
+                            "name": "trim",
+                            "title": "Remove leading and trailing spaces",
+                            "description": "",
+                            "required": "",
+                            "options": "",
+                            "multiple": "",
+                            "data_type": "Boolean",
+                            "fk_entity": "",
+                            "type": "specification"
+                        }
+                    ],
+                    "default_configuration": {
+                        "trim": ""
+                    }
+                },
+                "parameter_spec": {
+                    "parameter_specifications": [],
+                    "default_configuration": []
+                },
+                "default_configuration": []
+            },
             "is_required": "0",
             "default_value": "",
             "configuration": [],
@@ -78,7 +227,35 @@
             "include_formatted_params": "0",
             "title": "organization_postal_code",
             "name": "organization_postal_code",
-            "type": "String",
+            "type": {
+                "name": "String",
+                "label": "Short text",
+                "default_value_description": "",
+                "configuration_spec": {
+                    "parameter_specifications": [
+                        {
+                            "default_value": "",
+                            "name": "trim",
+                            "title": "Remove leading and trailing spaces",
+                            "description": "",
+                            "required": "",
+                            "options": "",
+                            "multiple": "",
+                            "data_type": "Boolean",
+                            "fk_entity": "",
+                            "type": "specification"
+                        }
+                    ],
+                    "default_configuration": {
+                        "trim": ""
+                    }
+                },
+                "parameter_spec": {
+                    "parameter_specifications": [],
+                    "default_configuration": []
+                },
+                "default_configuration": []
+            },
             "is_required": "0",
             "default_value": "",
             "configuration": [],
@@ -91,7 +268,35 @@
             "include_formatted_params": "0",
             "title": "website",
             "name": "website",
-            "type": "String",
+            "type": {
+                "name": "String",
+                "label": "Short text",
+                "default_value_description": "",
+                "configuration_spec": {
+                    "parameter_specifications": [
+                        {
+                            "default_value": "",
+                            "name": "trim",
+                            "title": "Remove leading and trailing spaces",
+                            "description": "",
+                            "required": "",
+                            "options": "",
+                            "multiple": "",
+                            "data_type": "Boolean",
+                            "fk_entity": "",
+                            "type": "specification"
+                        }
+                    ],
+                    "default_configuration": {
+                        "trim": ""
+                    }
+                },
+                "parameter_spec": {
+                    "parameter_specifications": [],
+                    "default_configuration": []
+                },
+                "default_configuration": []
+            },
             "is_required": "0",
             "default_value": "",
             "configuration": [],
@@ -104,7 +309,35 @@
             "include_formatted_params": "0",
             "title": "first_name",
             "name": "first_name",
-            "type": "String",
+            "type": {
+                "name": "String",
+                "label": "Short text",
+                "default_value_description": "",
+                "configuration_spec": {
+                    "parameter_specifications": [
+                        {
+                            "default_value": "",
+                            "name": "trim",
+                            "title": "Remove leading and trailing spaces",
+                            "description": "",
+                            "required": "",
+                            "options": "",
+                            "multiple": "",
+                            "data_type": "Boolean",
+                            "fk_entity": "",
+                            "type": "specification"
+                        }
+                    ],
+                    "default_configuration": {
+                        "trim": ""
+                    }
+                },
+                "parameter_spec": {
+                    "parameter_specifications": [],
+                    "default_configuration": []
+                },
+                "default_configuration": []
+            },
             "is_required": "0",
             "default_value": "",
             "configuration": [],
@@ -117,7 +350,35 @@
             "include_formatted_params": "0",
             "title": "last_name",
             "name": "last_name",
-            "type": "String",
+            "type": {
+                "name": "String",
+                "label": "Short text",
+                "default_value_description": "",
+                "configuration_spec": {
+                    "parameter_specifications": [
+                        {
+                            "default_value": "",
+                            "name": "trim",
+                            "title": "Remove leading and trailing spaces",
+                            "description": "",
+                            "required": "",
+                            "options": "",
+                            "multiple": "",
+                            "data_type": "Boolean",
+                            "fk_entity": "",
+                            "type": "specification"
+                        }
+                    ],
+                    "default_configuration": {
+                        "trim": ""
+                    }
+                },
+                "parameter_spec": {
+                    "parameter_specifications": [],
+                    "default_configuration": []
+                },
+                "default_configuration": []
+            },
             "is_required": "0",
             "default_value": "",
             "configuration": [],
@@ -130,7 +391,35 @@
             "include_formatted_params": "0",
             "title": "role",
             "name": "role",
-            "type": "String",
+            "type": {
+                "name": "String",
+                "label": "Short text",
+                "default_value_description": "",
+                "configuration_spec": {
+                    "parameter_specifications": [
+                        {
+                            "default_value": "",
+                            "name": "trim",
+                            "title": "Remove leading and trailing spaces",
+                            "description": "",
+                            "required": "",
+                            "options": "",
+                            "multiple": "",
+                            "data_type": "Boolean",
+                            "fk_entity": "",
+                            "type": "specification"
+                        }
+                    ],
+                    "default_configuration": {
+                        "trim": ""
+                    }
+                },
+                "parameter_spec": {
+                    "parameter_specifications": [],
+                    "default_configuration": []
+                },
+                "default_configuration": []
+            },
             "is_required": "0",
             "default_value": "",
             "configuration": [],
@@ -143,7 +432,35 @@
             "include_formatted_params": "0",
             "title": "email",
             "name": "email",
-            "type": "String",
+            "type": {
+                "name": "String",
+                "label": "Short text",
+                "default_value_description": "",
+                "configuration_spec": {
+                    "parameter_specifications": [
+                        {
+                            "default_value": "",
+                            "name": "trim",
+                            "title": "Remove leading and trailing spaces",
+                            "description": "",
+                            "required": "",
+                            "options": "",
+                            "multiple": "",
+                            "data_type": "Boolean",
+                            "fk_entity": "",
+                            "type": "specification"
+                        }
+                    ],
+                    "default_configuration": {
+                        "trim": ""
+                    }
+                },
+                "parameter_spec": {
+                    "parameter_specifications": [],
+                    "default_configuration": []
+                },
+                "default_configuration": []
+            },
             "is_required": "0",
             "default_value": "",
             "configuration": [],
@@ -151,7 +468,19 @@
             "default_data_parameter_mapping": [],
             "validators": [
                 {
-                    "validator": "email",
+                    "id": "1",
+                    "entity": "FormProcessorInput",
+                    "entity_id": "18",
+                    "validator": {
+                        "name": "email",
+                        "label": "E-mail",
+                        "invalid_message": "Invalid E-mail",
+                        "configuration_spec": {
+                            "parameter_specifications": [],
+                            "default_configuration": []
+                        },
+                        "configuration": []
+                    },
                     "configuration": []
                 }
             ]
@@ -161,7 +490,35 @@
             "include_formatted_params": "0",
             "title": "phone",
             "name": "phone",
-            "type": "String",
+            "type": {
+                "name": "String",
+                "label": "Short text",
+                "default_value_description": "",
+                "configuration_spec": {
+                    "parameter_specifications": [
+                        {
+                            "default_value": "",
+                            "name": "trim",
+                            "title": "Remove leading and trailing spaces",
+                            "description": "",
+                            "required": "",
+                            "options": "",
+                            "multiple": "",
+                            "data_type": "Boolean",
+                            "fk_entity": "",
+                            "type": "specification"
+                        }
+                    ],
+                    "default_configuration": {
+                        "trim": ""
+                    }
+                },
+                "parameter_spec": {
+                    "parameter_specifications": [],
+                    "default_configuration": []
+                },
+                "default_configuration": []
+            },
             "is_required": "0",
             "default_value": "",
             "configuration": [],
@@ -174,7 +531,35 @@
             "include_formatted_params": "0",
             "title": "repeat_client",
             "name": "repeat_client",
-            "type": "String",
+            "type": {
+                "name": "String",
+                "label": "Short text",
+                "default_value_description": "",
+                "configuration_spec": {
+                    "parameter_specifications": [
+                        {
+                            "default_value": "",
+                            "name": "trim",
+                            "title": "Remove leading and trailing spaces",
+                            "description": "",
+                            "required": "",
+                            "options": "",
+                            "multiple": "",
+                            "data_type": "Boolean",
+                            "fk_entity": "",
+                            "type": "specification"
+                        }
+                    ],
+                    "default_configuration": {
+                        "trim": ""
+                    }
+                },
+                "parameter_spec": {
+                    "parameter_specifications": [],
+                    "default_configuration": []
+                },
+                "default_configuration": []
+            },
             "is_required": "0",
             "default_value": "",
             "configuration": [],
@@ -187,7 +572,35 @@
             "include_formatted_params": "0",
             "title": "referral1",
             "name": "referral1",
-            "type": "String",
+            "type": {
+                "name": "String",
+                "label": "Short text",
+                "default_value_description": "",
+                "configuration_spec": {
+                    "parameter_specifications": [
+                        {
+                            "default_value": "",
+                            "name": "trim",
+                            "title": "Remove leading and trailing spaces",
+                            "description": "",
+                            "required": "",
+                            "options": "",
+                            "multiple": "",
+                            "data_type": "Boolean",
+                            "fk_entity": "",
+                            "type": "specification"
+                        }
+                    ],
+                    "default_configuration": {
+                        "trim": ""
+                    }
+                },
+                "parameter_spec": {
+                    "parameter_specifications": [],
+                    "default_configuration": []
+                },
+                "default_configuration": []
+            },
             "is_required": "0",
             "default_value": "",
             "configuration": [],
@@ -200,7 +613,35 @@
             "include_formatted_params": "0",
             "title": "referral2",
             "name": "referral2",
-            "type": "String",
+            "type": {
+                "name": "String",
+                "label": "Short text",
+                "default_value_description": "",
+                "configuration_spec": {
+                    "parameter_specifications": [
+                        {
+                            "default_value": "",
+                            "name": "trim",
+                            "title": "Remove leading and trailing spaces",
+                            "description": "",
+                            "required": "",
+                            "options": "",
+                            "multiple": "",
+                            "data_type": "Boolean",
+                            "fk_entity": "",
+                            "type": "specification"
+                        }
+                    ],
+                    "default_configuration": {
+                        "trim": ""
+                    }
+                },
+                "parameter_spec": {
+                    "parameter_specifications": [],
+                    "default_configuration": []
+                },
+                "default_configuration": []
+            },
             "is_required": "0",
             "default_value": "",
             "configuration": [],
@@ -213,7 +654,20 @@
             "include_formatted_params": "0",
             "title": "request",
             "name": "request",
-            "type": "Text",
+            "type": {
+                "name": "Text",
+                "label": "Long text",
+                "default_value_description": "",
+                "configuration_spec": {
+                    "parameter_specifications": [],
+                    "default_configuration": []
+                },
+                "parameter_spec": {
+                    "parameter_specifications": [],
+                    "default_configuration": []
+                },
+                "default_configuration": []
+            },
             "is_required": "0",
             "default_value": "",
             "configuration": [],
@@ -226,7 +680,35 @@
             "include_formatted_params": "0",
             "title": "expertise",
             "name": "expertise",
-            "type": "String",
+            "type": {
+                "name": "String",
+                "label": "Short text",
+                "default_value_description": "",
+                "configuration_spec": {
+                    "parameter_specifications": [
+                        {
+                            "default_value": "",
+                            "name": "trim",
+                            "title": "Remove leading and trailing spaces",
+                            "description": "",
+                            "required": "",
+                            "options": "",
+                            "multiple": "",
+                            "data_type": "Boolean",
+                            "fk_entity": "",
+                            "type": "specification"
+                        }
+                    ],
+                    "default_configuration": {
+                        "trim": ""
+                    }
+                },
+                "parameter_spec": {
+                    "parameter_specifications": [],
+                    "default_configuration": []
+                },
+                "default_configuration": []
+            },
             "is_required": "0",
             "default_value": "",
             "configuration": [],
@@ -237,7 +719,8 @@
     ],
     "actions": [
         {
-            "title": "Explode list of expertise \/ practice area",
+            "weight": "2",
+            "title": "Explode list of expertise / practice area",
             "name": "explode_list_of_expertise_practice_area",
             "type": "ExplodeList",
             "configuration": {
@@ -250,6 +733,7 @@
             "delay_configuration": ""
         },
         {
+            "weight": "3",
             "title": "Default the country to Canada",
             "name": "default_the_country_to_canada",
             "type": "SetValue",
@@ -261,6 +745,7 @@
             "delay_configuration": ""
         },
         {
+            "weight": "4",
             "title": "Get country ID",
             "name": "get_country_id",
             "type": "GetCountryId",
@@ -274,6 +759,7 @@
             "delay_configuration": ""
         },
         {
+            "weight": "5",
             "title": "Get province ID",
             "name": "get_province_id",
             "type": "GetStateProvinceId",
@@ -288,6 +774,7 @@
             "delay_configuration": ""
         },
         {
+            "weight": "6",
             "title": "Get or create organization by name",
             "name": "get_or_create_organization_by_name",
             "type": "FindOrCreateOrganizationByName",
@@ -301,6 +788,7 @@
             "delay_configuration": ""
         },
         {
+            "weight": "7",
             "title": "Update organization core fields",
             "name": "update_organization_core_fields",
             "type": "CreateUpdateOrganization",
@@ -354,6 +842,7 @@
             "delay_configuration": ""
         },
         {
+            "weight": "8",
             "title": "Update website",
             "name": "update_website",
             "type": "CreateUpdateWebsite",
@@ -368,6 +857,7 @@
             "delay_configuration": ""
         },
         {
+            "weight": "9",
             "title": "Get or create Individual by email and names",
             "name": "get_or_create_individual_by_email_and_names",
             "type": "FindOrCreateContactByEmailAndName",
@@ -385,6 +875,7 @@
             "delay_configuration": ""
         },
         {
+            "weight": "10",
             "title": "Set individual employer",
             "name": "set_individual_employer",
             "type": "SetContactEmployer",
@@ -397,6 +888,7 @@
             "delay_configuration": ""
         },
         {
+            "weight": "11",
             "title": "Update Individual core fields",
             "name": "update_individual_core_fields",
             "type": "CreateUpdateIndividual",
@@ -460,6 +952,7 @@
             "delay_configuration": ""
         },
         {
+            "weight": "12",
             "title": "Create Service Request",
             "name": "create_service_request",
             "type": "CreateCase",
@@ -483,6 +976,7 @@
             "delay_configuration": ""
         },
         {
+            "weight": "12",
             "title": "Update Case custom fields - Used MAS = Yes",
             "name": "update_case_custom_fields_used_mas_yes",
             "type": "CaseUpdateCustomData",
@@ -517,11 +1011,13 @@
                 "parameter_mapping": {
                     "parameter": "input.repeat_client"
                 },
-                "output_mapping": []
+                "output_mapping": [],
+                "title": "Compare parameter value"
             },
             "delay_configuration": ""
         },
         {
+            "weight": "13",
             "title": "Update Case custom data - Used MAS = No",
             "name": "update_case_custom_data_used_mas_no",
             "type": "CaseUpdateCustomData",
@@ -556,11 +1052,13 @@
                 "parameter_mapping": {
                     "parameter": "input.repeat_client"
                 },
-                "output_mapping": []
+                "output_mapping": [],
+                "title": "Compare parameter value"
             },
             "delay_configuration": ""
         },
         {
+            "weight": "14",
             "title": "Add a case role for the client rep",
             "name": "add_a_case_role_for_the_client_rep",
             "type": "MasAddRole",
@@ -583,6 +1081,5 @@
     "validate_validators": [],
     "calculate_actions": [],
     "default_data_output_configuration": [],
-    "calculation_output_configuration": [],
-    "calculations_configuration_url": "https:\/\/masdemo.localhost\/wp-admin\/admin.php?page=CiviCRM&q=civicrm%2Fadmin%2Fautomation%2Fformprocessor%2Fcalculationconfiguration&action=update&reset=1&id=2"
+    "calculation_output_configuration": []
 }

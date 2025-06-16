@@ -1,0 +1,1480 @@
+{
+    "type": "form",
+    "requires": null,
+    "entity_type": null,
+    "join_entity": null,
+    "title": "Request for Consulting Services",
+    "description": "MAS Request for Consulting Assistance form.",
+    "placement": [
+        "msg_token_single"
+    ],
+    "placement_filters": [],
+    "placement_weight": null,
+    "tags": null,
+    "icon": "fa-list-alt",
+    "server_route": "civicrm/mas-rcs-form",
+    "is_public": true,
+    "permission": [
+        "*always allow*"
+    ],
+    "permission_operator": "AND",
+    "redirect": "https://masdemo.localhost/thank-you/",
+    "submit_enabled": true,
+    "submit_limit": null,
+    "create_submission": true,
+    "manual_processing": false,
+    "allow_verification_by_email": false,
+    "email_confirmation_template_id": 71,
+    "autosave_draft": false,
+    "navigation": null,
+    "modified_date": "2025-06-12 17:52:55",
+    "layout": [
+        {
+            "#tag": "af-form",
+            "ctrl": "afform",
+            "#children": [
+                {
+                    "#text": "\n  "
+                },
+                {
+                    "#tag": "af-entity",
+                    "data": {
+                        "source": "Request for Consulting Services"
+                    },
+                    "type": "Organization",
+                    "name": "Organization1",
+                    "label": "Organization 1",
+                    "actions": {
+                        "create": false,
+                        "update": true
+                    },
+                    "security": "FBAC",
+                    "url-autofill": "0",
+                    "autofill": "relationship:Employer of",
+                    "autofill-relationship": "Individual3",
+                    "contact-dedupe": "Organization.Unsupervised"
+                },
+                {
+                    "#text": "\n  "
+                },
+                {
+                    "#tag": "af-entity",
+                    "data": {
+                        "source": "Request for Consulting Services"
+                    },
+                    "type": "Individual",
+                    "name": "Individual1",
+                    "label": "Individual 1",
+                    "actions": {
+                        "create": true,
+                        "update": true
+                    },
+                    "security": "FBAC",
+                    "autofill": "relationship:President of",
+                    "autofill-relationship": "Organization1",
+                    "contact-dedupe": "Individual.Supervised"
+                },
+                {
+                    "#text": "\n  "
+                },
+                {
+                    "#tag": "af-entity",
+                    "data": {
+                        "source": "Request for Consulting Services"
+                    },
+                    "type": "Individual",
+                    "name": "Individual2",
+                    "label": "Individual 2",
+                    "actions": {
+                        "create": true,
+                        "update": true
+                    },
+                    "security": "FBAC",
+                    "autofill": "relationship:Executive Director of",
+                    "autofill-relationship": "Organization1",
+                    "contact-dedupe": "Individual.Supervised"
+                },
+                {
+                    "#text": "\n  "
+                },
+                {
+                    "#tag": "af-entity",
+                    "data": {
+                        "source": "Request for Consulting Services"
+                    },
+                    "type": "Individual",
+                    "name": "Individual3",
+                    "label": "Individual 3",
+                    "actions": {
+                        "create": false,
+                        "update": true
+                    },
+                    "security": "FBAC",
+                    "url-autofill": "0",
+                    "autofill": "entity_id",
+                    "contact-dedupe": "Individual.Supervised"
+                },
+                {
+                    "#text": "\n  "
+                },
+                {
+                    "#tag": "af-entity",
+                    "data": {
+                        "contact_id": "Organization1",
+                        "case_type_id": 3
+                    },
+                    "actions": {
+                        "create": false,
+                        "update": true
+                    },
+                    "type": "Case",
+                    "name": "Case1",
+                    "label": "Case 1",
+                    "security": "FBAC",
+                    "url-autofill": "0",
+                    "case-autofill": "entity_id"
+                },
+                {
+                    "#text": "\n  "
+                },
+                {
+                    "#tag": "div",
+                    "class": "af-container",
+                    "#children": [
+                        {
+                            "#text": "\n    "
+                        },
+                        {
+                            "#tag": "fieldset",
+                            "af-fieldset": "Organization1",
+                            "class": "af-container af-container-style-pane",
+                            "af-title": "Organization",
+                            "style": "border: 3px solid #619ee6; background-color: #ffffff",
+                            "#children": [
+                                {
+                                    "#text": "\n      "
+                                },
+                                {
+                                    "#tag": "div",
+                                    "actions": {
+                                        "update": true,
+                                        "delete": true
+                                    },
+                                    "class": "af-container",
+                                    "#children": [
+                                        {
+                                            "#text": "\n        "
+                                        },
+                                        {
+                                            "#tag": "div",
+                                            "class": "af-container af-layout-inline",
+                                            "#children": [
+                                                {
+                                                    "#text": "\n          "
+                                                },
+                                                {
+                                                    "#tag": "af-field",
+                                                    "name": "organization_name",
+                                                    "defn": {
+                                                        "required": true,
+                                                        "input_attrs": []
+                                                    }
+                                                },
+                                                {
+                                                    "#text": "\n          "
+                                                },
+                                                {
+                                                    "#tag": "af-field",
+                                                    "name": "Organization.Industry",
+                                                    "defn": {
+                                                        "label": "Industry",
+                                                        "input_attrs": [],
+                                                        "required": true
+                                                    }
+                                                },
+                                                {
+                                                    "#text": "\n          "
+                                                },
+                                                {
+                                                    "#tag": "af-field",
+                                                    "name": "Organization.Budget",
+                                                    "defn": {
+                                                        "label": "Annual Budget",
+                                                        "input_attrs": [],
+                                                        "required": true
+                                                    }
+                                                },
+                                                {
+                                                    "#text": "\n          "
+                                                },
+                                                {
+                                                    "#tag": "af-field",
+                                                    "name": "Organization._Employees",
+                                                    "defn": {
+                                                        "label": "# Employees",
+                                                        "input_attrs": [],
+                                                        "required": true
+                                                    }
+                                                },
+                                                {
+                                                    "#text": "\n          "
+                                                },
+                                                {
+                                                    "#tag": "af-field",
+                                                    "name": "Organization._Volunteers",
+                                                    "defn": {
+                                                        "label": "# Volunteers",
+                                                        "input_attrs": [],
+                                                        "required": true
+                                                    }
+                                                },
+                                                {
+                                                    "#text": "\n          "
+                                                },
+                                                {
+                                                    "#tag": "af-field",
+                                                    "name": "Organization.Charity_Business_",
+                                                    "defn": {
+                                                        "label": "Charity/Business #",
+                                                        "input_attrs": []
+                                                    }
+                                                },
+                                                {
+                                                    "#text": "\n          "
+                                                },
+                                                {
+                                                    "#tag": "af-field",
+                                                    "name": "Organization.Notes",
+                                                    "defn": {
+                                                        "label": "Notes"
+                                                    }
+                                                },
+                                                {
+                                                    "#text": "\n        "
+                                                }
+                                            ]
+                                        },
+                                        {
+                                            "#text": "\n      "
+                                        }
+                                    ]
+                                },
+                                {
+                                    "#text": "\n      "
+                                },
+                                {
+                                    "#tag": "div",
+                                    "af-join": "Address",
+                                    "actions": {
+                                        "update": true,
+                                        "delete": true
+                                    },
+                                    "data": {
+                                        "is_primary": true
+                                    },
+                                    "#children": [
+                                        {
+                                            "#text": "\n        "
+                                        },
+                                        {
+                                            "#tag": "div",
+                                            "actions": {
+                                                "update": true,
+                                                "delete": true
+                                            },
+                                            "class": "af-container",
+                                            "#children": [
+                                                {
+                                                    "#text": "\n          "
+                                                },
+                                                {
+                                                    "#tag": "div",
+                                                    "class": "af-container af-layout-inline",
+                                                    "#children": [
+                                                        {
+                                                            "#text": "\n            "
+                                                        },
+                                                        {
+                                                            "#tag": "af-field",
+                                                            "name": "street_address",
+                                                            "defn": {
+                                                                "required": true,
+                                                                "input_attrs": []
+                                                            }
+                                                        },
+                                                        {
+                                                            "#text": "\n            "
+                                                        },
+                                                        {
+                                                            "#tag": "af-field",
+                                                            "name": "city",
+                                                            "defn": {
+                                                                "required": true,
+                                                                "input_attrs": []
+                                                            }
+                                                        },
+                                                        {
+                                                            "#text": "\n            "
+                                                        },
+                                                        {
+                                                            "#tag": "af-field",
+                                                            "name": "state_province_id",
+                                                            "defn": {
+                                                                "input_type": "Select",
+                                                                "input_attrs": [],
+                                                                "afform_default": 1108,
+                                                                "label": "Province",
+                                                                "required": true
+                                                            }
+                                                        },
+                                                        {
+                                                            "#text": "\n            "
+                                                        },
+                                                        {
+                                                            "#tag": "af-field",
+                                                            "name": "postal_code"
+                                                        },
+                                                        {
+                                                            "#text": "\n            "
+                                                        },
+                                                        {
+                                                            "#tag": "af-field",
+                                                            "name": "country_id",
+                                                            "defn": {
+                                                                "afform_default": "1039",
+                                                                "input_attrs": [],
+                                                                "input_type": "Hidden",
+                                                                "label": false
+                                                            }
+                                                        },
+                                                        {
+                                                            "#text": "\n            "
+                                                        },
+                                                        {
+                                                            "#tag": "af-field",
+                                                            "name": "location_type_id",
+                                                            "defn": {
+                                                                "afform_default": "1",
+                                                                "input_attrs": [],
+                                                                "input_type": "Hidden",
+                                                                "required": false,
+                                                                "label": false
+                                                            }
+                                                        },
+                                                        {
+                                                            "#text": "\n            "
+                                                        },
+                                                        {
+                                                            "#tag": "af-field",
+                                                            "name": "is_primary",
+                                                            "defn": {
+                                                                "afform_default": "1",
+                                                                "input_type": "Hidden",
+                                                                "label": false
+                                                            }
+                                                        },
+                                                        {
+                                                            "#text": "\n          "
+                                                        }
+                                                    ]
+                                                },
+                                                {
+                                                    "#text": "\n        "
+                                                }
+                                            ]
+                                        },
+                                        {
+                                            "#text": "\n      "
+                                        }
+                                    ]
+                                },
+                                {
+                                    "#text": "\n      "
+                                },
+                                {
+                                    "#tag": "div",
+                                    "af-join": "Phone",
+                                    "actions": {
+                                        "update": true,
+                                        "delete": true
+                                    },
+                                    "data": {
+                                        "is_primary": true
+                                    },
+                                    "#children": [
+                                        {
+                                            "#text": "\n        "
+                                        },
+                                        {
+                                            "#tag": "div",
+                                            "actions": {
+                                                "update": true,
+                                                "delete": true
+                                            },
+                                            "class": "af-container",
+                                            "#children": [
+                                                {
+                                                    "#text": "\n          "
+                                                },
+                                                {
+                                                    "#tag": "div",
+                                                    "class": "af-container af-layout-inline",
+                                                    "#children": [
+                                                        {
+                                                            "#text": "\n            "
+                                                        },
+                                                        {
+                                                            "#tag": "af-field",
+                                                            "name": "phone"
+                                                        },
+                                                        {
+                                                            "#text": "\n            "
+                                                        },
+                                                        {
+                                                            "#tag": "af-field",
+                                                            "name": "location_type_id",
+                                                            "defn": {
+                                                                "afform_default": "1",
+                                                                "input_attrs": [],
+                                                                "required": false,
+                                                                "label": false,
+                                                                "input_type": "Hidden"
+                                                            }
+                                                        },
+                                                        {
+                                                            "#text": "\n            "
+                                                        },
+                                                        {
+                                                            "#tag": "af-field",
+                                                            "name": "phone_type_id",
+                                                            "defn": {
+                                                                "afform_default": "1",
+                                                                "input_attrs": [],
+                                                                "label": false,
+                                                                "input_type": "Hidden"
+                                                            }
+                                                        },
+                                                        {
+                                                            "#text": "\n            "
+                                                        },
+                                                        {
+                                                            "#tag": "af-field",
+                                                            "name": "is_primary",
+                                                            "defn": {
+                                                                "afform_default": "1",
+                                                                "label": false,
+                                                                "input_type": "Hidden"
+                                                            }
+                                                        },
+                                                        {
+                                                            "#text": "\n          "
+                                                        }
+                                                    ]
+                                                },
+                                                {
+                                                    "#text": "\n        "
+                                                }
+                                            ]
+                                        },
+                                        {
+                                            "#text": "\n      "
+                                        }
+                                    ]
+                                },
+                                {
+                                    "#text": "\n      "
+                                },
+                                {
+                                    "#tag": "div",
+                                    "af-join": "Website",
+                                    "actions": {
+                                        "update": true,
+                                        "delete": true
+                                    },
+                                    "#children": [
+                                        {
+                                            "#text": "\n        "
+                                        },
+                                        {
+                                            "#tag": "div",
+                                            "actions": {
+                                                "update": true,
+                                                "delete": true
+                                            },
+                                            "class": "af-container",
+                                            "#children": [
+                                                {
+                                                    "#text": "\n          "
+                                                },
+                                                {
+                                                    "#tag": "div",
+                                                    "class": "af-container af-layout-inline",
+                                                    "#children": [
+                                                        {
+                                                            "#text": "\n            "
+                                                        },
+                                                        {
+                                                            "#tag": "af-field",
+                                                            "name": "url"
+                                                        },
+                                                        {
+                                                            "#text": "\n            "
+                                                        },
+                                                        {
+                                                            "#tag": "af-field",
+                                                            "name": "website_type_id",
+                                                            "defn": {
+                                                                "afform_default": "2",
+                                                                "input_attrs": [],
+                                                                "label": false,
+                                                                "input_type": "Hidden"
+                                                            }
+                                                        },
+                                                        {
+                                                            "#text": "\n          "
+                                                        }
+                                                    ]
+                                                },
+                                                {
+                                                    "#text": "\n        "
+                                                }
+                                            ]
+                                        },
+                                        {
+                                            "#text": "\n      "
+                                        }
+                                    ]
+                                },
+                                {
+                                    "#text": "\n    "
+                                }
+                            ]
+                        },
+                        {
+                            "#text": "\n    "
+                        },
+                        {
+                            "#tag": "fieldset",
+                            "af-fieldset": "Individual1",
+                            "class": "af-container af-container-style-pane",
+                            "af-title": "President / Board Chair",
+                            "style": "border: 3px solid #619ee6; background-color: #ffffff",
+                            "#children": [
+                                {
+                                    "#text": "\n      "
+                                },
+                                {
+                                    "#tag": "div",
+                                    "actions": {
+                                        "update": true,
+                                        "delete": true
+                                    },
+                                    "class": "af-container",
+                                    "#children": [
+                                        {
+                                            "#text": "\n        "
+                                        },
+                                        {
+                                            "#tag": "div",
+                                            "class": "af-container af-layout-inline",
+                                            "#children": [
+                                                {
+                                                    "#text": "\n          "
+                                                },
+                                                {
+                                                    "#tag": "af-field",
+                                                    "name": "first_name"
+                                                },
+                                                {
+                                                    "#text": "\n          "
+                                                },
+                                                {
+                                                    "#tag": "af-field",
+                                                    "name": "last_name"
+                                                },
+                                                {
+                                                    "#text": "\n          "
+                                                },
+                                                {
+                                                    "#tag": "div",
+                                                    "af-join": "Email",
+                                                    "actions": {
+                                                        "update": true,
+                                                        "delete": true
+                                                    },
+                                                    "data": {
+                                                        "is_primary": true
+                                                    },
+                                                    "#children": [
+                                                        {
+                                                            "#text": "\n            "
+                                                        },
+                                                        {
+                                                            "#tag": "div",
+                                                            "actions": {
+                                                                "update": true,
+                                                                "delete": true
+                                                            },
+                                                            "class": "af-container",
+                                                            "#children": [
+                                                                {
+                                                                    "#text": "\n              "
+                                                                },
+                                                                {
+                                                                    "#tag": "div",
+                                                                    "class": "af-container af-layout-inline",
+                                                                    "#children": [
+                                                                        {
+                                                                            "#text": "\n                "
+                                                                        },
+                                                                        {
+                                                                            "#tag": "af-field",
+                                                                            "name": "email",
+                                                                            "defn": {
+                                                                                "required": false,
+                                                                                "input_attrs": []
+                                                                            }
+                                                                        },
+                                                                        {
+                                                                            "#text": "\n                "
+                                                                        },
+                                                                        {
+                                                                            "#tag": "af-field",
+                                                                            "name": "location_type_id",
+                                                                            "defn": {
+                                                                                "afform_default": "1",
+                                                                                "input_attrs": [],
+                                                                                "required": false,
+                                                                                "label": false,
+                                                                                "input_type": "Hidden"
+                                                                            }
+                                                                        },
+                                                                        {
+                                                                            "#text": "\n                "
+                                                                        },
+                                                                        {
+                                                                            "#tag": "af-field",
+                                                                            "name": "is_primary",
+                                                                            "defn": {
+                                                                                "afform_default": "1",
+                                                                                "label": false,
+                                                                                "input_type": "Hidden"
+                                                                            }
+                                                                        },
+                                                                        {
+                                                                            "#text": "\n              "
+                                                                        }
+                                                                    ]
+                                                                },
+                                                                {
+                                                                    "#text": "\n            "
+                                                                }
+                                                            ]
+                                                        },
+                                                        {
+                                                            "#text": "\n          "
+                                                        }
+                                                    ]
+                                                },
+                                                {
+                                                    "#text": "\n          "
+                                                },
+                                                {
+                                                    "#tag": "af-field",
+                                                    "name": "do_not_email",
+                                                    "defn": {
+                                                        "input_type": "Select",
+                                                        "input_attrs": [],
+                                                        "options": [
+                                                            {
+                                                                "id": "1",
+                                                                "label": "Do not add to email list"
+                                                            },
+                                                            {
+                                                                "id": "0",
+                                                                "label": "Add to email list"
+                                                            }
+                                                        ]
+                                                    }
+                                                },
+                                                {
+                                                    "#text": "\n          "
+                                                },
+                                                {
+                                                    "#tag": "af-field",
+                                                    "name": "employer_id",
+                                                    "defn": {
+                                                        "afform_default": "Organization1",
+                                                        "input_attrs": [],
+                                                        "label": false,
+                                                        "input_type": "Hidden"
+                                                    }
+                                                },
+                                                {
+                                                    "#text": "\n          "
+                                                },
+                                                {
+                                                    "#tag": "af-field",
+                                                    "name": "job_title",
+                                                    "defn": {
+                                                        "input_type": "Hidden",
+                                                        "input_attrs": [],
+                                                        "label": false,
+                                                        "afform_default": "President"
+                                                    }
+                                                },
+                                                {
+                                                    "#text": "\n        "
+                                                }
+                                            ]
+                                        },
+                                        {
+                                            "#text": "\n      "
+                                        }
+                                    ]
+                                },
+                                {
+                                    "#text": "\n    "
+                                }
+                            ]
+                        },
+                        {
+                            "#text": "\n    "
+                        },
+                        {
+                            "#tag": "fieldset",
+                            "af-fieldset": "Individual2",
+                            "class": "af-container af-container-style-pane",
+                            "af-title": "Executive Director",
+                            "style": "border: 3px solid #619ee6",
+                            "#children": [
+                                {
+                                    "#text": "\n      "
+                                },
+                                {
+                                    "#tag": "div",
+                                    "actions": {
+                                        "update": true,
+                                        "delete": true
+                                    },
+                                    "class": "af-container",
+                                    "#children": [
+                                        {
+                                            "#text": "\n        "
+                                        },
+                                        {
+                                            "#tag": "div",
+                                            "class": "af-container af-layout-inline",
+                                            "#children": [
+                                                {
+                                                    "#text": "\n          "
+                                                },
+                                                {
+                                                    "#tag": "af-field",
+                                                    "name": "first_name"
+                                                },
+                                                {
+                                                    "#text": "\n          "
+                                                },
+                                                {
+                                                    "#tag": "af-field",
+                                                    "name": "last_name"
+                                                },
+                                                {
+                                                    "#text": "\n          "
+                                                },
+                                                {
+                                                    "#tag": "div",
+                                                    "af-join": "Email",
+                                                    "actions": {
+                                                        "update": true,
+                                                        "delete": true
+                                                    },
+                                                    "data": {
+                                                        "is_primary": true
+                                                    },
+                                                    "#children": [
+                                                        {
+                                                            "#text": "\n            "
+                                                        },
+                                                        {
+                                                            "#tag": "div",
+                                                            "class": "af-container af-layout-inline",
+                                                            "#children": [
+                                                                {
+                                                                    "#text": "\n              "
+                                                                },
+                                                                {
+                                                                    "#tag": "af-field",
+                                                                    "name": "email",
+                                                                    "defn": {
+                                                                        "required": false,
+                                                                        "input_attrs": []
+                                                                    }
+                                                                },
+                                                                {
+                                                                    "#text": "\n              "
+                                                                },
+                                                                {
+                                                                    "#tag": "af-field",
+                                                                    "name": "location_type_id",
+                                                                    "defn": {
+                                                                        "afform_default": "1",
+                                                                        "input_attrs": [],
+                                                                        "required": false,
+                                                                        "label": false,
+                                                                        "input_type": "Hidden"
+                                                                    }
+                                                                },
+                                                                {
+                                                                    "#text": "\n              "
+                                                                },
+                                                                {
+                                                                    "#tag": "af-field",
+                                                                    "name": "is_primary",
+                                                                    "defn": {
+                                                                        "afform_default": "1",
+                                                                        "label": false,
+                                                                        "input_type": "Hidden"
+                                                                    }
+                                                                },
+                                                                {
+                                                                    "#text": "\n            "
+                                                                }
+                                                            ]
+                                                        },
+                                                        {
+                                                            "#text": "\n          "
+                                                        }
+                                                    ]
+                                                },
+                                                {
+                                                    "#text": "\n          "
+                                                },
+                                                {
+                                                    "#tag": "af-field",
+                                                    "name": "do_not_email",
+                                                    "defn": {
+                                                        "input_type": "Select",
+                                                        "input_attrs": [],
+                                                        "options": [
+                                                            {
+                                                                "id": "1",
+                                                                "label": "Do not add to email list"
+                                                            },
+                                                            {
+                                                                "id": "0",
+                                                                "label": "Add to email list"
+                                                            }
+                                                        ]
+                                                    }
+                                                },
+                                                {
+                                                    "#text": "\n          "
+                                                },
+                                                {
+                                                    "#tag": "af-field",
+                                                    "name": "employer_id",
+                                                    "defn": {
+                                                        "input_type": "Hidden",
+                                                        "input_attrs": [],
+                                                        "label": false,
+                                                        "afform_default": "Organization1"
+                                                    }
+                                                },
+                                                {
+                                                    "#text": "\n          "
+                                                },
+                                                {
+                                                    "#tag": "af-field",
+                                                    "name": "job_title",
+                                                    "defn": {
+                                                        "input_type": "Hidden",
+                                                        "input_attrs": [],
+                                                        "label": false,
+                                                        "afform_default": "Executive Director"
+                                                    }
+                                                },
+                                                {
+                                                    "#text": "\n        "
+                                                }
+                                            ]
+                                        },
+                                        {
+                                            "#text": "\n      "
+                                        }
+                                    ]
+                                },
+                                {
+                                    "#text": "\n    "
+                                }
+                            ]
+                        },
+                        {
+                            "#text": "\n    "
+                        },
+                        {
+                            "#tag": "fieldset",
+                            "af-fieldset": "Individual3",
+                            "class": "af-container af-container-style-pane",
+                            "af-title": "Primary Contact for this Request",
+                            "style": "border: 3px solid #619ee6",
+                            "#children": [
+                                {
+                                    "#text": "\n      "
+                                },
+                                {
+                                    "#tag": "div",
+                                    "actions": {
+                                        "update": true,
+                                        "delete": true
+                                    },
+                                    "class": "af-container",
+                                    "#children": [
+                                        {
+                                            "#text": "\n        "
+                                        },
+                                        {
+                                            "#tag": "div",
+                                            "class": "af-container af-layout-inline",
+                                            "#children": [
+                                                {
+                                                    "#text": "\n          "
+                                                },
+                                                {
+                                                    "#tag": "af-field",
+                                                    "name": "first_name",
+                                                    "defn": {
+                                                        "required": true,
+                                                        "input_attrs": []
+                                                    }
+                                                },
+                                                {
+                                                    "#text": "\n          "
+                                                },
+                                                {
+                                                    "#tag": "af-field",
+                                                    "name": "last_name",
+                                                    "defn": {
+                                                        "required": true,
+                                                        "input_attrs": []
+                                                    }
+                                                },
+                                                {
+                                                    "#text": "\n          "
+                                                },
+                                                {
+                                                    "#tag": "div",
+                                                    "af-join": "Email",
+                                                    "actions": {
+                                                        "update": true,
+                                                        "delete": true
+                                                    },
+                                                    "data": {
+                                                        "is_primary": true
+                                                    },
+                                                    "#children": [
+                                                        {
+                                                            "#text": "\n            "
+                                                        },
+                                                        {
+                                                            "#tag": "div",
+                                                            "class": "af-container af-layout-inline",
+                                                            "#children": [
+                                                                {
+                                                                    "#text": "\n              "
+                                                                },
+                                                                {
+                                                                    "#tag": "af-field",
+                                                                    "name": "email"
+                                                                },
+                                                                {
+                                                                    "#text": "\n              "
+                                                                },
+                                                                {
+                                                                    "#tag": "af-field",
+                                                                    "name": "location_type_id",
+                                                                    "defn": {
+                                                                        "afform_default": "1",
+                                                                        "input_attrs": [],
+                                                                        "required": false,
+                                                                        "label": false,
+                                                                        "input_type": "Hidden"
+                                                                    }
+                                                                },
+                                                                {
+                                                                    "#text": "\n              "
+                                                                },
+                                                                {
+                                                                    "#tag": "af-field",
+                                                                    "name": "is_primary",
+                                                                    "defn": {
+                                                                        "afform_default": "1",
+                                                                        "label": false,
+                                                                        "input_type": "Hidden"
+                                                                    }
+                                                                },
+                                                                {
+                                                                    "#text": "\n            "
+                                                                }
+                                                            ]
+                                                        },
+                                                        {
+                                                            "#text": "\n          "
+                                                        }
+                                                    ]
+                                                },
+                                                {
+                                                    "#text": "\n          "
+                                                },
+                                                {
+                                                    "#tag": "div",
+                                                    "af-join": "Phone",
+                                                    "actions": {
+                                                        "update": true,
+                                                        "delete": true
+                                                    },
+                                                    "data": {
+                                                        "is_primary": true
+                                                    },
+                                                    "#children": [
+                                                        {
+                                                            "#text": "\n            "
+                                                        },
+                                                        {
+                                                            "#tag": "div",
+                                                            "actions": {
+                                                                "update": true,
+                                                                "delete": true
+                                                            },
+                                                            "class": "af-container",
+                                                            "#children": [
+                                                                {
+                                                                    "#text": "\n              "
+                                                                },
+                                                                {
+                                                                    "#tag": "div",
+                                                                    "class": "af-container af-layout-inline",
+                                                                    "#children": [
+                                                                        {
+                                                                            "#text": "\n                "
+                                                                        },
+                                                                        {
+                                                                            "#tag": "af-field",
+                                                                            "name": "phone"
+                                                                        },
+                                                                        {
+                                                                            "#text": "\n                "
+                                                                        },
+                                                                        {
+                                                                            "#tag": "af-field",
+                                                                            "name": "location_type_id",
+                                                                            "defn": {
+                                                                                "afform_default": "1",
+                                                                                "input_attrs": [],
+                                                                                "required": false,
+                                                                                "label": false,
+                                                                                "input_type": "Hidden"
+                                                                            }
+                                                                        },
+                                                                        {
+                                                                            "#text": "\n                "
+                                                                        },
+                                                                        {
+                                                                            "#tag": "af-field",
+                                                                            "name": "phone_type_id",
+                                                                            "defn": {
+                                                                                "afform_default": "1",
+                                                                                "input_attrs": [],
+                                                                                "label": false,
+                                                                                "input_type": "Hidden"
+                                                                            }
+                                                                        },
+                                                                        {
+                                                                            "#text": "\n                "
+                                                                        },
+                                                                        {
+                                                                            "#tag": "af-field",
+                                                                            "name": "is_primary",
+                                                                            "defn": {
+                                                                                "afform_default": "1",
+                                                                                "label": false,
+                                                                                "input_type": "Hidden"
+                                                                            }
+                                                                        },
+                                                                        {
+                                                                            "#text": "\n              "
+                                                                        }
+                                                                    ]
+                                                                },
+                                                                {
+                                                                    "#text": "\n            "
+                                                                }
+                                                            ]
+                                                        },
+                                                        {
+                                                            "#text": "\n          "
+                                                        }
+                                                    ]
+                                                },
+                                                {
+                                                    "#text": "\n          "
+                                                },
+                                                {
+                                                    "#tag": "af-field",
+                                                    "name": "job_title",
+                                                    "defn": {
+                                                        "label": "Role / Job Title",
+                                                        "input_attrs": [],
+                                                        "required": true
+                                                    }
+                                                },
+                                                {
+                                                    "#text": "\n        "
+                                                }
+                                            ]
+                                        },
+                                        {
+                                            "#text": "\n      "
+                                        }
+                                    ]
+                                },
+                                {
+                                    "#text": "\n    "
+                                }
+                            ]
+                        },
+                        {
+                            "#text": "\n    "
+                        },
+                        {
+                            "#tag": "fieldset",
+                            "af-fieldset": "Case1",
+                            "class": "af-container",
+                            "#children": [
+                                {
+                                    "#text": "\n      "
+                                },
+                                {
+                                    "#tag": "fieldset",
+                                    "class": "af-container af-layout-inline af-container-style-pane",
+                                    "af-title": "Request",
+                                    "style": "border: 3px solid #617de6",
+                                    "#children": [
+                                        {
+                                            "#text": "\n        "
+                                        },
+                                        {
+                                            "#tag": "af-field",
+                                            "name": "subject",
+                                            "defn": {
+                                                "label": "Subject",
+                                                "input_attrs": [],
+                                                "required": true
+                                            }
+                                        },
+                                        {
+                                            "#text": "\n        "
+                                        },
+                                        {
+                                            "#tag": "af-field",
+                                            "name": "Cases_SR_Projects_.Notes",
+                                            "defn": {
+                                                "help_pre": "What assistance are you\nlooking for at this time?\u00a0 Please\nbe as specific as you can about the nature of this project\u00a0 so we can find the right consultant to help\nyou.",
+                                                "input_attrs": {
+                                                    "maxlength": 1000
+                                                },
+                                                "label": "Details",
+                                                "required": true
+                                            }
+                                        },
+                                        {
+                                            "#text": "\n        "
+                                        },
+                                        {
+                                            "#tag": "div",
+                                            "class": "af-container",
+                                            "#children": []
+                                        },
+                                        {
+                                            "#text": "\n        "
+                                        },
+                                        {
+                                            "#tag": "af-field",
+                                            "name": "Cases_SR_Projects_.Virtual_Work",
+                                            "defn": {
+                                                "label": "Work Preference",
+                                                "input_attrs": [],
+                                                "required": true
+                                            }
+                                        },
+                                        {
+                                            "#text": "\n        "
+                                        },
+                                        {
+                                            "#tag": "af-field",
+                                            "name": "Cases_SR_Projects_.Board_Approval",
+                                            "defn": {
+                                                "required": true,
+                                                "label": "Board Approval"
+                                            }
+                                        },
+                                        {
+                                            "#text": "\n        "
+                                        },
+                                        {
+                                            "#tag": "af-field",
+                                            "name": "Cases_SR_Projects_.Requested_Start_Date",
+                                            "defn": {
+                                                "label": "Proposed Start Date",
+                                                "input_attrs": []
+                                            }
+                                        },
+                                        {
+                                            "#text": "\n        "
+                                        },
+                                        {
+                                            "#tag": "af-field",
+                                            "name": "Cases_SR_Projects_.Flexible_Start_Date",
+                                            "defn": {
+                                                "label": "Is Start Date Flexible?"
+                                            }
+                                        },
+                                        {
+                                            "#text": "\n      "
+                                        }
+                                    ]
+                                },
+                                {
+                                    "#text": "\n      "
+                                },
+                                {
+                                    "#tag": "fieldset",
+                                    "class": "af-container af-container-style-pane af-layout-inline",
+                                    "af-title": "Terms & Conditions",
+                                    "style": "border: 3px solid #619ee6",
+                                    "#children": [
+                                        {
+                                            "#text": "\n        "
+                                        },
+                                        {
+                                            "#tag": "div",
+                                            "class": "af-markup",
+                                            "#children": [
+                                                {
+                                                    "#text": "\n          \n          "
+                                                },
+                                                {
+                                                    "#tag": "p",
+                                                    "#children": [
+                                                        {
+                                                            "#text": "Please review the "
+                                                        },
+                                                        {
+                                                            "#tag": "a",
+                                                            "href": "https://masadvise.sharepoint.com/:w:/s/ManagementAdvisoryServiceofOntario/EfvikZuLN_xKix4EDjsxR1gBlvpCcJ1XjF4ZDFMcYF2-Ow?e=INhZvD",
+                                                            "rel": "noopener noreferrer",
+                                                            "target": "_blank",
+                                                            "#children": [
+                                                                {
+                                                                    "#text": "MAS Terms & Conditions"
+                                                                }
+                                                            ]
+                                                        },
+                                                        {
+                                                            "#text": " and then click this checkbox to confirm you are authorized and approve."
+                                                        }
+                                                    ]
+                                                },
+                                                {
+                                                    "#text": "\n\n        \n        "
+                                                }
+                                            ]
+                                        },
+                                        {
+                                            "#text": "\n        "
+                                        },
+                                        {
+                                            "#tag": "af-field",
+                                            "name": "Cases_SR_Projects_.T_C_Authorized_and_Approved",
+                                            "defn": {
+                                                "required": true,
+                                                "label": "Authorized and Approved"
+                                            }
+                                        },
+                                        {
+                                            "#text": "\n        "
+                                        },
+                                        {
+                                            "#tag": "af-field",
+                                            "name": "Cases_SR_Projects_.Authorized_Name",
+                                            "defn": {
+                                                "label": "Name",
+                                                "input_attrs": [],
+                                                "required": true
+                                            }
+                                        },
+                                        {
+                                            "#text": "\n        "
+                                        },
+                                        {
+                                            "#tag": "af-field",
+                                            "name": "Cases_SR_Projects_.Authorized_Title",
+                                            "defn": {
+                                                "label": "Title",
+                                                "input_attrs": [],
+                                                "required": true
+                                            }
+                                        },
+                                        {
+                                            "#text": "\n        "
+                                        },
+                                        {
+                                            "#tag": "af-field",
+                                            "name": "Cases_SR_Projects_.Authorized_Date",
+                                            "defn": {
+                                                "label": "Date",
+                                                "input_attrs": [],
+                                                "required": true
+                                            }
+                                        },
+                                        {
+                                            "#text": "\n      "
+                                        }
+                                    ]
+                                },
+                                {
+                                    "#text": "\n      "
+                                },
+                                {
+                                    "#tag": "fieldset",
+                                    "class": "af-container af-container-style-pane",
+                                    "af-title": "Donation",
+                                    "style": "border: 3px solid #619ee6; background-color: #ffff00",
+                                    "#children": [
+                                        {
+                                            "#text": "\n        "
+                                        },
+                                        {
+                                            "#tag": "div",
+                                            "class": "af-markup",
+                                            "#children": [
+                                                {
+                                                    "#text": "\n          \n          \n          "
+                                                },
+                                                {
+                                                    "#tag": "p",
+                                                    "#children": [
+                                                        {
+                                                            "#text": "MAS does not charge fees for its services, but we do ask organizations that are financially able to do so to consider giving MAS a donation at the completion of a project. MAS relies on donations to cover its operating expenses."
+                                                        }
+                                                    ]
+                                                },
+                                                {
+                                                    "#text": "\n\n        \n        \n        "
+                                                }
+                                            ]
+                                        },
+                                        {
+                                            "#text": "\n      "
+                                        }
+                                    ]
+                                },
+                                {
+                                    "#text": "\n    "
+                                }
+                            ]
+                        },
+                        {
+                            "#text": "\n    "
+                        },
+                        {
+                            "#tag": "div",
+                            "class": "af-markup",
+                            "#children": [
+                                {
+                                    "#text": "\n      \n      \n      \n      "
+                                },
+                                {
+                                    "#tag": "p",
+                                    "#children": [
+                                        {
+                                            "#text": "\n        If you have any issues with this form, please email\n        "
+                                        },
+                                        {
+                                            "#tag": "a",
+                                            "href": "mailto:info@masadvise.org",
+                                            "#children": [
+                                                {
+                                                    "#text": "info@masadvise.org"
+                                                }
+                                            ]
+                                        },
+                                        {
+                                            "#text": "\n      "
+                                        }
+                                    ]
+                                },
+                                {
+                                    "#text": "\n    \n    \n    \n    "
+                                }
+                            ]
+                        },
+                        {
+                            "#text": "\n    "
+                        },
+                        {
+                            "#tag": "div",
+                            "class": "af-container af-layout-inline",
+                            "#children": [
+                                {
+                                    "#text": "\n      "
+                                },
+                                {
+                                    "#tag": "button",
+                                    "class": "af-button btn btn-primary",
+                                    "crm-icon": "fa-floppy-disk",
+                                    "ng-click": "afform.submitDraft()",
+                                    "ng-if": "afform.showSubmitButton",
+                                    "#children": [
+                                        {
+                                            "#text": "Save Draft"
+                                        }
+                                    ]
+                                },
+                                {
+                                    "#text": "\n      "
+                                },
+                                {
+                                    "#tag": "button",
+                                    "class": "af-button btn btn-primary",
+                                    "crm-icon": "fa-check",
+                                    "ng-click": "afform.submit()",
+                                    "ng-if": "afform.showSubmitButton",
+                                    "#children": [
+                                        {
+                                            "#text": "Submit"
+                                        }
+                                    ]
+                                },
+                                {
+                                    "#text": "\n    "
+                                }
+                            ]
+                        },
+                        {
+                            "#text": "\n  "
+                        }
+                    ]
+                },
+                {
+                    "#text": "\n"
+                }
+            ]
+        },
+        {
+            "#text": "\n"
+        }
+    ],
+    "name": "afformMASRCSForm"
+}

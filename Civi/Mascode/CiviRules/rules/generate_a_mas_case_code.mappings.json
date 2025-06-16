@@ -1,0 +1,21 @@
+{
+    "source_environment": "dev",
+    "target_environment": "current",
+    "triggers": {
+        "109": "new_case"
+    },
+    "actions": {
+        "59": "mas_generate_mas_code"
+    },
+    "conditions": {
+        "11": "case_type"
+    },
+    "contact_types": [],
+    "case_types": [],
+    "activity_types": [],
+    "relationship_types": [],
+    "custom_groups": [],
+    "custom_fields": [],
+    "option_groups": [],
+    "option_values": []
+}

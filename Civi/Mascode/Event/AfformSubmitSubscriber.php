@@ -6,8 +6,10 @@ namespace Civi\Mascode\Event;
 
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Civi\Afform\Event\AfformSubmitEvent;
-use Civi\Api4\Email;
 use Civi\Api4\Contact;
+use Civi\Api4\MessageTemplate;
+use Civi\Api4\AfformSubmission;
+use Civi\Token\TokenProcessor;
 
 class AfformSubmitSubscriber implements EventSubscriberInterface
 {
@@ -53,7 +55,9 @@ class AfformSubmitSubscriber implements EventSubscriberInterface
 
         \Civi::log()->debug('AfformSubmitSubscriber: Processing entity', [
             'entity_name' => $entityName,
-            'entity_id' => $entityId
+            'entity_id' => $entityId,
+            'api_request_class' => get_class($event->getApiRequest()),
+            'api_request_methods' => get_class_methods($event->getApiRequest())
         ]);
 
         // Get or create submission tracking data
@@ -176,18 +180,96 @@ class AfformSubmitSubscriber implements EventSubscriberInterface
                 return;
             }
 
-            // Send to primary contact
-            Email::send(false)
-                ->setTemplateId(71)
-                ->setContactId($primaryContactId)
-                ->execute();
+            // Get primary contact email details
+            $contactDetails = Contact::get(false)
+                ->addSelect('display_name', 'email_primary.email')
+                ->addWhere('id', '=', $primaryContactId)
+                ->execute()
+                ->first();
+            
+            if (empty($contactDetails['email_primary.email'])) {
+                \Civi::log()->warning('MAS RCS Form: No email found for contact ' . $primaryContactId);
+                return;
+            }
 
-            // Send to info@masadvise.org
-            Email::send(false)
-                ->setTemplateId(71)
-                ->setContactId($primaryContactId)
-                ->addValue('to_email', 'info@masadvise.org')
-                ->execute();
+            // Get the message template
+            $template = MessageTemplate::get(false)
+                ->addSelect('msg_subject', 'msg_text', 'msg_html')
+                ->addWhere('id', '=', 71)
+                ->execute()
+                ->first();
+
+            if (!$template) {
+                \Civi::log()->warning('MAS RCS Form: Message template 71 not found');
+                return;
+            }
+
+            // Get the most recent submission for this form
+            $submission = AfformSubmission::get(false)
+                ->addSelect('id', 'afform_name', 'contact_id', 'data')
+                ->addWhere('afform_name', '=', 'afformMASRCSForm')
+                ->addOrderBy('id', 'DESC')
+                ->setLimit(1)
+                ->execute()
+                ->first();
+
+            $submissionData = '';
+            if ($submission) {
+                $submissionData = $this->formatSubmissionData($submission['data'] ?? []);
+                \Civi::log()->info('MAS RCS Form: Using submission data', [
+                    'submission_id' => $submission['id'],
+                    'contact_id' => $submission['contact_id']
+                ]);
+            }
+
+            // Prepare template content with submission data
+            $subject = $template['msg_subject'];
+            $textContent = $template['msg_text'] . "\n\n" . $submissionData;
+            $htmlContent = $template['msg_html'] . "<br><br>" . nl2br($submissionData);
+
+            // Use TokenProcessor for modern token replacement
+            $tokenProcessor = new TokenProcessor(\Civi::dispatcher(), [
+                'controller' => __CLASS__,
+                'smarty' => FALSE,
+                'schema' => ['contactId'],
+            ]);
+
+            $tokenProcessor->addMessage('subject', $subject, 'text/plain');
+            $tokenProcessor->addMessage('text', $textContent, 'text/plain');
+            $tokenProcessor->addMessage('html', $htmlContent, 'text/html');
+            $tokenProcessor->addRow(['contactId' => $primaryContactId]);
+            $tokenProcessor->evaluate();
+
+            $row = $tokenProcessor->getRow(0);
+            $templateContent = [
+                'subject' => $row->render('subject'),
+                'text' => $row->render('text'),
+                'html' => $row->render('html'),
+            ];
+
+            // Send to primary contact
+            $mailParams = [
+                'from' => 'MAS <info@masadvise.org>',
+                'toName' => $contactDetails['display_name'],
+                'toEmail' => $contactDetails['email_primary.email'],
+                'subject' => $templateContent['subject'],
+                'text' => $templateContent['text'],
+                'html' => $templateContent['html'],
+            ];
+
+            \CRM_Utils_Mail::send($mailParams);
+
+            // Send to info@masadvise.org (using same processed content)
+            $adminMailParams = [
+                'from' => 'MAS <info@masadvise.org>',
+                'toName' => 'MAS Admin',
+                'toEmail' => 'info@masadvise.org',
+                'subject' => $templateContent['subject'],
+                'text' => $templateContent['text'],
+                'html' => $templateContent['html'],
+            ];
+
+            \CRM_Utils_Mail::send($adminMailParams);
 
             \Civi::log()->info('MAS RCS Form confirmation emails sent successfully');
 
@@ -195,4 +277,83 @@ class AfformSubmitSubscriber implements EventSubscriberInterface
             \Civi::log()->error('Failed to send MAS RCS Form confirmation emails: ' . $e->getMessage());
         }
     }
+
+    /**
+     * Format submission data for inclusion in emails
+     */
+    private function formatSubmissionData(array $data): string
+    {
+        if (empty($data)) {
+            return 'No submission data available.';
+        }
+
+        $formatted = '';
+        
+        foreach ($data as $entityName => $entityData) {
+            if (!is_array($entityData)) {
+                continue;
+            }
+
+            // Add entity section header
+            $entityLabel = $this->getEntityLabel($entityName);
+            $formatted .= "\n=== {$entityLabel} ===\n";
+
+            foreach ($entityData as $record) {
+                if (!is_array($record) || !isset($record['fields'])) {
+                    continue;
+                }
+
+                foreach ($record['fields'] as $fieldName => $fieldValue) {
+                    if ($fieldValue !== null && $fieldValue !== '') {
+                        $fieldLabel = $this->getFieldLabel($fieldName);
+                        $formatted .= "{$fieldLabel}: {$fieldValue}\n";
+                    }
+                }
+                $formatted .= "\n"; // Separator between records
+            }
+        }
+
+        return $formatted;
+    }
+
+    /**
+     * Get user-friendly entity label
+     */
+    private function getEntityLabel(string $entityName): string
+    {
+        $labels = [
+            'Organization1' => 'Organization Information',
+            'Individual1' => 'President/Board Chair',
+            'Individual2' => 'Executive Director', 
+            'Individual3' => 'Primary Contact',
+            'Case1' => 'Request Details',
+        ];
+
+        return $labels[$entityName] ?? $entityName;
+    }
+
+    /**
+     * Get user-friendly field label
+     */
+    private function getFieldLabel(string $fieldName): string
+    {
+        $labels = [
+            'organization_name' => 'Organization Name',
+            'first_name' => 'First Name',
+            'last_name' => 'Last Name',
+            'email' => 'Email',
+            'phone' => 'Phone',
+            'job_title' => 'Job Title',
+            'street_address' => 'Address',
+            'city' => 'City',
+            'state_province_id' => 'Province',
+            'postal_code' => 'Postal Code',
+            'subject' => 'Subject',
+            'url' => 'Website',
+            'do_not_email' => 'Email Preference',
+        ];
+
+        return $labels[$fieldName] ?? ucwords(str_replace('_', ' ', $fieldName));
+    }
+
 }

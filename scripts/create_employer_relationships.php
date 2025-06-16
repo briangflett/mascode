@@ -36,14 +36,14 @@
  *
  * President relationships created for:
  *   - "president" (case-insensitive)
- *   - "President"
+ *   - 'board chair'
+ *   - 'chair'
  *
  * Executive Director relationships created for:
  *   - "executive director" (case-insensitive)
- *   - "Executive Director"
- *   - "Exec Director"
- *   - "Exec Dir"
- *   - "ED"
+ *   - "exec director"
+ *   - "exec dir"
+ *   - "ed"
  *
  * RELATIONSHIP TYPES:
  *
@@ -91,15 +91,15 @@ $VERBOSE = false;                                 // Set to false for summary on
 // Job title patterns for relationship types
 $PRESIDENT_TITLES = [
     'president',
-    'President'
+    'board chair',
+    'chair'
 ];
 
 $EXECUTIVE_DIRECTOR_TITLES = [
     'executive director',
-    'Executive Director',
-    'Exec Director',
-    'Exec Dir',
-    'ED'
+    'exec director',
+    'exec dir',
+    'ed'
 ];
 
 // Get relationship type IDs
