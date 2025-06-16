@@ -1,0 +1,16 @@
+{
+    "source_environment": "dev",
+    "target_environment": "current",
+    "conversions": [],
+    "message_templates": {
+        "71": "RCS Form Submission Confirmation"
+    },
+    "case_types": {
+        "3": "service_request"
+    },
+    "countries": [],
+    "state_provinces": [],
+    "location_types": [],
+    "phone_types": [],
+    "website_types": []
+}

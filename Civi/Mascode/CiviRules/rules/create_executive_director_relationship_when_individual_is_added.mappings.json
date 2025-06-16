@@ -1,0 +1,21 @@
+{
+    "source_environment": "dev",
+    "target_environment": "current",
+    "triggers": {
+        "16": "new_individual"
+    },
+    "actions": {
+        "63": "mas_add_relationship_to_employer"
+    },
+    "conditions": {
+        "66": "field_value_comparison"
+    },
+    "contact_types": [],
+    "case_types": [],
+    "activity_types": [],
+    "relationship_types": [],
+    "custom_groups": [],
+    "custom_fields": [],
+    "option_groups": [],
+    "option_values": []
+}

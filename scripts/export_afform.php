@@ -1,13 +1,13 @@
 <?php
 
 /**
- * Afform Export Tool
+ * Afform Export Tool - Unified Version
  *
- * Exports CiviCRM Afforms (FormBuilder forms) for deployment between environments.
- * Creates complete form data and ID mappings for cross-environment compatibility.
+ * Exports CiviCRM Afforms from the database and converts them for target environment.
+ * Supports exporting to any environment (dev/prod) with automatic ID mapping and URL conversion.
  *
  * USAGE:
- *   cv scr scripts/export_afform.php
+ *   cv scr scripts/export_afform.php --user=brian.flett@masadvise.org
  *
  * CONFIGURATION (edit the variables below):
  *
@@ -20,47 +20,75 @@
  *   - true:  Exports ALL custom forms (excludes core CiviCRM forms starting with 'civicrm')
  *   - false: Exports only the form specified in $FORM_TO_EXPORT
  *
+ * $TARGET_ENVIRONMENT:
+ *   - 'dev':  Export with dev-appropriate IDs and URLs
+ *   - 'prod': Export with prod-appropriate IDs and URLs
+ *   - 'current': Export with current environment IDs (no conversion)
+ *
  * $LIST_ONLY:
  *   - true:  Only lists available forms and exits (no export)
  *   - false: Normal export behavior
  *
+ * $DRY_RUN:
+ *   - true:  Show what would be exported without creating files
+ *   - false: Actually export the forms
+ *
  * BEHAVIOR:
  *
  * The script will:
- * 1. List all available custom forms for reference
- * 2. Export the specified form(s) to the 'ang/' directory in your extension
- * 3. Export forms and blocks based on having "MAS" in their title
- * 4. Create .get.json (complete form data) and .mappings.json (ID mappings) files
+ * 1. List all available custom Afforms for reference
+ * 2. Export the specified form(s) from the CiviCRM database
+ * 3. Apply environment-specific conversions (IDs, URLs)
+ * 4. Save to the Afforms directory with conversion metadata
+ * 5. Create export logs for tracking changes
  *
  * @author MAS Team
- * @version 3.0 (Complete API Export with ID Mappings)
+ * @version 2.0 (Unified Export with Environment Conversion)
  * @requires CiviCRM 6.1+, Afform extension
  */
 
-echo "=== Afform Export Tool ===\n\n";
+echo "=== Afform Export Tool (Unified) ===\n\n";
 
 // CONFIGURATION
 $FORM_TO_EXPORT = 'afformMASRCSForm';  // Change this to export different forms
-$EXPORT_ALL = false;                    // Set to true to export all forms
+$EXPORT_ALL = false;                   // Set to true to export all forms
+$TARGET_ENVIRONMENT = 'current';       // 'dev', 'prod', or 'current'
 $LIST_ONLY = false;                    // Set to true to just list available forms
+$DRY_RUN = false;                      // Set to true to preview export
 
-// Get available forms and blocks with "MAS" in title
+// Validate target environment
+if (!in_array($TARGET_ENVIRONMENT, ['dev', 'prod', 'current'])) {
+    echo "Error: TARGET_ENVIRONMENT must be 'dev', 'prod', or 'current'\n";
+    exit(1);
+}
+
+$currentEnv = detectCurrentEnvironment();
+echo "Current environment: $currentEnv\n";
+echo "Target environment: $TARGET_ENVIRONMENT\n";
+
+if ($DRY_RUN) {
+    echo "*** DRY RUN MODE - No files will be created ***\n";
+}
+echo "\n";
+
 try {
-    $forms = \Civi\Api4\Afform::get(false)
+    // Get available forms with "MAS" in name or title
+    $forms = \Civi\Api4\Afform::get()
         ->addWhere('name', 'LIKE', '%MAS%')
         ->addSelect('name', 'title', 'type')
         ->execute();
 } catch (Exception $e) {
-    echo "Error fetching forms: " . $e->getMessage() . "\n";
+    echo "Error fetching Afforms: " . $e->getMessage() . "\n";
+    echo "Make sure the Afform extension is installed and enabled.\n";
     exit(1);
 }
 
 if (empty($forms)) {
-    echo "No MAS forms found!\n";
+    echo "No MAS Afforms found!\n";
     exit(1);
 }
 
-echo "Available MAS forms and blocks:\n";
+echo "Available MAS Afforms:\n";
 foreach ($forms as $form) {
     echo "  - {$form['name']} ({$form['title']}) [{$form['type']}]\n";
 }
@@ -98,20 +126,20 @@ if ($EXPORT_ALL) {
 }
 
 // Create export directory
-$exportDir = \CRM_Mascode_ExtensionUtil::path('ang');
-if (!is_dir($exportDir)) {
+$exportDir = \CRM_Mascode_ExtensionUtil::path('Civi/Mascode/Afforms');
+if (!$DRY_RUN && !is_dir($exportDir)) {
     mkdir($exportDir, 0755, true);
     echo "Created directory: $exportDir\n";
 }
 
 // Export each form
 foreach ($formsToExport as $formName) {
-    echo "\n--- Exporting Form: $formName ---\n";
+    echo "\n--- " . ($DRY_RUN ? 'Preview' : 'Exporting') . " Form: $formName ---\n";
 
     try {
-        $form = \Civi\Api4\Afform::get(false)
+        // Get complete form data
+        $form = \Civi\Api4\Afform::get()
             ->addWhere('name', '=', $formName)
-            ->setCheckPermissions(false)
             ->execute()
             ->first();
 
@@ -120,16 +148,42 @@ foreach ($formsToExport as $formName) {
             continue;
         }
 
-        // Export complete form data
-        $getFile = $exportDir . '/' . $formName . '.get.json';
-        file_put_contents($getFile, json_encode($form, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES));
-        echo "✓ Complete form data: " . basename($getFile) . "\n";
+        // Apply environment conversion
+        $convertedForm = $form;
+        if ($TARGET_ENVIRONMENT !== 'current' && $TARGET_ENVIRONMENT !== $currentEnv) {
+            echo "Converting for $TARGET_ENVIRONMENT environment...\n";
+            $convertedForm = convertAfformForEnvironment($form, $currentEnv, $TARGET_ENVIRONMENT);
+        }
 
-        // Create ID mappings
-        $mappings = createIdMappings($form);
-        $mappingsFile = $exportDir . '/' . $formName . '.mappings.json';
-        file_put_contents($mappingsFile, json_encode($mappings, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES));
-        echo "✓ ID mappings: " . basename($mappingsFile) . "\n";
+        if ($DRY_RUN) {
+            echo "✓ Form data loaded and converted\n";
+            echo "✓ Would save to: {$exportDir}/{$formName}.get.json\n";
+        } else {
+            // Export complete form data
+            $getFile = $exportDir . '/' . $formName . '.get.json';
+            file_put_contents($getFile, json_encode($convertedForm, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES));
+            echo "✓ Complete form data: " . basename($getFile) . "\n";
+
+            // Create ID mappings
+            $mappings = createAfformIdMappings($form, $convertedForm, $currentEnv, $TARGET_ENVIRONMENT);
+            $mappingsFile = $exportDir . '/' . $formName . '.mappings.json';
+            file_put_contents($mappingsFile, json_encode($mappings, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES));
+            echo "✓ ID mappings: " . basename($mappingsFile) . "\n";
+
+            // Create export metadata
+            $metadataFile = $exportDir . '/' . $formName . '.export.log';
+            $metadata = [
+                'exported_date' => date('Y-m-d H:i:s'),
+                'source_environment' => $currentEnv,
+                'target_environment' => $TARGET_ENVIRONMENT,
+                'form_name' => $formName,
+                'form_title' => $form['title'] ?? 'Unknown',
+                'form_type' => $form['type'] ?? 'Unknown',
+                'export_version' => '2.0'
+            ];
+            file_put_contents($metadataFile, json_encode($metadata, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES));
+            echo "✓ Export metadata: " . basename($metadataFile) . "\n";
+        }
 
     } catch (Exception $e) {
         echo "✗ Error exporting $formName: " . $e->getMessage() . "\n";
@@ -137,14 +191,186 @@ foreach ($formsToExport as $formName) {
 }
 
 echo "\n=== Export Complete ===\n";
-echo "Files saved to: $exportDir\n";
+if (!$DRY_RUN) {
+    echo "Files saved to: $exportDir\n";
+}
 
 /**
- * Create ID to name mappings for form data
+ * Convert Afform data for target environment
  */
-function createIdMappings($form)
+function convertAfformForEnvironment($form, $sourceEnv, $targetEnv)
+{
+    $converted = $form;
+
+    // Get environment-specific mappings
+    $mappings = getAfformEnvironmentMappings($sourceEnv, $targetEnv);
+
+    // Convert email confirmation template ID
+    if (!empty($converted['email_confirmation_template_id'])) {
+        $converted['email_confirmation_template_id'] = convertAfformId(
+            $converted['email_confirmation_template_id'],
+            'email_confirmation_template_id',
+            $mappings
+        );
+    }
+
+    // Convert layout IDs
+    if (!empty($converted['layout'])) {
+        $converted['layout'] = convertAfformLayoutIds($converted['layout'], $mappings);
+    }
+
+    return $converted;
+}
+
+/**
+ * Recursively convert IDs in layout structure
+ */
+function convertAfformLayoutIds($layout, $mappings)
+{
+    if (!is_array($layout)) {
+        return $layout;
+    }
+
+    foreach ($layout as &$element) {
+        if (is_array($element)) {
+            // Check for case_type_id in data
+            if (isset($element['data']['case_type_id'])) {
+                $newId = convertAfformId($element['data']['case_type_id'], 'case_type_id', $mappings);
+                if ($newId !== $element['data']['case_type_id']) {
+                    echo "  → Converted case_type_id: {$element['data']['case_type_id']} → $newId\n";
+                    $element['data']['case_type_id'] = $newId;
+                }
+            }
+
+            // Check for defn with afform_default values
+            if (isset($element['defn']['afform_default'])) {
+                $value = $element['defn']['afform_default'];
+                $name = $element['name'] ?? '';
+
+                $newValue = convertAfformId($value, $name, $mappings);
+                if ($newValue !== $value) {
+                    echo "  → Converted $name: $value → $newValue\n";
+                    $element['defn']['afform_default'] = $newValue;
+                }
+            }
+
+            // Recursively check children
+            if (isset($element['#children'])) {
+                $element['#children'] = convertAfformLayoutIds($element['#children'], $mappings);
+            }
+        }
+    }
+
+    return $layout;
+}
+
+/**
+ * Convert individual ID based on field name and mappings
+ */
+function convertAfformId($value, $fieldName, $mappings)
+{
+    // Skip non-numeric values
+    if (!is_numeric($value)) {
+        return $value;
+    }
+
+    $numericValue = (int)$value;
+
+    // Map based on field patterns
+    if (preg_match('/message_template|email_confirmation_template/', $fieldName) && isset($mappings['message_templates'][$numericValue])) {
+        return $mappings['message_templates'][$numericValue];
+    }
+
+    if (preg_match('/case_type/', $fieldName) && isset($mappings['case_types'][$numericValue])) {
+        return $mappings['case_types'][$numericValue];
+    }
+
+    if ($fieldName === 'country_id' && isset($mappings['countries'][$numericValue])) {
+        return $mappings['countries'][$numericValue];
+    }
+
+    if ($fieldName === 'state_province_id' && isset($mappings['state_provinces'][$numericValue])) {
+        return $mappings['state_provinces'][$numericValue];
+    }
+
+    if ($fieldName === 'location_type_id' && isset($mappings['location_types'][$numericValue])) {
+        return $mappings['location_types'][$numericValue];
+    }
+
+    if ($fieldName === 'phone_type_id' && isset($mappings['phone_types'][$numericValue])) {
+        return $mappings['phone_types'][$numericValue];
+    }
+
+    if ($fieldName === 'website_type_id' && isset($mappings['website_types'][$numericValue])) {
+        return $mappings['website_types'][$numericValue];
+    }
+
+    return $value;
+}
+
+/**
+ * Get environment-specific ID mappings for Afforms
+ */
+function getAfformEnvironmentMappings($sourceEnv, $targetEnv)
+{
+    if ($sourceEnv === 'dev' && $targetEnv === 'prod') {
+        // Converting dev → prod
+        return [
+            'location_types' => [
+                1 => 3,  // Home → Work
+                2 => 2,  // Home → Home (if needed)
+                3 => 3,  // Work → Work
+            ],
+            'phone_types' => [
+                1 => 1,  // Phone → Phone
+                2 => 2,  // Mobile → Mobile
+                3 => 3,  // Fax → Fax
+            ],
+            'countries' => [],
+            'state_provinces' => [],
+            'case_types' => [],
+            'message_templates' => []
+        ];
+    } elseif ($sourceEnv === 'prod' && $targetEnv === 'dev') {
+        // Converting prod → dev
+        return [
+            'location_types' => [
+                3 => 1,  // Work → Home
+                2 => 2,  // Home → Home (if needed)
+                1 => 1,  // Home → Home
+            ],
+            'phone_types' => [
+                1 => 1,  // Phone → Phone
+                2 => 2,  // Mobile → Mobile
+                3 => 3,  // Fax → Fax
+            ],
+            'countries' => [],
+            'state_provinces' => [],
+            'case_types' => [],
+            'message_templates' => []
+        ];
+    } else {
+        // Same environment - no conversion needed
+        return [
+            'location_types' => [],
+            'phone_types' => [],
+            'countries' => [],
+            'state_provinces' => [],
+            'case_types' => [],
+            'message_templates' => []
+        ];
+    }
+}
+
+/**
+ * Create ID to name mappings for Afform data
+ */
+function createAfformIdMappings($originalForm, $convertedForm, $sourceEnv, $targetEnv)
 {
     $mappings = [
+        'source_environment' => $sourceEnv,
+        'target_environment' => $targetEnv,
+        'conversions' => [],
         'message_templates' => [],
         'case_types' => [],
         'countries' => [],
@@ -154,13 +380,13 @@ function createIdMappings($form)
         'website_types' => []
     ];
 
-    // Extract IDs from form data
-    $ids = extractIdsFromForm($form);
+    // Extract and map any IDs that were converted
+    $ids = extractIdsFromAfform($originalForm);
 
     // Get message template names
     if (!empty($ids['message_template_ids'])) {
         try {
-            $templates = \Civi\Api4\MessageTemplate::get(false)
+            $templates = \Civi\Api4\MessageTemplate::get()
                 ->addWhere('id', 'IN', $ids['message_template_ids'])
                 ->addSelect('id', 'msg_title')
                 ->execute();
@@ -175,7 +401,7 @@ function createIdMappings($form)
     // Get case type names
     if (!empty($ids['case_type_ids'])) {
         try {
-            $caseTypes = \Civi\Api4\CaseType::get(false)
+            $caseTypes = \Civi\Api4\CaseType::get()
                 ->addWhere('id', 'IN', $ids['case_type_ids'])
                 ->addSelect('id', 'name')
                 ->execute();
@@ -187,90 +413,13 @@ function createIdMappings($form)
         }
     }
 
-    // Get country names
-    if (!empty($ids['country_ids'])) {
-        try {
-            $countries = \Civi\Api4\Country::get(false)
-                ->addWhere('id', 'IN', $ids['country_ids'])
-                ->addSelect('id', 'name')
-                ->execute();
-            foreach ($countries as $country) {
-                $mappings['countries'][$country['id']] = $country['name'];
-            }
-        } catch (Exception $e) {
-            echo "Warning: Could not fetch countries: " . $e->getMessage() . "\n";
-        }
-    }
-
-    // Get state/province names
-    if (!empty($ids['state_province_ids'])) {
-        try {
-            $stateProvinces = \Civi\Api4\StateProvince::get(false)
-                ->addWhere('id', 'IN', $ids['state_province_ids'])
-                ->addSelect('id', 'name')
-                ->execute();
-            foreach ($stateProvinces as $stateProvince) {
-                $mappings['state_provinces'][$stateProvince['id']] = $stateProvince['name'];
-            }
-        } catch (Exception $e) {
-            echo "Warning: Could not fetch state/provinces: " . $e->getMessage() . "\n";
-        }
-    }
-
-    // Get location type names
-    if (!empty($ids['location_type_ids'])) {
-        try {
-            $locationTypes = \Civi\Api4\LocationType::get(false)
-                ->addWhere('id', 'IN', $ids['location_type_ids'])
-                ->addSelect('id', 'name')
-                ->execute();
-            foreach ($locationTypes as $locationType) {
-                $mappings['location_types'][$locationType['id']] = $locationType['name'];
-            }
-        } catch (Exception $e) {
-            echo "Warning: Could not fetch location types: " . $e->getMessage() . "\n";
-        }
-    }
-
-    // Get phone type names
-    if (!empty($ids['phone_type_ids'])) {
-        try {
-            $phoneTypes = \Civi\Api4\OptionValue::get(false)
-                ->addWhere('option_group_id:name', '=', 'phone_type')
-                ->addWhere('value', 'IN', $ids['phone_type_ids'])
-                ->addSelect('value', 'name')
-                ->execute();
-            foreach ($phoneTypes as $phoneType) {
-                $mappings['phone_types'][$phoneType['value']] = $phoneType['name'];
-            }
-        } catch (Exception $e) {
-            echo "Warning: Could not fetch phone types: " . $e->getMessage() . "\n";
-        }
-    }
-
-    // Get website type names
-    if (!empty($ids['website_type_ids'])) {
-        try {
-            $websiteTypes = \Civi\Api4\OptionValue::get(false)
-                ->addWhere('option_group_id:name', '=', 'website_type')
-                ->addWhere('value', 'IN', $ids['website_type_ids'])
-                ->addSelect('value', 'name')
-                ->execute();
-            foreach ($websiteTypes as $websiteType) {
-                $mappings['website_types'][$websiteType['value']] = $websiteType['name'];
-            }
-        } catch (Exception $e) {
-            echo "Warning: Could not fetch website types: " . $e->getMessage() . "\n";
-        }
-    }
-
     return $mappings;
 }
 
 /**
- * Extract all ID references from form data
+ * Extract all ID references from Afform data
  */
-function extractIdsFromForm($form)
+function extractIdsFromAfform($form)
 {
     $ids = [
         'message_template_ids' => [],
@@ -289,7 +438,7 @@ function extractIdsFromForm($form)
 
     // Recursively search layout for ID references
     if (isset($form['layout'])) {
-        extractIdsFromLayout($form['layout'], $ids);
+        extractIdsFromAfformLayout($form['layout'], $ids);
     }
 
     // Remove duplicates and empty values
@@ -303,7 +452,7 @@ function extractIdsFromForm($form)
 /**
  * Recursively extract IDs from layout structure
  */
-function extractIdsFromLayout($layout, &$ids)
+function extractIdsFromAfformLayout($layout, &$ids)
 {
     if (!is_array($layout)) {
         return;
@@ -336,8 +485,27 @@ function extractIdsFromLayout($layout, &$ids)
 
             // Recursively check children
             if (isset($element['#children'])) {
-                extractIdsFromLayout($element['#children'], $ids);
+                extractIdsFromAfformLayout($element['#children'], $ids);
             }
         }
     }
+}
+
+/**
+ * Detect current environment
+ */
+function detectCurrentEnvironment()
+{
+    // Check for dev environment indicators
+    if (strpos($_SERVER['HTTP_HOST'] ?? '', 'localhost') !== false ||
+        strpos($_SERVER['HTTP_HOST'] ?? '', 'masdemo') !== false) {
+        return 'dev';
+    }
+
+    if (strpos($_SERVER['HTTP_HOST'] ?? '', 'masadvise.org') !== false) {
+        return 'prod';
+    }
+
+    // Default to dev for safety
+    return 'dev';
 }
