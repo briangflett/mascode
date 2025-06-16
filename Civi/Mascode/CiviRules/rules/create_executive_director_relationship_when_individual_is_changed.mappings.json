@@ -4,14 +4,18 @@
     "triggers": {
         "17": "changed_individual"
     },
-    "actions": [],
+    "actions": {
+        "63": "mas_add_relationship_to_employer"
+    },
     "conditions": {
         "66": "field_value_comparison"
     },
     "contact_types": [],
     "case_types": [],
     "activity_types": [],
-    "relationship_types": [],
+    "relationship_types": {
+        "20": "Executive Director of"
+    },
     "custom_groups": [],
     "custom_fields": [],
     "option_groups": [],

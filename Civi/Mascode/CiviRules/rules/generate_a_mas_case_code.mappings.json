@@ -2,7 +2,7 @@
     "source_environment": "dev",
     "target_environment": "current",
     "triggers": {
-        "109": "new_case"
+        "113": "mas_new_case"
     },
     "actions": {
         "59": "mas_generate_mas_code"
