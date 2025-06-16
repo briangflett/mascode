@@ -13,7 +13,9 @@
     "contact_types": [],
     "case_types": [],
     "activity_types": [],
-    "relationship_types": [],
+    "relationship_types": {
+        "19": "President of"
+    },
     "custom_groups": [],
     "custom_fields": [],
     "option_groups": [],

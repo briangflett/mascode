@@ -431,6 +431,66 @@ function getCiviRulesEnvironmentMappings($sourceEnv, $targetEnv)
 /**
  * Create ID to name mappings for CiviRules data
  */
+/**
+ * Extract and map IDs found in serialized parameters
+ */
+function extractIdsFromParams($params, $mappings) {
+    foreach ($params as $key => $value) {
+        if (is_array($value)) {
+            // Recursively check array values
+            $mappings = extractIdsFromParams($value, $mappings);
+        } elseif (is_string($key) && is_numeric($value)) {
+            // Check for relationship types
+            if (preg_match('/relationship_type/', $key)) {
+                try {
+                    $relType = \Civi\Api4\RelationshipType::get()
+                        ->addWhere('id', '=', $value)
+                        ->addSelect('id', 'name_a_b', 'label_a_b')
+                        ->execute()
+                        ->first();
+                    if ($relType) {
+                        $mappings['relationship_types'][$value] = $relType['name_a_b'];
+                    }
+                } catch (Exception $e) {
+                    // Ignore missing relationship types
+                }
+            }
+            // Check for case types
+            elseif (preg_match('/case_type/', $key)) {
+                try {
+                    $caseType = \Civi\Api4\CaseType::get()
+                        ->addWhere('id', '=', $value)
+                        ->addSelect('id', 'name')
+                        ->execute()
+                        ->first();
+                    if ($caseType) {
+                        $mappings['case_types'][$value] = $caseType['name'];
+                    }
+                } catch (Exception $e) {
+                    // Ignore missing case types
+                }
+            }
+            // Check for activity types
+            elseif (preg_match('/activity_type/', $key)) {
+                try {
+                    $activityType = \Civi\Api4\OptionValue::get()
+                        ->addWhere('option_group_id:name', '=', 'activity_type')
+                        ->addWhere('value', '=', $value)
+                        ->addSelect('value', 'name')
+                        ->execute()
+                        ->first();
+                    if ($activityType) {
+                        $mappings['activity_types'][$value] = $activityType['name'];
+                    }
+                } catch (Exception $e) {
+                    // Ignore missing activity types
+                }
+            }
+        }
+    }
+    return $mappings;
+}
+
 function createCiviRulesIdMappings($ruleExport, $sourceEnv, $targetEnv)
 {
     $mappings = [
@@ -481,6 +541,14 @@ function createCiviRulesIdMappings($ruleExport, $sourceEnv, $targetEnv)
                 echo "Warning: Could not fetch action mapping: " . $e->getMessage() . "\n";
             }
         }
+
+        // Extract IDs from action parameters
+        if (!empty($ruleAction['action_params'])) {
+            $params = @unserialize($ruleAction['action_params']);
+            if ($params && is_array($params)) {
+                $mappings = extractIdsFromParams($params, $mappings);
+            }
+        }
     }
 
     // Map conditions
@@ -497,6 +565,14 @@ function createCiviRulesIdMappings($ruleExport, $sourceEnv, $targetEnv)
                 }
             } catch (Exception $e) {
                 echo "Warning: Could not fetch condition mapping: " . $e->getMessage() . "\n";
+            }
+        }
+
+        // Extract IDs from condition parameters
+        if (!empty($ruleCondition['condition_params'])) {
+            $params = @unserialize($ruleCondition['condition_params']);
+            if ($params && is_array($params)) {
+                $mappings = extractIdsFromParams($params, $mappings);
             }
         }
     }

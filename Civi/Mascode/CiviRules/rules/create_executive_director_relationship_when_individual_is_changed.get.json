@@ -14,7 +14,20 @@
         "modified_user_id": 9785,
         "is_debug": false
     },
-    "actions": [],
+    "actions": [
+        {
+            "id": 33,
+            "rule_id": 15,
+            "action_id": 63,
+            "action_params": "a:1:{s:20:\"relationship_type_id\";s:2:\"20\";}",
+            "delay": null,
+            "ignore_condition_with_delay": false,
+            "is_active": true,
+            "weight": 19,
+            "created_date": "2025-06-16 08:17:29",
+            "modified_date": "2025-06-16 08:17:35"
+        }
+    ],
     "conditions": [
         {
             "id": 29,
@@ -49,6 +62,6 @@
         "class_name": "CRM_CivirulesPostTrigger_Contact",
         "is_active": true
     },
-    "exported_date": "2025-06-13 10:17:10",
+    "exported_date": "2025-06-16 08:18:15",
     "exported_by": "MAS Export Script v2.0"
 }

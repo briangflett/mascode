@@ -7,7 +7,7 @@
  * Supports importing from any environment (dev/prod) with automatic ID mapping and URL conversion.
  *
  * USAGE:
- *   cv scr scripts/import_afform_unified.php --user=brian.flett@masadvise.org
+ *   cv scr scripts/import_afform.php --user=brian.flett@masadvise.org
  *
  * CONFIGURATION (edit the variables below):
  *
@@ -93,7 +93,7 @@ foreach ($files as $file) {
     $formName = basename($file, '.get.json');
     $mappingsFile = $importDir . '/' . $formName . '.mappings.json';
     $metadataFile = $importDir . '/' . $formName . '.export.log';
-    
+
     $availableFiles[$formName] = [
         'get_file' => $file,
         'mappings_file' => file_exists($mappingsFile) ? $mappingsFile : null,
@@ -216,11 +216,11 @@ foreach ($formsToImport as $formName) {
         } else {
             // Actually import the form
             $result = importAfform($convertedFormData, $existingForm);
-            
+
             if ($result) {
                 echo "✓ Form imported successfully: $formName\n";
                 $importedForms++;
-                
+
                 // Create import log
                 $logFile = $importDir . '/' . $formName . '.import.log';
                 $logData = [
@@ -267,7 +267,7 @@ function importAfform($formData, $existingForm = null)
             ->execute();
 
         return !empty($result);
-        
+
     } catch (Exception $e) {
         echo "Import error: " . $e->getMessage() . "\n";
         return false;
@@ -283,7 +283,7 @@ function detectAfformSourceEnvironment($formData, $metadata)
     if (!empty($metadata['target_environment'])) {
         return $metadata['target_environment'];
     }
-    
+
     // Check common ID patterns in layout (this is heuristic)
     if (!empty($formData['layout'])) {
         $ids = extractLocationTypeIds($formData['layout']);
@@ -296,7 +296,7 @@ function detectAfformSourceEnvironment($formData, $metadata)
             }
         }
     }
-    
+
     // Default to dev for safety
     return 'dev';
 }
@@ -307,7 +307,7 @@ function detectAfformSourceEnvironment($formData, $metadata)
 function extractLocationTypeIds($layout)
 {
     $ids = [];
-    
+
     if (!is_array($layout)) {
         return $ids;
     }
@@ -315,7 +315,7 @@ function extractLocationTypeIds($layout)
     foreach ($layout as $element) {
         if (is_array($element)) {
             // Check for location type in defn
-            if (isset($element['defn']['afform_default']) && isset($element['name']) && 
+            if (isset($element['defn']['afform_default']) && isset($element['name']) &&
                 $element['name'] === 'location_type_id') {
                 $ids[] = (int)$element['defn']['afform_default'];
             }
@@ -326,7 +326,7 @@ function extractLocationTypeIds($layout)
             }
         }
     }
-    
+
     return $ids;
 }
 
@@ -336,10 +336,10 @@ function extractLocationTypeIds($layout)
 function convertAfformFromEnvironment($formData, $mappings, $sourceEnv, $targetEnv)
 {
     $converted = $formData;
-    
+
     // Get conversion mappings
     $conversionMappings = getAfformEnvironmentConversionMappings($sourceEnv, $targetEnv);
-    
+
     // Convert email confirmation template ID
     if (!empty($converted['email_confirmation_template_id'])) {
         $devId = $converted['email_confirmation_template_id'];
@@ -352,12 +352,12 @@ function convertAfformFromEnvironment($formData, $mappings, $sourceEnv, $targetE
             }
         }
     }
-    
+
     // Convert layout IDs
     if (!empty($converted['layout'])) {
         $converted['layout'] = convertAfformLayoutFromEnvironment($converted['layout'], $mappings, $conversionMappings);
     }
-    
+
     return $converted;
 }
 
@@ -540,11 +540,11 @@ function detectCurrentEnvironment()
         strpos($_SERVER['HTTP_HOST'] ?? '', 'masdemo') !== false) {
         return 'dev';
     }
-    
+
     if (strpos($_SERVER['HTTP_HOST'] ?? '', 'masadvise.org') !== false) {
         return 'prod';
     }
-    
+
     // Default to dev for safety
     return 'dev';
 }

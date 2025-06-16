@@ -8,7 +8,7 @@
  * with automatic ID mapping and conversion.
  *
  * USAGE:
- *   cv scr scripts/import_civirules_unified.php --user=brian.flett@masadvise.org
+ *   cv scr scripts/import_civirules.php --user=brian.flett@masadvise.org
  *
  * CONFIGURATION (edit the variables below):
  *
@@ -105,13 +105,13 @@ foreach ($ruleFiles as $file) {
     $ruleName = basename($file, '.get.json');
     $mappingsFile = $rulesDir . '/' . $ruleName . '.mappings.json';
     $metadataFile = $rulesDir . '/' . $ruleName . '.export.log';
-    
+
     $availableFiles[$ruleName] = [
         'get_file' => $file,
         'mappings_file' => file_exists($mappingsFile) ? $mappingsFile : null,
         'metadata_file' => file_exists($metadataFile) ? $metadataFile : null
     ];
-    
+
     $metadataStatus = $availableFiles[$ruleName]['metadata_file'] ? '✓ With metadata' : '⚠ No metadata';
     $mappingsStatus = $availableFiles[$ruleName]['mappings_file'] ? '✓ With mappings' : '⚠ No mappings';
     echo "  - $ruleName ($metadataStatus, $mappingsStatus)\n";
@@ -245,11 +245,11 @@ foreach ($filesToImport as $ruleName) {
         } else {
             // Actually import the rule
             $result = importCiviRule($convertedRuleData, $existingRule, $componentMappings);
-            
+
             if ($result) {
                 echo "✓ Rule imported successfully: $ruleName\n";
                 $importedRules++;
-                
+
                 // Create import log
                 $logFile = $rulesDir . '/' . $ruleName . '.import.log';
                 $logData = [
@@ -598,7 +598,7 @@ function detectCiviRulesSourceEnvironment($ruleData, $metadata)
     if (!empty($metadata['target_environment'])) {
         return $metadata['target_environment'];
     }
-    
+
     // For CiviRules, environment detection is less clear since most IDs are consistent
     // Default to dev for safety
     return 'dev';
@@ -610,10 +610,10 @@ function detectCiviRulesSourceEnvironment($ruleData, $metadata)
 function convertCiviRulesFromEnvironment($ruleData, $idMappings, $sourceEnv, $targetEnv)
 {
     $converted = $ruleData;
-    
+
     // Get conversion mappings
     $conversionMappings = getCiviRulesEnvironmentConversionMappings($sourceEnv, $targetEnv);
-    
+
     // Convert IDs in action parameters
     foreach ($converted['actions'] as &$ruleAction) {
         if (!empty($ruleAction['action_params'])) {
@@ -662,7 +662,7 @@ function convertCiviRulesFromEnvironment($ruleData, $idMappings, $sourceEnv, $ta
             }
         }
     }
-    
+
     return $converted;
 }
 
@@ -818,11 +818,11 @@ function detectCurrentEnvironment()
         strpos($_SERVER['HTTP_HOST'] ?? '', 'masdemo') !== false) {
         return 'dev';
     }
-    
+
     if (strpos($_SERVER['HTTP_HOST'] ?? '', 'masadvise.org') !== false) {
         return 'prod';
     }
-    
+
     // Default to dev for safety
     return 'dev';
 }

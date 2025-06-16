@@ -3,14 +3,14 @@
         "id": 16,
         "name": "generate_a_mas_case_code",
         "label": "Generate a MAS Case Code",
-        "trigger_id": 109,
+        "trigger_id": 113,
         "trigger_params": null,
         "is_active": true,
         "description": "When a new service request or project is created, generate a MAS Case code for it (Ryynnn or Pyynnn).",
         "help_text": null,
         "created_date": "2025-06-04 21:50:50",
         "created_user_id": null,
-        "modified_date": "2025-06-04 21:50:50",
+        "modified_date": "2025-06-16 07:53:12",
         "modified_user_id": null,
         "is_debug": false
     },
@@ -42,8 +42,8 @@
         }
     ],
     "trigger": {
-        "id": 109,
-        "name": "new_case",
+        "id": 113,
+        "name": "mas_new_case",
         "label": "mas: Case is created",
         "object_name": "Case",
         "op": "create",
@@ -51,6 +51,6 @@
         "class_name": "CRM_CivirulesPostTrigger_Case",
         "is_active": true
     },
-    "exported_date": "2025-06-13 10:17:10",
+    "exported_date": "2025-06-16 08:18:15",
     "exported_by": "MAS Export Script v2.0"
 }
