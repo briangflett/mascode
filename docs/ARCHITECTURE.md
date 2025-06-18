@@ -53,11 +53,29 @@ Services registered in `mascode_civicrm_container()`:
 - **Relationship Management**: Enhanced contact-organization relationships
 - **Status Tracking**: Custom case status workflows
 
+### Self Assessment Survey System
+- **Unified Survey Framework**: 35-question assessment system with Short (21) and Full (35) versions
+- **Activity-Based Storage**: Organization → Individual → Activity → Case structure
+- **SASS/SASF Forms**: Short Self Assessment Survey and Full Self Assessment Survey
+- **Integrated Reporting**: Survey results linked to case management workflows
+
+### Request for Consulting Services (RCS)
+- **Comprehensive Intake**: Complete organizational assessment and project scoping
+- **Automated Case Creation**: Direct integration with Service Request workflow
+- **Multi-Entity Forms**: Organization, Individual, and Case creation in single form
+- **Anonymous Access**: Public form access with secure processing
+
 ### Form Processing
 - **Anonymous Access**: Secure form access with checksum validation
 - **Dynamic Prefilling**: Complex form prefill scenarios beyond core FormBuilder
 - **Custom Actions**: Post-submission processing for complex workflows
 - **Validation**: Enhanced form validation and error handling
+
+### Deployment System
+- **Script-Based Deployment**: Robust deployment scripts replacing fragile export/import
+- **Environment-Specific Configuration**: Production-ready ID mapping and configuration
+- **Automated Component Deployment**: CiviRules, Afforms, and Custom Fields
+- **Manual Component Support**: Documentation for Form Processor deployment
 
 ### AI Integration Strategy
 
@@ -86,11 +104,15 @@ Automated application of CiviCRM core enhancements:
 ├── CiviRules/
 │   ├── Action/           # Business logic actions
 │   ├── Trigger/          # Custom event triggers
-│   └── Form/             # Configuration forms (when needed)
+│   ├── Form/             # Configuration forms (when needed)
+│   ├── actions.json      # CiviRules action definitions
+│   ├── triggers.json     # CiviRules trigger definitions
+│   └── conditions.json   # CiviRules condition definitions
 ├── Event/
 │   ├── AfformPrefillSubscriber.php
 │   └── AfformSubmitSubscriber.php
-├── FormProcessor/Action/ # FormProcessor integration
+├── FormProcessor/
+│   └── Action/          # FormProcessor integration
 ├── Hook/                 # CiviCRM hook implementations
 ├── Patches/             # Core patch management
 │   ├── PatchManager.php
@@ -112,6 +134,13 @@ Automated application of CiviCRM core enhancements:
 
 ### Configuration & Templates
 ```
+scripts/                 # Deployment scripts
+├── deploy_self_assessment_surveys.php
+├── deploy_civirules.php
+├── deploy_rcs_form.php
+├── deploy_form_processors.md
+├── export_afform.php    # Legacy export tool
+└── import_afform.php    # Legacy import tool
 templates/               # Smarty templates (minimize use)
 ├── CRM/Mascode/CiviRules/Form/  # CiviRules form templates
 xml/Menu/                # Menu definitions
@@ -206,7 +235,35 @@ class MyAction extends \CRM_CivirulesActions_Generic_Api {
 - Workflow automation improvements
 - Integration with additional CiviCRM extensions
 
+## Deployment Architecture
+
+### Script-Based Deployment
+The extension uses environment-aware deployment scripts to replace fragile export/import functionality:
+
+- **Self Assessment Surveys**: Automated deployment of activity types, custom fields, and Afforms
+- **CiviRules**: Automated deployment of custom actions, triggers, and conditions
+- **RCS Form**: Automated deployment of complete form structure with entity relationships
+- **Form Processors**: Manual deployment via CiviCRM UI with comprehensive documentation
+
+### Environment Configuration
+Each deployment script includes environment-specific configuration sections:
+```php
+$config = [
+    'environment' => 'prod',  // 'dev' or 'prod'
+    'case_types' => [
+        'service_request' => 3,  // Production-specific ID
+    ],
+    // ... other environment-specific mappings
+];
+```
+
+### Deployment Workflow
+1. **Development**: Create and test components in dev environment
+2. **Version Control**: Commit changes to dev branch, create PR to master
+3. **Production**: Pull latest code, update script configurations, run deployment scripts
+4. **Verification**: Test deployed components and clear cache
+
 ---
 *Last Updated: June 2025*  
-*Extension Version: 1.0.0*  
+*Extension Version: 1.0.3*  
 *CiviCRM Compatibility: 6.1+*

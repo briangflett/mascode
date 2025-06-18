@@ -28,10 +28,23 @@ Custom automation and logic for Management Advisory Services (MAS), providing en
 
 ## Key Features
 
+### Core Functionality
 - **Automatic MAS Code Generation** (R25001, P25001 format)
 - **Service Request → Project Conversion** via CiviRules automation
+- **Self Assessment Survey System** (SASS/SASF) with unified 35-question framework
+- **Request for Consulting Services (RCS) Form** with complete case management integration
+
+### Deployment & Integration
+- **Environment-Specific Deployment Scripts** for reliable dev-to-production deployment
+- **CiviRules Integration** with custom actions, triggers, and automated business logic
+- **Form Processor Integration** with manual deployment documentation
 - **Enhanced Form Processing** with secure anonymous access
+
+### Technical Features
+- **Script-Based Deployment System** replacing fragile export/import functionality
+- **Environment Configuration Management** with production-ready ID mapping
 - **AI-Ready Architecture** for future intelligent features
+- **Comprehensive Testing Framework** with automated validation
 
 ## Support & Community
 
