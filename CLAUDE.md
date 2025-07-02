@@ -15,6 +15,65 @@
 - **Database Note**: CiviRules table names start with civirules\_
 - **API Namespace**: Use `/Civi/Api4/CiviCase` not `/Civi/Api4/Case`
 
+## CiviCRM API and Afform Management
+
+### API User Authentication
+- **Correct User**: `brian.flett@masadvise.org` (not `admin`)
+- **CV Commands**: Use `--user=brian.flett@masadvise.org` parameter
+
+### Afform Management Best Practices
+- **Updating Afforms**: Use CiviCRM API4 to update existing forms, not file manipulation
+- **Custom Field Updates**: Use `CustomField::update()` API to modify field properties like `help_pre`
+- **Cache Management**: Always flush cache after Afform or custom field changes using `/home/brian/buildkit/bin/cv flush`
+- **Field Identification**: Custom fields can be identified by custom_group_id and field name
+- **Form Layout Updates**: Export current forms first, then update deployment scripts with actual layouts
+- **Deployment Script Updates**: Replace layout generation functions with exported layouts for accuracy
+
+### Verified API Patterns
+```php
+// Update custom fields
+\Civi\Api4\CustomField::update(FALSE)
+    ->addWhere('custom_group_id', '=', $groupId)
+    ->addWhere('name', '=', $fieldName)
+    ->addValue('help_pre', null)
+    ->execute();
+
+// Get Afform entities
+\Civi\Api4\Afform::get(FALSE)
+    ->addWhere('name', '=', 'afformName')
+    ->execute();
+
+// Update Afform layouts
+\Civi\Api4\Afform::update(FALSE)
+    ->addWhere('name', '=', 'afformName')
+    ->addValue('layout', $newLayout)
+    ->execute();
+```
+
+### CV Command Execution Patterns
+```bash
+# CORRECT: Use cv scr with file path (not -e flag)
+/home/brian/buildkit/bin/cv scr /path/to/script.php --user=brian.flett@masadvise.org
+
+# INCORRECT: cv scr -e does not exist
+/home/brian/buildkit/bin/cv scr -e 'php code here'
+
+# WORKAROUND: Write temporary PHP files for complex operations
+echo '<?php /* code */' > /tmp/script.php
+/home/brian/buildkit/bin/cv scr /tmp/script.php --user=brian.flett@masadvise.org
+```
+
+### Deployment Script Management
+- **Form Export Process**: Use API4 to export current form layouts from development environment
+- **Layout Function Replacement**: Replace generic layout functions with actual exported form structures
+- **Overwrite vs Skip**: Update deployment scripts to overwrite existing forms rather than skip them
+- **Multi-Form Handling**: Use separate functions for different form variants (SASS vs SASF)
+
+### Error Recovery Patterns
+- **JSON Parsing Issues**: When processing large exports, break into smaller files
+- **Complex String Replacement**: Use manual parsing and reconstruction for complex data structures
+- **Function Finding**: Use bracket counting to find function boundaries in code replacement
+
 ## Extension Documentation
 
 - **Architecture Details**: See `docs/ARCHITECTURE.md`

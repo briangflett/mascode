@@ -21,6 +21,59 @@ cv ext:list | grep mascode
 
 ## Development Workflow
 
+### Development to Production Process
+
+1. **Develop in Development Environment**
+   - Make changes in `/home/brian/buildkit/build/masdemo/web/wp-content/uploads/civicrm/ext/mascode/`
+   - Test thoroughly using development environment
+   - Use `cv flush` after code changes
+   - Use `XDEBUG_SESSION=1 cv scr <script>` for debugging
+
+2. **Commit and Push to GitHub Dev Branch**
+   ```bash
+   git add .
+   git commit -m "Description of changes"
+   git push origin dev
+   ```
+
+3. **Create and Merge Pull Request**
+   - Create PR from `dev` to `master` branch on GitHub
+   - Review changes and merge to `master`
+   - Use automated release script if creating a release:
+     ```bash
+     ./.claude/commands/release.sh [patch|minor|major]
+     ```
+
+4. **Deploy to Production Environment**
+   ```bash
+   # Pull latest changes in production
+   git pull origin master
+   
+   # Update deployment script configurations for production environment
+   # Edit these files with production-specific IDs:
+   # - scripts/deploy_self_assessment_surveys.php
+   # - scripts/deploy_civirules.php  
+   # - scripts/deploy_rcs_form.php
+   
+   # Run deployment scripts in production
+   cv scr scripts/deploy_self_assessment_surveys.php --user=admin
+   cv scr scripts/deploy_civirules.php --user=admin  
+   cv scr scripts/deploy_rcs_form.php --user=admin
+   
+   # For Form Processors, follow manual process in:
+   # scripts/deploy_form_processors.md
+   
+   # Clear cache after deployment
+   cv flush
+   ```
+
+5. **Production Deployment Checklist**
+   - [ ] Update foreign key IDs in deployment script configurations
+   - [ ] Verify all dependencies exist in production (case types, message templates, etc.)
+   - [ ] Run deployment scripts in correct order
+   - [ ] Test deployed components thoroughly
+   - [ ] Monitor logs for any errors
+
 ### Essential Commands
 ```bash
 cv flush                              # Clear cache after changes

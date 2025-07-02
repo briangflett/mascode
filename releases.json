@@ -28,5 +28,25 @@
         },
         "status": "stable",
         "description": "CiviRules deployment tools and employer relationship automation"
+      },
+    "1.0.3": {
+        "version": "1.0.3",
+        "releaseDate": "2025-06-18",
+        "downloadUrl": "https://github.com/briangflett/mascode/archive/refs/tags/v1.0.3.tar.gz",
+        "compatibility": {
+          "ver": "6.1"
+        },
+        "status": "stable",
+        "description": "Enhanced export/import functionality with deployment scripts"
+      },
+    "1.0.4": {
+        "version": "1.0.4",
+        "releaseDate": "2025-07-02",
+        "downloadUrl": "https://github.com/briangflett/mascode/archive/refs/tags/v1.0.4.tar.gz",
+        "compatibility": {
+          "ver": "6.1"
+        },
+        "status": "stable",
+        "description": "Form enhancements and email improvements"
       }
     }

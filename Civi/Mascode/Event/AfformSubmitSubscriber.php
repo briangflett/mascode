@@ -42,9 +42,17 @@ class AfformSubmitSubscriber implements EventSubscriberInterface
     {
         $afform = $event->getAfform();
         $formRoute = $afform['server_route'] ?? null;
+        $formName = $afform['name'] ?? null;
 
-        // Check if this is our target form
-        if ($formRoute !== 'civicrm/mas-rcs-form') {
+        // Define forms that should trigger email confirmations
+        $emailForms = [
+            'civicrm/mas-rcs-form' => 'afformMASRCSForm',
+            'civicrm/mas-sasf-form' => 'afformMASSASF',
+            'civicrm/mas-sass-form' => 'afformMASSASS'
+        ];
+
+        // Check if this is one of our target forms
+        if (!isset($emailForms[$formRoute]) || $emailForms[$formRoute] !== $formName) {
             return;
         }
 
@@ -66,29 +74,53 @@ class AfformSubmitSubscriber implements EventSubscriberInterface
             self::$submissionData[$sessionId] = [];
         }
 
-        // Store entity IDs based on entity name
-        switch ($entityName) {
-            case 'Organization1':
-                self::$submissionData[$sessionId]['organization_id'] = $entityId;
-                break;
-            case 'Individual1': // President
-                self::$submissionData[$sessionId]['president_id'] = $entityId;
-                break;
-            case 'Individual2': // Executive Director
-                self::$submissionData[$sessionId]['executive_director_id'] = $entityId;
-                break;
-            case 'Individual3': // Primary Contact
-                self::$submissionData[$sessionId]['primary_contact_id'] = $entityId;
-                break;
-            case 'Case1':
-                self::$submissionData[$sessionId]['case_id'] = $entityId;
-                // Update case status when processing Case1 (last entity processed)
-                $this->updateCaseStatus($sessionId);
-                // Send confirmation email
-                $this->sendConfirmationEmail($sessionId);
-                // Clean up after processing
-                unset(self::$submissionData[$sessionId]);
-                break;
+        // Store form type and entity IDs based on entity name
+        self::$submissionData[$sessionId]['form_name'] = $formName;
+        self::$submissionData[$sessionId]['form_route'] = $formRoute;
+        
+        // Handle different form types
+        if ($formRoute === 'civicrm/mas-rcs-form') {
+            // RCS Form - existing logic
+            switch ($entityName) {
+                case 'Organization1':
+                    self::$submissionData[$sessionId]['organization_id'] = $entityId;
+                    break;
+                case 'Individual1': // President
+                    self::$submissionData[$sessionId]['president_id'] = $entityId;
+                    break;
+                case 'Individual2': // Executive Director
+                    self::$submissionData[$sessionId]['executive_director_id'] = $entityId;
+                    break;
+                case 'Individual3': // Primary Contact
+                    self::$submissionData[$sessionId]['primary_contact_id'] = $entityId;
+                    break;
+                case 'Case1':
+                    self::$submissionData[$sessionId]['case_id'] = $entityId;
+                    // Update case status when processing Case1 (last entity processed)
+                    $this->updateCaseStatus($sessionId);
+                    // Send confirmation email
+                    $this->sendConfirmationEmail($sessionId);
+                    // Clean up after processing
+                    unset(self::$submissionData[$sessionId]);
+                    break;
+            }
+        } else {
+            // Survey Forms (SASS/SASF) - simpler structure
+            switch ($entityName) {
+                case 'Organization1':
+                    self::$submissionData[$sessionId]['organization_id'] = $entityId;
+                    break;
+                case 'Individual1': // Primary Contact
+                    self::$submissionData[$sessionId]['primary_contact_id'] = $entityId;
+                    break;
+                case 'Activity1':
+                    self::$submissionData[$sessionId]['activity_id'] = $entityId;
+                    // Send confirmation email for survey forms (last entity processed)
+                    $this->sendConfirmationEmail($sessionId);
+                    // Clean up after processing
+                    unset(self::$submissionData[$sessionId]);
+                    break;
+            }
         }
     }
 
@@ -171,10 +203,13 @@ class AfformSubmitSubscriber implements EventSubscriberInterface
         try {
             $submissionData = self::$submissionData[$sessionId] ?? [];
             $primaryContactId = $submissionData['primary_contact_id'] ?? null;
+            $formName = $submissionData['form_name'] ?? 'Unknown Form';
+            $formRoute = $submissionData['form_route'] ?? '';
 
             if (empty($primaryContactId)) {
-                \Civi::log()->warning('AfformSubmitSubscriber: No primary contact ID found for RCS Form', [
+                \Civi::log()->warning('AfformSubmitSubscriber: No primary contact ID found for form', [
                     'session_id' => $sessionId,
+                    'form_name' => $formName,
                     'submission_data' => $submissionData
                 ]);
                 return;
@@ -188,7 +223,10 @@ class AfformSubmitSubscriber implements EventSubscriberInterface
                 ->first();
             
             if (empty($contactDetails['email_primary.email'])) {
-                \Civi::log()->warning('MAS RCS Form: No email found for contact ' . $primaryContactId);
+                \Civi::log()->warning('AfformSubmitSubscriber: No email found for contact', [
+                    'contact_id' => $primaryContactId,
+                    'form_name' => $formName
+                ]);
                 return;
             }
 
@@ -200,32 +238,35 @@ class AfformSubmitSubscriber implements EventSubscriberInterface
                 ->first();
 
             if (!$template) {
-                \Civi::log()->warning('MAS RCS Form: Message template 71 not found');
+                \Civi::log()->warning('AfformSubmitSubscriber: Message template 71 not found', [
+                    'form_name' => $formName
+                ]);
                 return;
             }
 
             // Get the most recent submission for this form
             $submission = AfformSubmission::get(false)
                 ->addSelect('id', 'afform_name', 'contact_id', 'data')
-                ->addWhere('afform_name', '=', 'afformMASRCSForm')
+                ->addWhere('afform_name', '=', $formName)
                 ->addOrderBy('id', 'DESC')
                 ->setLimit(1)
                 ->execute()
                 ->first();
 
-            $submissionData = '';
+            $formattedSubmissionData = '';
             if ($submission) {
-                $submissionData = $this->formatSubmissionData($submission['data'] ?? []);
-                \Civi::log()->info('MAS RCS Form: Using submission data', [
+                $formattedSubmissionData = $this->formatSubmissionData($submission['data'] ?? [], $formRoute);
+                \Civi::log()->info('AfformSubmitSubscriber: Using submission data', [
                     'submission_id' => $submission['id'],
-                    'contact_id' => $submission['contact_id']
+                    'contact_id' => $submission['contact_id'],
+                    'form_name' => $formName
                 ]);
             }
 
             // Prepare template content with submission data
             $subject = $template['msg_subject'];
-            $textContent = $template['msg_text'] . "\n\n" . $submissionData;
-            $htmlContent = $template['msg_html'] . "<br><br>" . nl2br($submissionData);
+            $textContent = $template['msg_text'] . "\n\n" . $formattedSubmissionData;
+            $htmlContent = $template['msg_html'] . "<br><br>" . nl2br($formattedSubmissionData);
 
             // Use TokenProcessor for modern token replacement
             $tokenProcessor = new TokenProcessor(\Civi::dispatcher(), [
@@ -271,17 +312,23 @@ class AfformSubmitSubscriber implements EventSubscriberInterface
 
             \CRM_Utils_Mail::send($adminMailParams);
 
-            \Civi::log()->info('MAS RCS Form confirmation emails sent successfully');
+            \Civi::log()->info('AfformSubmitSubscriber: Confirmation emails sent successfully', [
+                'form_name' => $formName,
+                'primary_contact_id' => $primaryContactId
+            ]);
 
         } catch (\Exception $e) {
-            \Civi::log()->error('Failed to send MAS RCS Form confirmation emails: ' . $e->getMessage());
+            \Civi::log()->error('AfformSubmitSubscriber: Failed to send confirmation emails', [
+                'form_name' => $formName ?? 'Unknown',
+                'error' => $e->getMessage()
+            ]);
         }
     }
 
     /**
      * Format submission data for inclusion in emails
      */
-    private function formatSubmissionData(array $data): string
+    private function formatSubmissionData(array $data, string $formRoute = ''): string
     {
         if (empty($data)) {
             return 'No submission data available.';
@@ -295,7 +342,7 @@ class AfformSubmitSubscriber implements EventSubscriberInterface
             }
 
             // Add entity section header
-            $entityLabel = $this->getEntityLabel($entityName);
+            $entityLabel = $this->getEntityLabel($entityName, $formRoute);
             $formatted .= "\n=== {$entityLabel} ===\n";
 
             foreach ($entityData as $record) {
@@ -305,7 +352,20 @@ class AfformSubmitSubscriber implements EventSubscriberInterface
 
                 foreach ($record['fields'] as $fieldName => $fieldValue) {
                     if ($fieldValue !== null && $fieldValue !== '') {
-                        $fieldLabel = $this->getFieldLabel($fieldName);
+                        $fieldLabel = $this->getFieldLabel($fieldName, $formRoute);
+                        
+                        // Format survey answers if they are numeric ratings
+                        if ($formRoute !== 'civicrm/mas-rcs-form' && is_numeric($fieldValue) && $fieldValue >= 1 && $fieldValue <= 5) {
+                            $scaleLabels = [
+                                1 => 'Strongly Disagree',
+                                2 => 'Disagree', 
+                                3 => 'Neutral',
+                                4 => 'Agree',
+                                5 => 'Strongly Agree'
+                            ];
+                            $fieldValue = $fieldValue . ' (' . ($scaleLabels[$fieldValue] ?? 'Unknown') . ')';
+                        }
+                        
                         $formatted .= "{$fieldLabel}: {$fieldValue}\n";
                     }
                 }
@@ -319,15 +379,25 @@ class AfformSubmitSubscriber implements EventSubscriberInterface
     /**
      * Get user-friendly entity label
      */
-    private function getEntityLabel(string $entityName): string
+    private function getEntityLabel(string $entityName, string $formRoute = ''): string
     {
-        $labels = [
-            'Organization1' => 'Organization Information',
-            'Individual1' => 'President/Board Chair',
-            'Individual2' => 'Executive Director', 
-            'Individual3' => 'Primary Contact',
-            'Case1' => 'Request Details',
-        ];
+        if ($formRoute === 'civicrm/mas-rcs-form') {
+            // RCS Form labels
+            $labels = [
+                'Organization1' => 'Organization Information',
+                'Individual1' => 'President/Board Chair',
+                'Individual2' => 'Executive Director', 
+                'Individual3' => 'Primary Contact',
+                'Case1' => 'Request Details',
+            ];
+        } else {
+            // Survey Form labels (SASS/SASF)
+            $labels = [
+                'Organization1' => 'Organization Information',
+                'Individual1' => 'Contact Information',
+                'Activity1' => 'Survey Responses',
+            ];
+        }
 
         return $labels[$entityName] ?? $entityName;
     }
@@ -335,9 +405,10 @@ class AfformSubmitSubscriber implements EventSubscriberInterface
     /**
      * Get user-friendly field label
      */
-    private function getFieldLabel(string $fieldName): string
+    private function getFieldLabel(string $fieldName, string $formRoute = ''): string
     {
-        $labels = [
+        // Common field labels for all forms
+        $commonLabels = [
             'organization_name' => 'Organization Name',
             'first_name' => 'First Name',
             'last_name' => 'Last Name',
@@ -353,7 +424,57 @@ class AfformSubmitSubscriber implements EventSubscriberInterface
             'do_not_email' => 'Email Preference',
         ];
 
-        return $labels[$fieldName] ?? ucwords(str_replace('_', ' ', $fieldName));
+        // Survey question labels (for SASS/SASF forms)
+        $surveyLabels = [
+            'q01_mission_clear' => '1. Our mission is clear and understood by all staff and board members',
+            'q02_vision_inspiring' => '2. We have an inspiring vision that guides our work',
+            'q03_values_guide' => '3. Our organizational values clearly guide our decisions and actions',
+            'q04_mission_relevant' => '4. Our mission remains relevant to current community needs',
+            'q05_strategic_alignment' => '5. All our activities are clearly aligned with our mission',
+            'q06_board_effective' => '6. Our board is effective at providing governance and oversight',
+            'q07_roles_clear' => '7. Board and staff roles and responsibilities are clearly defined',
+            'q08_policies_current' => '8. We have current and comprehensive governance policies',
+            'q09_board_diverse' => '9. Our board reflects the diversity of our community',
+            'q10_board_recruitment' => '10. We have effective board recruitment and orientation processes',
+            'q11_financial_stable' => '11. Our organization is financially stable',
+            'q12_budget_process' => '12. We have a sound budgeting and financial planning process',
+            'q13_revenue_diverse' => '13. We have diversified revenue sources',
+            'q14_financial_controls' => '14. We have strong financial controls and accountability measures',
+            'q15_reserves_adequate' => '15. We maintain adequate financial reserves',
+            'q16_programs_effective' => '16. Our programs are effective at achieving intended outcomes',
+            'q17_data_collection' => '17. We regularly collect and analyze data on program performance',
+            'q18_continuous_improvement' => '18. We use evaluation results for continuous program improvement',
+            'q19_program_innovation' => '19. We regularly innovate and adapt our programs',
+            'q20_impact_measurement' => '20. We effectively measure and communicate our impact',
+            'q21_staff_skilled' => '21. Our staff have the skills and resources needed to do their jobs well',
+            'q22_professional_development' => '22. We provide adequate professional development opportunities',
+            'q23_succession_planning' => '23. We have effective succession planning and knowledge management',
+            'q24_compensation_competitive' => '24. Our compensation and benefits are competitive',
+            'q25_performance_management' => '25. We have effective performance management systems',
+            'q26_communication_open' => '26. We have open and effective internal communication',
+            'q27_culture_positive' => '27. Our organizational culture is positive and supportive',
+            'q28_change_adaptable' => '28. We are adaptable and responsive to change',
+            'q29_collaboration_strong' => '29. We have strong collaboration across departments/programs',
+            'q30_learning_culture' => '30. We have a culture of learning and continuous improvement',
+            'q31_stakeholder_engaged' => '31. We effectively engage with our key stakeholders',
+            'q32_partnerships_strong' => '32. We have strong partnerships that advance our mission',
+            'q33_reputation_positive' => '33. We have a positive reputation in our community',
+            'q34_marketing_effective' => '34. Our marketing and communications are effective',
+            'q35_advocacy_engaged' => '35. We effectively engage in advocacy and policy work when appropriate'
+        ];
+
+        // Check survey labels first for survey forms
+        if ($formRoute !== 'civicrm/mas-rcs-form' && isset($surveyLabels[$fieldName])) {
+            return $surveyLabels[$fieldName];
+        }
+
+        // Check common labels
+        if (isset($commonLabels[$fieldName])) {
+            return $commonLabels[$fieldName];
+        }
+
+        // Default formatting
+        return ucwords(str_replace('_', ' ', $fieldName));
     }
 
 }
