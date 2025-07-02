@@ -244,40 +244,54 @@ try {
     
     echo "✓ Created $createdFields new survey questions, $existingFields already existed\n";
     
-    // Step 4: Create Short Self Assessment Survey Afform
-    echo "\nStep 4: Creating Short Self Assessment Survey Afform...\n";
+    // Step 4: Create or Update Short Self Assessment Survey Afform
+    echo "\nStep 4: Creating or Updating Short Self Assessment Survey Afform...\n";
     
     $sassAfform = \Civi\Api4\Afform::get(FALSE)
         ->addWhere('name', '=', 'afformMASSASS')
         ->execute()->first();
     
-    if (!$sassAfform) {
-        // Create SASS Afform
-        $sassAfformData = createSASSAfform($config, $customGroup['name']);
+    // Create or update SASS Afform
+    $sassAfformData = createSASSAfform($config, $customGroup['name']);
+    
+    if ($sassAfform) {
+        // Update existing form
+        $sassAfform = \Civi\Api4\Afform::update(FALSE)
+            ->addWhere('name', '=', 'afformMASSASS')
+            ->setValues($sassAfformData)
+            ->execute()->first();
+        echo "✓ Updated Short Self Assessment Survey Afform\n";
+    } else {
+        // Create new form
         $sassAfform = \Civi\Api4\Afform::create(FALSE)
             ->setValues($sassAfformData)
             ->execute()->first();
         echo "✓ Created Short Self Assessment Survey Afform\n";
-    } else {
-        echo "✓ Short Self Assessment Survey Afform already exists\n";
     }
     
-    // Step 5: Create Full Self Assessment Survey Afform
-    echo "\nStep 5: Creating Full Self Assessment Survey Afform...\n";
+    // Step 5: Create or Update Full Self Assessment Survey Afform
+    echo "\nStep 5: Creating or Updating Full Self Assessment Survey Afform...\n";
     
     $sasfAfform = \Civi\Api4\Afform::get(FALSE)
         ->addWhere('name', '=', 'afformMASSASF')
         ->execute()->first();
     
-    if (!$sasfAfform) {
-        // Create SASF Afform  
-        $sasfAfformData = createSASFAfform($config, $customGroup['name']);
+    // Create or update SASF Afform
+    $sasfAfformData = createSASFAfform($config, $customGroup['name']);
+    
+    if ($sasfAfform) {
+        // Update existing form
+        $sasfAfform = \Civi\Api4\Afform::update(FALSE)
+            ->addWhere('name', '=', 'afformMASSASF')
+            ->setValues($sasfAfformData)
+            ->execute()->first();
+        echo "✓ Updated Full Self Assessment Survey Afform\n";
+    } else {
+        // Create new form
         $sasfAfform = \Civi\Api4\Afform::create(FALSE)
             ->setValues($sasfAfformData)
             ->execute()->first();
         echo "✓ Created Full Self Assessment Survey Afform\n";
-    } else {
-        echo "✓ Full Self Assessment Survey Afform already exists\n";
     }
     
     echo "\n=== DEPLOYMENT COMPLETED SUCCESSFULLY ===\n";
@@ -325,7 +339,7 @@ function createSASSAfform($config, $customGroupName) {
         'allow_verification_by_email' => false,
         'email_confirmation_template_id' => $config['email_confirmation_template_id'],
         'autosave_draft' => false,
-        'layout' => [createFormLayout($config['sass_activity_type_value'], $customGroupName, $shortSurveyFields, 'Short Self Assessment Survey', 'Short Version: 21 Questions')]
+        'layout' => [createSASSFormLayout()]
     ];
 }
 
@@ -359,208 +373,3006 @@ function createSASFAfform($config, $customGroupName) {
         'allow_verification_by_email' => false,
         'email_confirmation_template_id' => $config['email_confirmation_template_id'],
         'autosave_draft' => false,
-        'layout' => [createFormLayout($config['sasf_activity_type_value'], $customGroupName, $allSurveyFields, 'Full Self Assessment Survey', 'Full Version: 35 Questions')]
+        'layout' => [createSASFFormLayout()]
     ];
 }
 
 // Helper function to create form layout
+// Helper function to create SASS form layout
+function createSASSFormLayout() {
+    return array (
+  '#tag' => 'af-form',
+  'ctrl' => 'afform',
+  '#children' => 
+  array (
+    0 => 
+    array (
+      '#text' => '
+  ',
+    ),
+    1 => 
+    array (
+      '#tag' => 'af-entity',
+      'data' => 
+      array (
+        'source' => 'Short Self Assessment Survey',
+      ),
+      'type' => 'Organization',
+      'name' => 'Organization1',
+      'label' => 'Organization 1',
+      'actions' => 
+      array (
+        'create' => false,
+        'update' => true,
+      ),
+      'security' => 'FBAC',
+      'url-autofill' => '0',
+      'autofill' => 'relationship:Employer of',
+      'autofill-relationship' => 'Individual1',
+      'contact-dedupe' => 'Organization.Unsupervised',
+    ),
+    2 => 
+    array (
+      '#text' => '
+  ',
+    ),
+    3 => 
+    array (
+      '#tag' => 'af-entity',
+      'data' => 
+      array (
+        'source' => 'Short Self Assessment Survey',
+      ),
+      'type' => 'Individual',
+      'name' => 'Individual1',
+      'label' => 'Individual 1',
+      'actions' => 
+      array (
+        'create' => true,
+        'update' => true,
+      ),
+      'security' => 'FBAC',
+      'autofill' => 'entity_id',
+      'contact-dedupe' => 'Individual.Supervised',
+    ),
+    4 => 
+    array (
+      '#text' => '
+  ',
+    ),
+    5 => 
+    array (
+      '#tag' => 'af-entity',
+      'data' => 
+      array (
+        'source_contact_id' => 'Individual1',
+        'activity_type_id' => 1000,
+        'status_id' => 2,
+      ),
+      'type' => 'Activity',
+      'name' => 'Activity1',
+      'label' => 'Activity 1',
+      'actions' => 
+      array (
+        'create' => true,
+        'update' => false,
+      ),
+      'security' => 'FBAC',
+    ),
+    6 => 
+    array (
+      '#text' => '
+  ',
+    ),
+    7 => 
+    array (
+      '#tag' => 'div',
+      'class' => 'af-container',
+      '#children' => 
+      array (
+        0 => 
+        array (
+          '#text' => '
+    ',
+        ),
+        1 => 
+        array (
+          '#tag' => 'fieldset',
+          'af-fieldset' => 'Organization1',
+          'class' => 'af-container af-container-style-pane',
+          'af-title' => 'Organization Information',
+          'style' => 'border: 3px solid #619ee6; background-color: #ffffff',
+          '#children' => 
+          array (
+            0 => 
+            array (
+              '#text' => '
+      ',
+            ),
+            1 => 
+            array (
+              '#tag' => 'div',
+              'class' => 'af-container af-layout-inline',
+              '#children' => 
+              array (
+                0 => 
+                array (
+                  '#text' => '
+        ',
+                ),
+                1 => 
+                array (
+                  '#tag' => 'af-field',
+                  'name' => 'organization_name',
+                  'defn' => 
+                  array (
+                    'required' => true,
+                    'input_attrs' => 
+                    array (
+                    ),
+                  ),
+                ),
+                2 => 
+                array (
+                  '#text' => '
+      ',
+                ),
+              ),
+            ),
+            2 => 
+            array (
+              '#text' => '
+    ',
+            ),
+          ),
+        ),
+        2 => 
+        array (
+          '#text' => '
+    ',
+        ),
+        3 => 
+        array (
+          '#tag' => 'fieldset',
+          'af-fieldset' => 'Individual1',
+          'class' => 'af-container af-container-style-pane',
+          'af-title' => 'Contact Information',
+          'style' => 'border: 3px solid #619ee6; background-color: #ffffff',
+          '#children' => 
+          array (
+            0 => 
+            array (
+              '#text' => '
+      ',
+            ),
+            1 => 
+            array (
+              '#tag' => 'div',
+              'class' => 'af-container af-layout-inline',
+              '#children' => 
+              array (
+                0 => 
+                array (
+                  '#text' => '
+        ',
+                ),
+                1 => 
+                array (
+                  '#tag' => 'af-field',
+                  'name' => 'first_name',
+                  'defn' => 
+                  array (
+                    'required' => true,
+                    'input_attrs' => 
+                    array (
+                    ),
+                  ),
+                ),
+                2 => 
+                array (
+                  '#text' => '
+        ',
+                ),
+                3 => 
+                array (
+                  '#tag' => 'af-field',
+                  'name' => 'last_name',
+                  'defn' => 
+                  array (
+                    'required' => true,
+                    'input_attrs' => 
+                    array (
+                    ),
+                  ),
+                ),
+                4 => 
+                array (
+                  '#text' => '
+        ',
+                ),
+                5 => 
+                array (
+                  '#tag' => 'div',
+                  'af-join' => 'Email',
+                  'actions' => 
+                  array (
+                    'update' => true,
+                    'delete' => true,
+                  ),
+                  'data' => 
+                  array (
+                    'is_primary' => true,
+                  ),
+                  '#children' => 
+                  array (
+                    0 => 
+                    array (
+                      '#text' => '
+          ',
+                    ),
+                    1 => 
+                    array (
+                      '#tag' => 'af-field',
+                      'name' => 'email',
+                      'defn' => 
+                      array (
+                        'required' => true,
+                        'input_attrs' => 
+                        array (
+                        ),
+                      ),
+                    ),
+                    2 => 
+                    array (
+                      '#text' => '
+        ',
+                    ),
+                  ),
+                ),
+                6 => 
+                array (
+                  '#text' => '
+      ',
+                ),
+              ),
+            ),
+            2 => 
+            array (
+              '#text' => '
+    ',
+            ),
+          ),
+        ),
+        4 => 
+        array (
+          '#text' => '
+    ',
+        ),
+        5 => 
+        array (
+          '#tag' => 'fieldset',
+          'af-fieldset' => 'Activity1',
+          'class' => 'af-container af-container-style-pane',
+          'af-title' => 'Short Self Assessment Survey',
+          'style' => 'border: 3px solid #617de6; background-color: #ffffff',
+          '#children' => 
+          array (
+            0 => 
+            array (
+              '#text' => '
+      ',
+            ),
+            1 => 
+            array (
+              '#tag' => 'div',
+              'class' => 'af-markup',
+              '#children' => 
+              array (
+                0 => 
+                array (
+                  '#text' => '
+        
+        ',
+                ),
+                1 => 
+                array (
+                  '#tag' => 'p',
+                  '#children' => 
+                  array (
+                    0 => 
+                    array (
+                      '#text' => 'Please rate each statement using the scale: 1 = Strongly Disagree, 2 = Disagree, 3 = Neutral, 4 = Agree, 5 = Strongly Agree',
+                    ),
+                  ),
+                ),
+                2 => 
+                array (
+                  '#text' => '
+        ',
+                ),
+                3 => 
+                array (
+                  '#tag' => 'p',
+                  '#children' => 
+                  array (
+                    0 => 
+                    array (
+                      '#tag' => 'strong',
+                      '#children' => 
+                      array (
+                        0 => 
+                        array (
+                          '#text' => 'Short Version: 21 Questions',
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+                4 => 
+                array (
+                  '#text' => '
+      
+      ',
+                ),
+              ),
+            ),
+            2 => 
+            array (
+              '#text' => '
+      ',
+            ),
+            3 => 
+            array (
+              '#tag' => 'div',
+              'class' => 'af-markup',
+              '#children' => 
+              array (
+                0 => 
+                array (
+                  '#text' => '
+        
+        ',
+                ),
+                1 => 
+                array (
+                  '#tag' => 'h4',
+                  'style' => 'color: #617de6; border-bottom: 2px solid #617de6; padding-bottom: 5px; margin-top: 20px; margin-bottom: 15px;',
+                  '#children' => 
+                  array (
+                    0 => 
+                    array (
+                      '#text' => 'Mission and Vision',
+                    ),
+                  ),
+                ),
+                2 => 
+                array (
+                  '#text' => '
+      
+      ',
+                ),
+              ),
+            ),
+            4 => 
+            array (
+              '#text' => '
+      ',
+            ),
+            5 => 
+            array (
+              '#tag' => 'af-field',
+              'name' => 'Unified_Self_Assessment_Survey.q01_mission_clear',
+              'defn' => 
+              array (
+                'required' => true,
+                'input_attrs' => 
+                array (
+                ),
+              ),
+            ),
+            6 => 
+            array (
+              '#text' => '
+      ',
+            ),
+            7 => 
+            array (
+              '#tag' => 'af-field',
+              'name' => 'Unified_Self_Assessment_Survey.q02_vision_inspiring',
+              'defn' => 
+              array (
+                'required' => true,
+                'input_attrs' => 
+                array (
+                ),
+              ),
+            ),
+            8 => 
+            array (
+              '#text' => '
+      ',
+            ),
+            9 => 
+            array (
+              '#tag' => 'af-field',
+              'name' => 'Unified_Self_Assessment_Survey.q03_values_guide',
+              'defn' => 
+              array (
+                'required' => true,
+                'input_attrs' => 
+                array (
+                ),
+              ),
+            ),
+            10 => 
+            array (
+              '#text' => '
+      ',
+            ),
+            11 => 
+            array (
+              '#tag' => 'div',
+              'class' => 'af-markup',
+              '#children' => 
+              array (
+                0 => 
+                array (
+                  '#text' => '
+        
+        ',
+                ),
+                1 => 
+                array (
+                  '#tag' => 'h4',
+                  'style' => 'color: #617de6; border-bottom: 2px solid #617de6; padding-bottom: 5px; margin-top: 20px; margin-bottom: 15px;',
+                  '#children' => 
+                  array (
+                    0 => 
+                    array (
+                      '#text' => 'Governance',
+                    ),
+                  ),
+                ),
+                2 => 
+                array (
+                  '#text' => '
+      
+      ',
+                ),
+              ),
+            ),
+            12 => 
+            array (
+              '#text' => '
+      ',
+            ),
+            13 => 
+            array (
+              '#tag' => 'af-field',
+              'name' => 'Unified_Self_Assessment_Survey.q06_board_effective',
+              'defn' => 
+              array (
+                'required' => true,
+                'input_attrs' => 
+                array (
+                ),
+              ),
+            ),
+            14 => 
+            array (
+              '#text' => '
+      ',
+            ),
+            15 => 
+            array (
+              '#tag' => 'af-field',
+              'name' => 'Unified_Self_Assessment_Survey.q07_roles_clear',
+              'defn' => 
+              array (
+                'required' => true,
+                'input_attrs' => 
+                array (
+                ),
+              ),
+            ),
+            16 => 
+            array (
+              '#text' => '
+      ',
+            ),
+            17 => 
+            array (
+              '#tag' => 'af-field',
+              'name' => 'Unified_Self_Assessment_Survey.q08_policies_current',
+              'defn' => 
+              array (
+                'required' => true,
+                'input_attrs' => 
+                array (
+                ),
+              ),
+            ),
+            18 => 
+            array (
+              '#text' => '
+      ',
+            ),
+            19 => 
+            array (
+              '#tag' => 'div',
+              'class' => 'af-markup',
+              '#children' => 
+              array (
+                0 => 
+                array (
+                  '#text' => '
+        
+        ',
+                ),
+                1 => 
+                array (
+                  '#tag' => 'h4',
+                  'style' => 'color: #617de6; border-bottom: 2px solid #617de6; padding-bottom: 5px; margin-top: 20px; margin-bottom: 15px;',
+                  '#children' => 
+                  array (
+                    0 => 
+                    array (
+                      '#text' => 'Financial Management',
+                    ),
+                  ),
+                ),
+                2 => 
+                array (
+                  '#text' => '
+      
+      ',
+                ),
+              ),
+            ),
+            20 => 
+            array (
+              '#text' => '
+      ',
+            ),
+            21 => 
+            array (
+              '#tag' => 'af-field',
+              'name' => 'Unified_Self_Assessment_Survey.q11_financial_stable',
+              'defn' => 
+              array (
+                'required' => true,
+                'input_attrs' => 
+                array (
+                ),
+              ),
+            ),
+            22 => 
+            array (
+              '#text' => '
+      ',
+            ),
+            23 => 
+            array (
+              '#tag' => 'af-field',
+              'name' => 'Unified_Self_Assessment_Survey.q12_budget_process',
+              'defn' => 
+              array (
+                'required' => true,
+                'input_attrs' => 
+                array (
+                ),
+              ),
+            ),
+            24 => 
+            array (
+              '#text' => '
+      ',
+            ),
+            25 => 
+            array (
+              '#tag' => 'af-field',
+              'name' => 'Unified_Self_Assessment_Survey.q13_revenue_diverse',
+              'defn' => 
+              array (
+                'required' => true,
+                'input_attrs' => 
+                array (
+                ),
+              ),
+            ),
+            26 => 
+            array (
+              '#text' => '
+      ',
+            ),
+            27 => 
+            array (
+              '#tag' => 'div',
+              'class' => 'af-markup',
+              '#children' => 
+              array (
+                0 => 
+                array (
+                  '#text' => '
+        
+        ',
+                ),
+                1 => 
+                array (
+                  '#tag' => 'h4',
+                  'style' => 'color: #617de6; border-bottom: 2px solid #617de6; padding-bottom: 5px; margin-top: 20px; margin-bottom: 15px;',
+                  '#children' => 
+                  array (
+                    0 => 
+                    array (
+                      '#text' => 'Program Effectiveness',
+                    ),
+                  ),
+                ),
+                2 => 
+                array (
+                  '#text' => '
+      
+      ',
+                ),
+              ),
+            ),
+            28 => 
+            array (
+              '#text' => '
+      ',
+            ),
+            29 => 
+            array (
+              '#tag' => 'af-field',
+              'name' => 'Unified_Self_Assessment_Survey.q16_programs_effective',
+              'defn' => 
+              array (
+                'required' => true,
+                'input_attrs' => 
+                array (
+                ),
+              ),
+            ),
+            30 => 
+            array (
+              '#text' => '
+      ',
+            ),
+            31 => 
+            array (
+              '#tag' => 'af-field',
+              'name' => 'Unified_Self_Assessment_Survey.q17_data_collection',
+              'defn' => 
+              array (
+                'required' => true,
+                'input_attrs' => 
+                array (
+                ),
+              ),
+            ),
+            32 => 
+            array (
+              '#text' => '
+      ',
+            ),
+            33 => 
+            array (
+              '#tag' => 'af-field',
+              'name' => 'Unified_Self_Assessment_Survey.q18_continuous_improvement',
+              'defn' => 
+              array (
+                'required' => true,
+                'input_attrs' => 
+                array (
+                ),
+              ),
+            ),
+            34 => 
+            array (
+              '#text' => '
+      ',
+            ),
+            35 => 
+            array (
+              '#tag' => 'div',
+              'class' => 'af-markup',
+              '#children' => 
+              array (
+                0 => 
+                array (
+                  '#text' => '
+        
+        ',
+                ),
+                1 => 
+                array (
+                  '#tag' => 'h4',
+                  'style' => 'color: #617de6; border-bottom: 2px solid #617de6; padding-bottom: 5px; margin-top: 20px; margin-bottom: 15px;',
+                  '#children' => 
+                  array (
+                    0 => 
+                    array (
+                      '#text' => 'Human Resources',
+                    ),
+                  ),
+                ),
+                2 => 
+                array (
+                  '#text' => '
+      
+      ',
+                ),
+              ),
+            ),
+            36 => 
+            array (
+              '#text' => '
+      ',
+            ),
+            37 => 
+            array (
+              '#tag' => 'af-field',
+              'name' => 'Unified_Self_Assessment_Survey.q21_staff_skilled',
+              'defn' => 
+              array (
+                'required' => true,
+                'input_attrs' => 
+                array (
+                ),
+              ),
+            ),
+            38 => 
+            array (
+              '#text' => '
+      ',
+            ),
+            39 => 
+            array (
+              '#tag' => 'af-field',
+              'name' => 'Unified_Self_Assessment_Survey.q22_professional_development',
+              'defn' => 
+              array (
+                'required' => true,
+                'input_attrs' => 
+                array (
+                ),
+              ),
+            ),
+            40 => 
+            array (
+              '#text' => '
+      ',
+            ),
+            41 => 
+            array (
+              '#tag' => 'af-field',
+              'name' => 'Unified_Self_Assessment_Survey.q23_succession_planning',
+              'defn' => 
+              array (
+                'required' => true,
+                'input_attrs' => 
+                array (
+                ),
+              ),
+            ),
+            42 => 
+            array (
+              '#text' => '
+      ',
+            ),
+            43 => 
+            array (
+              '#tag' => 'div',
+              'class' => 'af-markup',
+              '#children' => 
+              array (
+                0 => 
+                array (
+                  '#text' => '
+        
+        ',
+                ),
+                1 => 
+                array (
+                  '#tag' => 'h4',
+                  'style' => 'color: #617de6; border-bottom: 2px solid #617de6; padding-bottom: 5px; margin-top: 20px; margin-bottom: 15px;',
+                  '#children' => 
+                  array (
+                    0 => 
+                    array (
+                      '#text' => 'Organizational Culture',
+                    ),
+                  ),
+                ),
+                2 => 
+                array (
+                  '#text' => '
+      
+      ',
+                ),
+              ),
+            ),
+            44 => 
+            array (
+              '#text' => '
+      ',
+            ),
+            45 => 
+            array (
+              '#tag' => 'af-field',
+              'name' => 'Unified_Self_Assessment_Survey.q26_communication_open',
+              'defn' => 
+              array (
+                'required' => true,
+                'input_attrs' => 
+                array (
+                ),
+              ),
+            ),
+            46 => 
+            array (
+              '#text' => '
+      ',
+            ),
+            47 => 
+            array (
+              '#tag' => 'af-field',
+              'name' => 'Unified_Self_Assessment_Survey.q27_culture_positive',
+              'defn' => 
+              array (
+                'required' => true,
+                'input_attrs' => 
+                array (
+                ),
+              ),
+            ),
+            48 => 
+            array (
+              '#text' => '
+      ',
+            ),
+            49 => 
+            array (
+              '#tag' => 'af-field',
+              'name' => 'Unified_Self_Assessment_Survey.q28_change_adaptable',
+              'defn' => 
+              array (
+                'required' => true,
+                'input_attrs' => 
+                array (
+                ),
+              ),
+            ),
+            50 => 
+            array (
+              '#text' => '
+      ',
+            ),
+            51 => 
+            array (
+              '#tag' => 'div',
+              'class' => 'af-markup',
+              '#children' => 
+              array (
+                0 => 
+                array (
+                  '#text' => '
+        
+        ',
+                ),
+                1 => 
+                array (
+                  '#tag' => 'h4',
+                  'style' => 'color: #617de6; border-bottom: 2px solid #617de6; padding-bottom: 5px; margin-top: 20px; margin-bottom: 15px;',
+                  '#children' => 
+                  array (
+                    0 => 
+                    array (
+                      '#text' => 'External Relations',
+                    ),
+                  ),
+                ),
+                2 => 
+                array (
+                  '#text' => '
+      
+      ',
+                ),
+              ),
+            ),
+            52 => 
+            array (
+              '#text' => '
+      ',
+            ),
+            53 => 
+            array (
+              '#tag' => 'af-field',
+              'name' => 'Unified_Self_Assessment_Survey.q31_stakeholder_engaged',
+              'defn' => 
+              array (
+                'required' => true,
+                'input_attrs' => 
+                array (
+                ),
+              ),
+            ),
+            54 => 
+            array (
+              '#text' => '
+      ',
+            ),
+            55 => 
+            array (
+              '#tag' => 'af-field',
+              'name' => 'Unified_Self_Assessment_Survey.q32_partnerships_strong',
+              'defn' => 
+              array (
+                'required' => true,
+                'input_attrs' => 
+                array (
+                ),
+              ),
+            ),
+            56 => 
+            array (
+              '#text' => '
+      ',
+            ),
+            57 => 
+            array (
+              '#tag' => 'af-field',
+              'name' => 'Unified_Self_Assessment_Survey.q33_reputation_positive',
+              'defn' => 
+              array (
+                'required' => true,
+                'input_attrs' => 
+                array (
+                ),
+              ),
+            ),
+            58 => 
+            array (
+              '#text' => '
+    ',
+            ),
+          ),
+        ),
+        6 => 
+        array (
+          '#text' => '
+    ',
+        ),
+        7 => 
+        array (
+          '#tag' => 'div',
+          'class' => 'af-container af-layout-inline',
+          '#children' => 
+          array (
+            0 => 
+            array (
+              '#text' => '
+      ',
+            ),
+            1 => 
+            array (
+              '#tag' => 'button',
+              'class' => 'af-button btn btn-primary',
+              'crm-icon' => 'fa-check',
+              'ng-click' => 'afform.submit()',
+              'ng-if' => 'afform.showSubmitButton',
+              '#children' => 
+              array (
+                0 => 
+                array (
+                  '#text' => 'Submit Survey',
+                ),
+              ),
+            ),
+            2 => 
+            array (
+              '#text' => '
+    ',
+            ),
+          ),
+        ),
+        8 => 
+        array (
+          '#text' => '
+  ',
+        ),
+      ),
+    ),
+    8 => 
+    array (
+      '#text' => '
+',
+    ),
+  ),
+);
+}
+
+// Helper function to create SASF form layout
+function createSASFFormLayout() {
+    return array (
+  '#tag' => 'af-form',
+  'ctrl' => 'afform',
+  '#children' => 
+  array (
+    0 => 
+    array (
+      '#text' => '
+  ',
+    ),
+    1 => 
+    array (
+      '#tag' => 'af-entity',
+      'data' => 
+      array (
+        'source' => 'Full Self Assessment Survey',
+      ),
+      'type' => 'Organization',
+      'name' => 'Organization1',
+      'label' => 'Organization 1',
+      'actions' => 
+      array (
+        'create' => false,
+        'update' => true,
+      ),
+      'security' => 'FBAC',
+      'url-autofill' => '0',
+      'autofill' => 'relationship:Employer of',
+      'autofill-relationship' => 'Individual1',
+      'contact-dedupe' => 'Organization.Unsupervised',
+    ),
+    2 => 
+    array (
+      '#text' => '
+  ',
+    ),
+    3 => 
+    array (
+      '#tag' => 'af-entity',
+      'data' => 
+      array (
+        'source' => 'Full Self Assessment Survey',
+      ),
+      'type' => 'Individual',
+      'name' => 'Individual1',
+      'label' => 'Individual 1',
+      'actions' => 
+      array (
+        'create' => true,
+        'update' => true,
+      ),
+      'security' => 'FBAC',
+      'autofill' => 'entity_id',
+      'contact-dedupe' => 'Individual.Supervised',
+    ),
+    4 => 
+    array (
+      '#text' => '
+  ',
+    ),
+    5 => 
+    array (
+      '#tag' => 'af-entity',
+      'data' => 
+      array (
+        'source_contact_id' => 'Individual1',
+        'activity_type_id' => 74,
+        'status_id' => 2,
+      ),
+      'type' => 'Activity',
+      'name' => 'Activity1',
+      'label' => 'Activity 1',
+      'actions' => 
+      array (
+        'create' => true,
+        'update' => false,
+      ),
+      'security' => 'FBAC',
+    ),
+    6 => 
+    array (
+      '#text' => '
+  ',
+    ),
+    7 => 
+    array (
+      '#tag' => 'div',
+      'class' => 'af-container',
+      '#children' => 
+      array (
+        0 => 
+        array (
+          '#text' => '
+    ',
+        ),
+        1 => 
+        array (
+          '#tag' => 'fieldset',
+          'af-fieldset' => 'Organization1',
+          'class' => 'af-container af-container-style-pane',
+          'af-title' => 'Organization Information',
+          'style' => 'border: 3px solid #619ee6; background-color: #ffffff',
+          '#children' => 
+          array (
+            0 => 
+            array (
+              '#text' => '
+      ',
+            ),
+            1 => 
+            array (
+              '#tag' => 'div',
+              'class' => 'af-container af-layout-inline',
+              '#children' => 
+              array (
+                0 => 
+                array (
+                  '#text' => '
+        ',
+                ),
+                1 => 
+                array (
+                  '#tag' => 'af-field',
+                  'name' => 'organization_name',
+                  'defn' => 
+                  array (
+                    'required' => true,
+                    'input_attrs' => 
+                    array (
+                    ),
+                  ),
+                ),
+                2 => 
+                array (
+                  '#text' => '
+      ',
+                ),
+              ),
+            ),
+            2 => 
+            array (
+              '#text' => '
+    ',
+            ),
+          ),
+        ),
+        2 => 
+        array (
+          '#text' => '
+    ',
+        ),
+        3 => 
+        array (
+          '#tag' => 'fieldset',
+          'af-fieldset' => 'Individual1',
+          'class' => 'af-container af-container-style-pane',
+          'af-title' => 'Contact Information',
+          'style' => 'border: 3px solid #619ee6; background-color: #ffffff',
+          '#children' => 
+          array (
+            0 => 
+            array (
+              '#text' => '
+      ',
+            ),
+            1 => 
+            array (
+              '#tag' => 'div',
+              'class' => 'af-container af-layout-inline',
+              '#children' => 
+              array (
+                0 => 
+                array (
+                  '#text' => '
+        ',
+                ),
+                1 => 
+                array (
+                  '#tag' => 'af-field',
+                  'name' => 'first_name',
+                  'defn' => 
+                  array (
+                    'required' => true,
+                    'input_attrs' => 
+                    array (
+                    ),
+                  ),
+                ),
+                2 => 
+                array (
+                  '#text' => '
+        ',
+                ),
+                3 => 
+                array (
+                  '#tag' => 'af-field',
+                  'name' => 'last_name',
+                  'defn' => 
+                  array (
+                    'required' => true,
+                    'input_attrs' => 
+                    array (
+                    ),
+                  ),
+                ),
+                4 => 
+                array (
+                  '#text' => '
+        ',
+                ),
+                5 => 
+                array (
+                  '#tag' => 'div',
+                  'af-join' => 'Email',
+                  'actions' => 
+                  array (
+                    'update' => true,
+                    'delete' => true,
+                  ),
+                  'data' => 
+                  array (
+                    'is_primary' => true,
+                  ),
+                  '#children' => 
+                  array (
+                    0 => 
+                    array (
+                      '#text' => '
+          ',
+                    ),
+                    1 => 
+                    array (
+                      '#tag' => 'div',
+                      'actions' => 
+                      array (
+                        'update' => true,
+                        'delete' => true,
+                      ),
+                      'class' => 'af-container',
+                      '#children' => 
+                      array (
+                        0 => 
+                        array (
+                          '#text' => '
+            ',
+                        ),
+                        1 => 
+                        array (
+                          '#tag' => 'div',
+                          'class' => 'af-container af-layout-inline',
+                          '#children' => 
+                          array (
+                            0 => 
+                            array (
+                              '#text' => '
+              ',
+                            ),
+                            1 => 
+                            array (
+                              '#tag' => 'af-field',
+                              'name' => 'email',
+                              'defn' => 
+                              array (
+                                'required' => true,
+                                'input_attrs' => 
+                                array (
+                                ),
+                              ),
+                            ),
+                            2 => 
+                            array (
+                              '#text' => '
+              ',
+                            ),
+                            3 => 
+                            array (
+                              '#tag' => 'af-field',
+                              'name' => 'location_type_id',
+                              'defn' => 
+                              array (
+                                'afform_default' => '1',
+                                'input_attrs' => 
+                                array (
+                                ),
+                                'required' => false,
+                                'label' => false,
+                                'input_type' => 'Hidden',
+                              ),
+                            ),
+                            4 => 
+                            array (
+                              '#text' => '
+              ',
+                            ),
+                            5 => 
+                            array (
+                              '#tag' => 'af-field',
+                              'name' => 'is_primary',
+                              'defn' => 
+                              array (
+                                'afform_default' => '1',
+                                'label' => false,
+                                'input_type' => 'Hidden',
+                              ),
+                            ),
+                            6 => 
+                            array (
+                              '#text' => '
+            ',
+                            ),
+                          ),
+                        ),
+                        2 => 
+                        array (
+                          '#text' => '
+          ',
+                        ),
+                      ),
+                    ),
+                    2 => 
+                    array (
+                      '#text' => '
+        ',
+                    ),
+                  ),
+                ),
+                6 => 
+                array (
+                  '#text' => '
+      ',
+                ),
+              ),
+            ),
+            2 => 
+            array (
+              '#text' => '
+    ',
+            ),
+          ),
+        ),
+        4 => 
+        array (
+          '#text' => '
+    ',
+        ),
+        5 => 
+        array (
+          '#tag' => 'fieldset',
+          'af-fieldset' => 'Activity1',
+          'class' => 'af-container af-container-style-pane',
+          'af-title' => 'Self Assessment Survey - Full Version',
+          'style' => 'border: 3px solid #617de6; background-color: #ffffff',
+          '#children' => 
+          array (
+            0 => 
+            array (
+              '#text' => '
+      ',
+            ),
+            1 => 
+            array (
+              '#tag' => 'div',
+              'class' => 'af-markup',
+              '#children' => 
+              array (
+                0 => 
+                array (
+                  '#text' => '
+        
+        ',
+                ),
+                1 => 
+                array (
+                  '#tag' => 'p',
+                  '#children' => 
+                  array (
+                    0 => 
+                    array (
+                      '#text' => 'Please rate each statement using the scale: 1 = Strongly Disagree, 2 = Disagree, 3 = Neutral, 4 = Agree, 5 = Strongly Agree',
+                    ),
+                  ),
+                ),
+                2 => 
+                array (
+                  '#text' => '
+        ',
+                ),
+                3 => 
+                array (
+                  '#tag' => 'p',
+                  '#children' => 
+                  array (
+                    0 => 
+                    array (
+                      '#tag' => 'strong',
+                      '#children' => 
+                      array (
+                        0 => 
+                        array (
+                          '#text' => 'Full Version: 35 Questions',
+                        ),
+                      ),
+                    ),
+                    1 => 
+                    array (
+                      '#text' => ' (comprehensive assessment covering all 6 organizational areas with 5 questions each, plus 5 additional questions)',
+                    ),
+                  ),
+                ),
+                4 => 
+                array (
+                  '#text' => '
+      
+      ',
+                ),
+              ),
+            ),
+            2 => 
+            array (
+              '#text' => '
+      ',
+            ),
+            3 => 
+            array (
+              '#tag' => 'div',
+              'class' => 'af-markup',
+              '#children' => 
+              array (
+                0 => 
+                array (
+                  '#text' => '
+        
+          ',
+                ),
+                1 => 
+                array (
+                  '#tag' => 'h4',
+                  'style' => 'color: #617de6; border-bottom: 2px solid #617de6; padding-bottom: 5px; margin-top: 20px;',
+                  '#children' => 
+                  array (
+                    0 => 
+                    array (
+                      '#text' => 'Mission and Vision',
+                    ),
+                  ),
+                ),
+                2 => 
+                array (
+                  '#text' => '
+        
+      ',
+                ),
+              ),
+            ),
+            4 => 
+            array (
+              '#text' => '
+      ',
+            ),
+            5 => 
+            array (
+              '#tag' => 'af-field',
+              'name' => 'Unified_Self_Assessment_Survey.q01_mission_clear',
+              'defn' => 
+              array (
+                'required' => true,
+                'input_attrs' => 
+                array (
+                ),
+                'help_pre' => NULL,
+              ),
+            ),
+            6 => 
+            array (
+              '#text' => '
+      ',
+            ),
+            7 => 
+            array (
+              '#tag' => 'af-field',
+              'name' => 'Unified_Self_Assessment_Survey.q02_vision_inspiring',
+              'defn' => 
+              array (
+                'required' => true,
+                'input_attrs' => 
+                array (
+                ),
+              ),
+            ),
+            8 => 
+            array (
+              '#text' => '
+      ',
+            ),
+            9 => 
+            array (
+              '#tag' => 'af-field',
+              'name' => 'Unified_Self_Assessment_Survey.q03_values_guide',
+              'defn' => 
+              array (
+                'required' => true,
+                'input_attrs' => 
+                array (
+                ),
+              ),
+            ),
+            10 => 
+            array (
+              '#text' => '
+      ',
+            ),
+            11 => 
+            array (
+              '#tag' => 'af-field',
+              'name' => 'Unified_Self_Assessment_Survey.q04_mission_relevant',
+              'defn' => 
+              array (
+                'required' => true,
+                'input_attrs' => 
+                array (
+                ),
+              ),
+            ),
+            12 => 
+            array (
+              '#text' => '
+      ',
+            ),
+            13 => 
+            array (
+              '#tag' => 'af-field',
+              'name' => 'Unified_Self_Assessment_Survey.q05_strategic_alignment',
+              'defn' => 
+              array (
+                'required' => true,
+                'input_attrs' => 
+                array (
+                ),
+              ),
+            ),
+            14 => 
+            array (
+              '#text' => '
+      ',
+            ),
+            15 => 
+            array (
+              '#tag' => 'div',
+              'class' => 'af-markup',
+              '#children' => 
+              array (
+                0 => 
+                array (
+                  '#text' => '
+        
+          ',
+                ),
+                1 => 
+                array (
+                  '#tag' => 'h4',
+                  'style' => 'color: #617de6; border-bottom: 2px solid #617de6; padding-bottom: 5px; margin-top: 20px;',
+                  '#children' => 
+                  array (
+                    0 => 
+                    array (
+                      '#text' => 'Governance',
+                    ),
+                  ),
+                ),
+                2 => 
+                array (
+                  '#text' => '
+        
+      ',
+                ),
+              ),
+            ),
+            16 => 
+            array (
+              '#text' => '
+      ',
+            ),
+            17 => 
+            array (
+              '#tag' => 'af-field',
+              'name' => 'Unified_Self_Assessment_Survey.q06_board_effective',
+              'defn' => 
+              array (
+                'required' => true,
+                'input_attrs' => 
+                array (
+                ),
+              ),
+            ),
+            18 => 
+            array (
+              '#text' => '
+      ',
+            ),
+            19 => 
+            array (
+              '#tag' => 'af-field',
+              'name' => 'Unified_Self_Assessment_Survey.q07_roles_clear',
+              'defn' => 
+              array (
+                'required' => true,
+                'input_attrs' => 
+                array (
+                ),
+              ),
+            ),
+            20 => 
+            array (
+              '#text' => '
+      ',
+            ),
+            21 => 
+            array (
+              '#tag' => 'af-field',
+              'name' => 'Unified_Self_Assessment_Survey.q08_policies_current',
+              'defn' => 
+              array (
+                'required' => true,
+                'input_attrs' => 
+                array (
+                ),
+              ),
+            ),
+            22 => 
+            array (
+              '#text' => '
+      ',
+            ),
+            23 => 
+            array (
+              '#tag' => 'af-field',
+              'name' => 'Unified_Self_Assessment_Survey.q09_board_diverse',
+              'defn' => 
+              array (
+                'required' => true,
+                'input_attrs' => 
+                array (
+                ),
+              ),
+            ),
+            24 => 
+            array (
+              '#text' => '
+      ',
+            ),
+            25 => 
+            array (
+              '#tag' => 'af-field',
+              'name' => 'Unified_Self_Assessment_Survey.q10_board_recruitment',
+              'defn' => 
+              array (
+                'required' => true,
+                'input_attrs' => 
+                array (
+                ),
+              ),
+            ),
+            26 => 
+            array (
+              '#text' => '
+      ',
+            ),
+            27 => 
+            array (
+              '#tag' => 'div',
+              'class' => 'af-markup',
+              '#children' => 
+              array (
+                0 => 
+                array (
+                  '#text' => '
+        
+          ',
+                ),
+                1 => 
+                array (
+                  '#tag' => 'h4',
+                  'style' => 'color: #617de6; border-bottom: 2px solid #617de6; padding-bottom: 5px; margin-top: 20px;',
+                  '#children' => 
+                  array (
+                    0 => 
+                    array (
+                      '#text' => 'Financial Management',
+                    ),
+                  ),
+                ),
+                2 => 
+                array (
+                  '#text' => '
+        
+      ',
+                ),
+              ),
+            ),
+            28 => 
+            array (
+              '#text' => '
+      ',
+            ),
+            29 => 
+            array (
+              '#tag' => 'af-field',
+              'name' => 'Unified_Self_Assessment_Survey.q11_financial_stable',
+              'defn' => 
+              array (
+                'required' => true,
+                'input_attrs' => 
+                array (
+                ),
+              ),
+            ),
+            30 => 
+            array (
+              '#text' => '
+      ',
+            ),
+            31 => 
+            array (
+              '#tag' => 'af-field',
+              'name' => 'Unified_Self_Assessment_Survey.q12_budget_process',
+              'defn' => 
+              array (
+                'required' => true,
+                'input_attrs' => 
+                array (
+                ),
+              ),
+            ),
+            32 => 
+            array (
+              '#text' => '
+      ',
+            ),
+            33 => 
+            array (
+              '#tag' => 'af-field',
+              'name' => 'Unified_Self_Assessment_Survey.q13_revenue_diverse',
+              'defn' => 
+              array (
+                'required' => true,
+                'input_attrs' => 
+                array (
+                ),
+              ),
+            ),
+            34 => 
+            array (
+              '#text' => '
+      ',
+            ),
+            35 => 
+            array (
+              '#tag' => 'af-field',
+              'name' => 'Unified_Self_Assessment_Survey.q14_financial_controls',
+              'defn' => 
+              array (
+                'required' => true,
+                'input_attrs' => 
+                array (
+                ),
+              ),
+            ),
+            36 => 
+            array (
+              '#text' => '
+      ',
+            ),
+            37 => 
+            array (
+              '#tag' => 'af-field',
+              'name' => 'Unified_Self_Assessment_Survey.q15_reserves_adequate',
+              'defn' => 
+              array (
+                'required' => true,
+                'input_attrs' => 
+                array (
+                ),
+              ),
+            ),
+            38 => 
+            array (
+              '#text' => '
+      ',
+            ),
+            39 => 
+            array (
+              '#tag' => 'div',
+              'class' => 'af-markup',
+              '#children' => 
+              array (
+                0 => 
+                array (
+                  '#text' => '
+        
+          ',
+                ),
+                1 => 
+                array (
+                  '#tag' => 'h4',
+                  'style' => 'color: #617de6; border-bottom: 2px solid #617de6; padding-bottom: 5px; margin-top: 20px;',
+                  '#children' => 
+                  array (
+                    0 => 
+                    array (
+                      '#text' => 'Program Effectiveness',
+                    ),
+                  ),
+                ),
+                2 => 
+                array (
+                  '#text' => '
+        
+      ',
+                ),
+              ),
+            ),
+            40 => 
+            array (
+              '#text' => '
+      ',
+            ),
+            41 => 
+            array (
+              '#tag' => 'af-field',
+              'name' => 'Unified_Self_Assessment_Survey.q16_programs_effective',
+              'defn' => 
+              array (
+                'required' => true,
+                'input_attrs' => 
+                array (
+                ),
+              ),
+            ),
+            42 => 
+            array (
+              '#text' => '
+      ',
+            ),
+            43 => 
+            array (
+              '#tag' => 'af-field',
+              'name' => 'Unified_Self_Assessment_Survey.q17_data_collection',
+              'defn' => 
+              array (
+                'required' => true,
+                'input_attrs' => 
+                array (
+                ),
+              ),
+            ),
+            44 => 
+            array (
+              '#text' => '
+      ',
+            ),
+            45 => 
+            array (
+              '#tag' => 'af-field',
+              'name' => 'Unified_Self_Assessment_Survey.q18_continuous_improvement',
+              'defn' => 
+              array (
+                'required' => true,
+                'input_attrs' => 
+                array (
+                ),
+              ),
+            ),
+            46 => 
+            array (
+              '#text' => '
+      ',
+            ),
+            47 => 
+            array (
+              '#tag' => 'af-field',
+              'name' => 'Unified_Self_Assessment_Survey.q19_program_innovation',
+              'defn' => 
+              array (
+                'required' => true,
+                'input_attrs' => 
+                array (
+                ),
+              ),
+            ),
+            48 => 
+            array (
+              '#text' => '
+      ',
+            ),
+            49 => 
+            array (
+              '#tag' => 'af-field',
+              'name' => 'Unified_Self_Assessment_Survey.q20_impact_measurement',
+              'defn' => 
+              array (
+                'required' => true,
+                'input_attrs' => 
+                array (
+                ),
+              ),
+            ),
+            50 => 
+            array (
+              '#text' => '
+      ',
+            ),
+            51 => 
+            array (
+              '#tag' => 'div',
+              'class' => 'af-markup',
+              '#children' => 
+              array (
+                0 => 
+                array (
+                  '#text' => '
+        
+          ',
+                ),
+                1 => 
+                array (
+                  '#tag' => 'h4',
+                  'style' => 'color: #617de6; border-bottom: 2px solid #617de6; padding-bottom: 5px; margin-top: 20px;',
+                  '#children' => 
+                  array (
+                    0 => 
+                    array (
+                      '#text' => 'Human Resources',
+                    ),
+                  ),
+                ),
+                2 => 
+                array (
+                  '#text' => '
+        
+      ',
+                ),
+              ),
+            ),
+            52 => 
+            array (
+              '#text' => '
+      ',
+            ),
+            53 => 
+            array (
+              '#tag' => 'af-field',
+              'name' => 'Unified_Self_Assessment_Survey.q21_staff_skilled',
+              'defn' => 
+              array (
+                'required' => true,
+                'input_attrs' => 
+                array (
+                ),
+              ),
+            ),
+            54 => 
+            array (
+              '#text' => '
+      ',
+            ),
+            55 => 
+            array (
+              '#tag' => 'af-field',
+              'name' => 'Unified_Self_Assessment_Survey.q22_professional_development',
+              'defn' => 
+              array (
+                'required' => true,
+                'input_attrs' => 
+                array (
+                ),
+              ),
+            ),
+            56 => 
+            array (
+              '#text' => '
+      ',
+            ),
+            57 => 
+            array (
+              '#tag' => 'af-field',
+              'name' => 'Unified_Self_Assessment_Survey.q23_succession_planning',
+              'defn' => 
+              array (
+                'required' => true,
+                'input_attrs' => 
+                array (
+                ),
+              ),
+            ),
+            58 => 
+            array (
+              '#text' => '
+      ',
+            ),
+            59 => 
+            array (
+              '#tag' => 'af-field',
+              'name' => 'Unified_Self_Assessment_Survey.q24_compensation_competitive',
+              'defn' => 
+              array (
+                'required' => true,
+                'input_attrs' => 
+                array (
+                ),
+              ),
+            ),
+            60 => 
+            array (
+              '#text' => '
+      ',
+            ),
+            61 => 
+            array (
+              '#tag' => 'af-field',
+              'name' => 'Unified_Self_Assessment_Survey.q25_performance_management',
+              'defn' => 
+              array (
+                'required' => true,
+                'input_attrs' => 
+                array (
+                ),
+              ),
+            ),
+            62 => 
+            array (
+              '#text' => '
+      ',
+            ),
+            63 => 
+            array (
+              '#tag' => 'div',
+              'class' => 'af-markup',
+              '#children' => 
+              array (
+                0 => 
+                array (
+                  '#text' => '
+        
+          ',
+                ),
+                1 => 
+                array (
+                  '#tag' => 'h4',
+                  'style' => 'color: #617de6; border-bottom: 2px solid #617de6; padding-bottom: 5px; margin-top: 20px;',
+                  '#children' => 
+                  array (
+                    0 => 
+                    array (
+                      '#text' => 'Organizational Culture',
+                    ),
+                  ),
+                ),
+                2 => 
+                array (
+                  '#text' => '
+        
+      ',
+                ),
+              ),
+            ),
+            64 => 
+            array (
+              '#text' => '
+      ',
+            ),
+            65 => 
+            array (
+              '#tag' => 'af-field',
+              'name' => 'Unified_Self_Assessment_Survey.q26_communication_open',
+              'defn' => 
+              array (
+                'required' => true,
+                'input_attrs' => 
+                array (
+                ),
+              ),
+            ),
+            66 => 
+            array (
+              '#text' => '
+      ',
+            ),
+            67 => 
+            array (
+              '#tag' => 'af-field',
+              'name' => 'Unified_Self_Assessment_Survey.q27_culture_positive',
+              'defn' => 
+              array (
+                'required' => true,
+                'input_attrs' => 
+                array (
+                ),
+              ),
+            ),
+            68 => 
+            array (
+              '#text' => '
+      ',
+            ),
+            69 => 
+            array (
+              '#tag' => 'af-field',
+              'name' => 'Unified_Self_Assessment_Survey.q28_change_adaptable',
+              'defn' => 
+              array (
+                'required' => true,
+                'input_attrs' => 
+                array (
+                ),
+              ),
+            ),
+            70 => 
+            array (
+              '#text' => '
+      ',
+            ),
+            71 => 
+            array (
+              '#tag' => 'af-field',
+              'name' => 'Unified_Self_Assessment_Survey.q29_collaboration_strong',
+              'defn' => 
+              array (
+                'required' => true,
+                'input_attrs' => 
+                array (
+                ),
+              ),
+            ),
+            72 => 
+            array (
+              '#text' => '
+      ',
+            ),
+            73 => 
+            array (
+              '#tag' => 'af-field',
+              'name' => 'Unified_Self_Assessment_Survey.q30_learning_culture',
+              'defn' => 
+              array (
+                'required' => true,
+                'input_attrs' => 
+                array (
+                ),
+              ),
+            ),
+            74 => 
+            array (
+              '#text' => '
+      ',
+            ),
+            75 => 
+            array (
+              '#tag' => 'div',
+              'class' => 'af-markup',
+              '#children' => 
+              array (
+                0 => 
+                array (
+                  '#text' => '
+        
+          ',
+                ),
+                1 => 
+                array (
+                  '#tag' => 'h4',
+                  'style' => 'color: #617de6; border-bottom: 2px solid #617de6; padding-bottom: 5px; margin-top: 20px;',
+                  '#children' => 
+                  array (
+                    0 => 
+                    array (
+                      '#text' => 'External Relations',
+                    ),
+                  ),
+                ),
+                2 => 
+                array (
+                  '#text' => '
+        
+      ',
+                ),
+              ),
+            ),
+            76 => 
+            array (
+              '#text' => '
+      ',
+            ),
+            77 => 
+            array (
+              '#tag' => 'af-field',
+              'name' => 'Unified_Self_Assessment_Survey.q31_stakeholder_engaged',
+              'defn' => 
+              array (
+                'required' => true,
+                'input_attrs' => 
+                array (
+                ),
+              ),
+            ),
+            78 => 
+            array (
+              '#text' => '
+      ',
+            ),
+            79 => 
+            array (
+              '#tag' => 'af-field',
+              'name' => 'Unified_Self_Assessment_Survey.q32_partnerships_strong',
+              'defn' => 
+              array (
+                'required' => true,
+                'input_attrs' => 
+                array (
+                ),
+              ),
+            ),
+            80 => 
+            array (
+              '#text' => '
+      ',
+            ),
+            81 => 
+            array (
+              '#tag' => 'af-field',
+              'name' => 'Unified_Self_Assessment_Survey.q33_reputation_positive',
+              'defn' => 
+              array (
+                'required' => true,
+                'input_attrs' => 
+                array (
+                ),
+              ),
+            ),
+            82 => 
+            array (
+              '#text' => '
+      ',
+            ),
+            83 => 
+            array (
+              '#tag' => 'af-field',
+              'name' => 'Unified_Self_Assessment_Survey.q34_marketing_effective',
+              'defn' => 
+              array (
+                'required' => true,
+                'input_attrs' => 
+                array (
+                ),
+              ),
+            ),
+            84 => 
+            array (
+              '#text' => '
+      ',
+            ),
+            85 => 
+            array (
+              '#tag' => 'af-field',
+              'name' => 'Unified_Self_Assessment_Survey.q35_advocacy_engaged',
+              'defn' => 
+              array (
+                'required' => true,
+                'input_attrs' => 
+                array (
+                ),
+              ),
+            ),
+            86 => 
+            array (
+              '#text' => '
+    ',
+            ),
+          ),
+        ),
+        6 => 
+        array (
+          '#text' => '
+  ',
+        ),
+      ),
+    ),
+    8 => 
+    array (
+      '#text' => '
+  ',
+    ),
+    9 => 
+    array (
+      '#tag' => 'div',
+      '#children' => 
+      array (
+        0 => 
+        array (
+          '#text' => '
+    ',
+        ),
+        1 => 
+        array (
+          '#tag' => 'div',
+          '#children' => 
+          array (
+            0 => 
+            array (
+              '#tag' => 'div',
+              '#children' => 
+              array (
+                0 => 
+                array (
+                  '#text' => '
+        ',
+                ),
+                1 => 
+                array (
+                  '#tag' => 'af-field',
+                  'name' => 'Full_Self_Assessment_Survey.mission_clear',
+                  'defn' => 
+                  array (
+                    'required' => true,
+                    'input_attrs' => 
+                    array (
+                    ),
+                  ),
+                ),
+                2 => 
+                array (
+                  '#text' => '
+        ',
+                ),
+                3 => 
+                array (
+                  '#tag' => 'af-field',
+                  'name' => 'Full_Self_Assessment_Survey.vision_inspiring',
+                  'defn' => 
+                  array (
+                    'required' => true,
+                    'input_attrs' => 
+                    array (
+                    ),
+                  ),
+                ),
+                4 => 
+                array (
+                  '#text' => '
+        ',
+                ),
+                5 => 
+                array (
+                  '#tag' => 'af-field',
+                  'name' => 'Full_Self_Assessment_Survey.values_guide',
+                  'defn' => 
+                  array (
+                    'required' => true,
+                    'input_attrs' => 
+                    array (
+                    ),
+                  ),
+                ),
+                6 => 
+                array (
+                  '#text' => '
+        ',
+                ),
+                7 => 
+                array (
+                  '#tag' => 'af-field',
+                  'name' => 'Full_Self_Assessment_Survey.mission_relevant',
+                  'defn' => 
+                  array (
+                    'required' => true,
+                    'input_attrs' => 
+                    array (
+                    ),
+                  ),
+                ),
+                8 => 
+                array (
+                  '#text' => '
+        ',
+                ),
+                9 => 
+                array (
+                  '#tag' => 'af-field',
+                  'name' => 'Full_Self_Assessment_Survey.strategic_alignment',
+                  'defn' => 
+                  array (
+                    'required' => true,
+                    'input_attrs' => 
+                    array (
+                    ),
+                  ),
+                ),
+                10 => 
+                array (
+                  '#text' => '
+        ',
+                ),
+                11 => 
+                array (
+                  '#tag' => 'af-field',
+                  'name' => 'Full_Self_Assessment_Survey.board_effective',
+                  'defn' => 
+                  array (
+                    'required' => true,
+                    'input_attrs' => 
+                    array (
+                    ),
+                  ),
+                ),
+                12 => 
+                array (
+                  '#text' => '
+        ',
+                ),
+                13 => 
+                array (
+                  '#tag' => 'af-field',
+                  'name' => 'Full_Self_Assessment_Survey.roles_clear',
+                  'defn' => 
+                  array (
+                    'required' => true,
+                    'input_attrs' => 
+                    array (
+                    ),
+                  ),
+                ),
+                14 => 
+                array (
+                  '#text' => '
+        ',
+                ),
+                15 => 
+                array (
+                  '#tag' => 'af-field',
+                  'name' => 'Full_Self_Assessment_Survey.policies_current',
+                  'defn' => 
+                  array (
+                    'required' => true,
+                    'input_attrs' => 
+                    array (
+                    ),
+                  ),
+                ),
+                16 => 
+                array (
+                  '#text' => '
+        ',
+                ),
+                17 => 
+                array (
+                  '#tag' => 'af-field',
+                  'name' => 'Full_Self_Assessment_Survey.board_diverse',
+                  'defn' => 
+                  array (
+                    'required' => true,
+                    'input_attrs' => 
+                    array (
+                    ),
+                  ),
+                ),
+                18 => 
+                array (
+                  '#text' => '
+        ',
+                ),
+                19 => 
+                array (
+                  '#tag' => 'af-field',
+                  'name' => 'Full_Self_Assessment_Survey.board_recruitment',
+                  'defn' => 
+                  array (
+                    'required' => true,
+                    'input_attrs' => 
+                    array (
+                    ),
+                  ),
+                ),
+                20 => 
+                array (
+                  '#text' => '
+        ',
+                ),
+                21 => 
+                array (
+                  '#tag' => 'af-field',
+                  'name' => 'Full_Self_Assessment_Survey.financial_stable',
+                  'defn' => 
+                  array (
+                    'required' => true,
+                    'input_attrs' => 
+                    array (
+                    ),
+                  ),
+                ),
+                22 => 
+                array (
+                  '#text' => '
+        ',
+                ),
+                23 => 
+                array (
+                  '#tag' => 'af-field',
+                  'name' => 'Full_Self_Assessment_Survey.budget_process',
+                  'defn' => 
+                  array (
+                    'required' => true,
+                    'input_attrs' => 
+                    array (
+                    ),
+                  ),
+                ),
+                24 => 
+                array (
+                  '#text' => '
+        ',
+                ),
+                25 => 
+                array (
+                  '#tag' => 'af-field',
+                  'name' => 'Full_Self_Assessment_Survey.revenue_diverse',
+                  'defn' => 
+                  array (
+                    'required' => true,
+                    'input_attrs' => 
+                    array (
+                    ),
+                  ),
+                ),
+                26 => 
+                array (
+                  '#text' => '
+        ',
+                ),
+                27 => 
+                array (
+                  '#tag' => 'af-field',
+                  'name' => 'Full_Self_Assessment_Survey.financial_controls',
+                  'defn' => 
+                  array (
+                    'required' => true,
+                    'input_attrs' => 
+                    array (
+                    ),
+                  ),
+                ),
+                28 => 
+                array (
+                  '#text' => '
+        ',
+                ),
+                29 => 
+                array (
+                  '#tag' => 'af-field',
+                  'name' => 'Full_Self_Assessment_Survey.reserves_adequate',
+                  'defn' => 
+                  array (
+                    'required' => true,
+                    'input_attrs' => 
+                    array (
+                    ),
+                  ),
+                ),
+                30 => 
+                array (
+                  '#text' => '
+        ',
+                ),
+                31 => 
+                array (
+                  '#tag' => 'af-field',
+                  'name' => 'Full_Self_Assessment_Survey.programs_effective',
+                  'defn' => 
+                  array (
+                    'required' => true,
+                    'input_attrs' => 
+                    array (
+                    ),
+                  ),
+                ),
+                32 => 
+                array (
+                  '#text' => '
+        ',
+                ),
+                33 => 
+                array (
+                  '#tag' => 'af-field',
+                  'name' => 'Full_Self_Assessment_Survey.data_collection',
+                  'defn' => 
+                  array (
+                    'required' => true,
+                    'input_attrs' => 
+                    array (
+                    ),
+                  ),
+                ),
+                34 => 
+                array (
+                  '#text' => '
+        ',
+                ),
+                35 => 
+                array (
+                  '#tag' => 'af-field',
+                  'name' => 'Full_Self_Assessment_Survey.continuous_improvement',
+                  'defn' => 
+                  array (
+                    'required' => true,
+                    'input_attrs' => 
+                    array (
+                    ),
+                  ),
+                ),
+                36 => 
+                array (
+                  '#text' => '
+        ',
+                ),
+                37 => 
+                array (
+                  '#tag' => 'af-field',
+                  'name' => 'Full_Self_Assessment_Survey.program_innovation',
+                  'defn' => 
+                  array (
+                    'required' => true,
+                    'input_attrs' => 
+                    array (
+                    ),
+                  ),
+                ),
+                38 => 
+                array (
+                  '#text' => '
+        ',
+                ),
+                39 => 
+                array (
+                  '#tag' => 'af-field',
+                  'name' => 'Full_Self_Assessment_Survey.impact_measurement',
+                  'defn' => 
+                  array (
+                    'required' => true,
+                    'input_attrs' => 
+                    array (
+                    ),
+                  ),
+                ),
+                40 => 
+                array (
+                  '#text' => '
+        ',
+                ),
+                41 => 
+                array (
+                  '#tag' => 'af-field',
+                  'name' => 'Full_Self_Assessment_Survey.staff_skilled',
+                  'defn' => 
+                  array (
+                    'required' => true,
+                    'input_attrs' => 
+                    array (
+                    ),
+                  ),
+                ),
+                42 => 
+                array (
+                  '#text' => '
+        ',
+                ),
+                43 => 
+                array (
+                  '#tag' => 'af-field',
+                  'name' => 'Full_Self_Assessment_Survey.professional_development',
+                  'defn' => 
+                  array (
+                    'required' => true,
+                    'input_attrs' => 
+                    array (
+                    ),
+                  ),
+                ),
+                44 => 
+                array (
+                  '#text' => '
+        ',
+                ),
+                45 => 
+                array (
+                  '#tag' => 'af-field',
+                  'name' => 'Full_Self_Assessment_Survey.succession_planning',
+                  'defn' => 
+                  array (
+                    'required' => true,
+                    'input_attrs' => 
+                    array (
+                    ),
+                  ),
+                ),
+                46 => 
+                array (
+                  '#text' => '
+        ',
+                ),
+                47 => 
+                array (
+                  '#tag' => 'af-field',
+                  'name' => 'Full_Self_Assessment_Survey.compensation_competitive',
+                  'defn' => 
+                  array (
+                    'required' => true,
+                    'input_attrs' => 
+                    array (
+                    ),
+                  ),
+                ),
+                48 => 
+                array (
+                  '#text' => '
+        ',
+                ),
+                49 => 
+                array (
+                  '#tag' => 'af-field',
+                  'name' => 'Full_Self_Assessment_Survey.performance_management',
+                  'defn' => 
+                  array (
+                    'required' => true,
+                    'input_attrs' => 
+                    array (
+                    ),
+                  ),
+                ),
+                50 => 
+                array (
+                  '#text' => '
+        ',
+                ),
+                51 => 
+                array (
+                  '#tag' => 'af-field',
+                  'name' => 'Full_Self_Assessment_Survey.communication_open',
+                  'defn' => 
+                  array (
+                    'required' => true,
+                    'input_attrs' => 
+                    array (
+                    ),
+                  ),
+                ),
+                52 => 
+                array (
+                  '#text' => '
+        ',
+                ),
+                53 => 
+                array (
+                  '#tag' => 'af-field',
+                  'name' => 'Full_Self_Assessment_Survey.culture_positive',
+                  'defn' => 
+                  array (
+                    'required' => true,
+                    'input_attrs' => 
+                    array (
+                    ),
+                  ),
+                ),
+                54 => 
+                array (
+                  '#text' => '
+        ',
+                ),
+                55 => 
+                array (
+                  '#tag' => 'af-field',
+                  'name' => 'Full_Self_Assessment_Survey.change_adaptable',
+                  'defn' => 
+                  array (
+                    'required' => true,
+                    'input_attrs' => 
+                    array (
+                    ),
+                  ),
+                ),
+                56 => 
+                array (
+                  '#text' => '
+        ',
+                ),
+                57 => 
+                array (
+                  '#tag' => 'af-field',
+                  'name' => 'Full_Self_Assessment_Survey.collaboration_strong',
+                  'defn' => 
+                  array (
+                    'required' => true,
+                    'input_attrs' => 
+                    array (
+                    ),
+                  ),
+                ),
+                58 => 
+                array (
+                  '#text' => '
+        ',
+                ),
+                59 => 
+                array (
+                  '#tag' => 'af-field',
+                  'name' => 'Full_Self_Assessment_Survey.learning_culture',
+                  'defn' => 
+                  array (
+                    'required' => true,
+                    'input_attrs' => 
+                    array (
+                    ),
+                  ),
+                ),
+                60 => 
+                array (
+                  '#text' => '
+        ',
+                ),
+                61 => 
+                array (
+                  '#tag' => 'af-field',
+                  'name' => 'Full_Self_Assessment_Survey.stakeholder_engaged',
+                  'defn' => 
+                  array (
+                    'required' => true,
+                    'input_attrs' => 
+                    array (
+                    ),
+                  ),
+                ),
+                62 => 
+                array (
+                  '#text' => '
+        ',
+                ),
+                63 => 
+                array (
+                  '#tag' => 'af-field',
+                  'name' => 'Full_Self_Assessment_Survey.partnerships_strong',
+                  'defn' => 
+                  array (
+                    'required' => true,
+                    'input_attrs' => 
+                    array (
+                    ),
+                  ),
+                ),
+                64 => 
+                array (
+                  '#text' => '
+        ',
+                ),
+                65 => 
+                array (
+                  '#tag' => 'af-field',
+                  'name' => 'Full_Self_Assessment_Survey.reputation_positive',
+                  'defn' => 
+                  array (
+                    'required' => true,
+                    'input_attrs' => 
+                    array (
+                    ),
+                  ),
+                ),
+                66 => 
+                array (
+                  '#text' => '
+        ',
+                ),
+                67 => 
+                array (
+                  '#tag' => 'af-field',
+                  'name' => 'Full_Self_Assessment_Survey.marketing_effective',
+                  'defn' => 
+                  array (
+                    'required' => true,
+                    'input_attrs' => 
+                    array (
+                    ),
+                  ),
+                ),
+                68 => 
+                array (
+                  '#text' => '
+        ',
+                ),
+                69 => 
+                array (
+                  '#tag' => 'af-field',
+                  'name' => 'Full_Self_Assessment_Survey.advocacy_engaged',
+                  'defn' => 
+                  array (
+                    'required' => true,
+                    'input_attrs' => 
+                    array (
+                    ),
+                  ),
+                ),
+                70 => 
+                array (
+                  '#text' => '
+      ',
+                ),
+              ),
+            ),
+          ),
+        ),
+        2 => 
+        array (
+          '#text' => '
+    ',
+        ),
+        3 => 
+        array (
+          '#tag' => 'div',
+          'class' => 'af-container af-layout-inline',
+          '#children' => 
+          array (
+            0 => 
+            array (
+              '#text' => '
+      ',
+            ),
+            1 => 
+            array (
+              '#tag' => 'button',
+              'class' => 'af-button btn btn-primary',
+              'crm-icon' => 'fa-check',
+              'ng-click' => 'afform.submit()',
+              'ng-if' => 'afform.showSubmitButton',
+              '#children' => 
+              array (
+                0 => 
+                array (
+                  '#text' => 'Submit Survey',
+                ),
+              ),
+            ),
+            2 => 
+            array (
+              '#text' => '
+    ',
+            ),
+          ),
+        ),
+        4 => 
+        array (
+          '#text' => '
+  
+  ',
+        ),
+      ),
+    ),
+    10 => 
+    array (
+      '#text' => '
+',
+    ),
+  ),
+);
+}
+
+// Deprecated function - kept for compatibility
 function createFormLayout($activityTypeValue, $customGroupName, $surveyFields, $surveyTitle, $surveyDescription) {
-    $surveyFieldElements = [];
-    
-    foreach ($surveyFields as $fieldName) {
-        $surveyFieldElements[] = ['#text' => "\n        "];
-        $surveyFieldElements[] = [
-            '#tag' => 'af-field',
-            'name' => $customGroupName . '.' . $fieldName,
-            'defn' => ['required' => true, 'input_attrs' => []]
-        ];
+    // This function is deprecated - use createSASSFormLayout() or createSASFFormLayout() instead
+    if (count($surveyFields) <= 21) {
+        return createSASSFormLayout();
+    } else {
+        return createSASFFormLayout();
     }
-    $surveyFieldElements[] = ['#text' => "\n      "];
-    
-    return [
-        '#tag' => 'af-form',
-        'ctrl' => 'afform',
-        '#children' => [
-            ['#text' => "\n  "],
-            
-            // Organization entity
-            [
-                '#tag' => 'af-entity',
-                'data' => ['source' => $surveyTitle],
-                'type' => 'Organization',
-                'name' => 'Organization1',
-                'label' => 'Organization 1',
-                'actions' => ['create' => false, 'update' => true],
-                'security' => 'FBAC',
-                'url-autofill' => '0',
-                'autofill' => 'relationship:Employer of',
-                'autofill-relationship' => 'Individual1',
-                'contact-dedupe' => 'Organization.Unsupervised'
-            ],
-            
-            ['#text' => "\n  "],
-            
-            // Individual entity
-            [
-                '#tag' => 'af-entity',
-                'data' => ['source' => $surveyTitle],
-                'type' => 'Individual',
-                'name' => 'Individual1', 
-                'label' => 'Individual 1',
-                'actions' => ['create' => true, 'update' => true],
-                'security' => 'FBAC',
-                'autofill' => 'entity_id',
-                'contact-dedupe' => 'Individual.Supervised'
-            ],
-            
-            ['#text' => "\n  "],
-            
-            // Activity entity
-            [
-                '#tag' => 'af-entity',
-                'data' => [
-                    'source_contact_id' => 'Individual1',
-                    'activity_type_id' => (int)$activityTypeValue,
-                    'status_id' => 2 // Completed
-                ],
-                'type' => 'Activity',
-                'name' => 'Activity1',
-                'label' => 'Activity 1', 
-                'actions' => ['create' => true, 'update' => false],
-                'security' => 'FBAC'
-            ],
-            
-            ['#text' => "\n  "],
-            
-            // Main form container
-            [
-                '#tag' => 'div',
-                'class' => 'af-container',
-                '#children' => [
-                    ['#text' => "\n    "],
-                    
-                    // Organization fieldset
-                    [
-                        '#tag' => 'fieldset',
-                        'af-fieldset' => 'Organization1',
-                        'class' => 'af-container af-container-style-pane',
-                        'af-title' => 'Organization Information',
-                        'style' => 'border: 3px solid #619ee6; background-color: #ffffff',
-                        '#children' => [
-                            ['#text' => "\n      "],
-                            [
-                                '#tag' => 'af-field',
-                                'name' => 'organization_name',
-                                'defn' => ['required' => true, 'input_attrs' => []]
-                            ],
-                            ['#text' => "\n    "]
-                        ]
-                    ],
-                    
-                    ['#text' => "\n    "],
-                    
-                    // Individual fieldset
-                    [
-                        '#tag' => 'fieldset',
-                        'af-fieldset' => 'Individual1',
-                        'class' => 'af-container af-container-style-pane',
-                        'af-title' => 'Contact Information',
-                        'style' => 'border: 3px solid #619ee6; background-color: #ffffff',
-                        '#children' => [
-                            ['#text' => "\n      "],
-                            [
-                                '#tag' => 'af-field',
-                                'name' => 'first_name',
-                                'defn' => ['required' => true, 'input_attrs' => []]
-                            ],
-                            ['#text' => "\n      "],
-                            [
-                                '#tag' => 'af-field',
-                                'name' => 'last_name',
-                                'defn' => ['required' => true, 'input_attrs' => []]
-                            ],
-                            ['#text' => "\n      "],
-                            [
-                                '#tag' => 'div',
-                                'af-join' => 'Email',
-                                'actions' => ['update' => true, 'delete' => true],
-                                'data' => ['is_primary' => true],
-                                '#children' => [
-                                    ['#text' => "\n        "],
-                                    [
-                                        '#tag' => 'af-field',
-                                        'name' => 'email',
-                                        'defn' => ['required' => true, 'input_attrs' => []]
-                                    ],
-                                    ['#text' => "\n      "]
-                                ]
-                            ],
-                            ['#text' => "\n    "]
-                        ]
-                    ],
-                    
-                    ['#text' => "\n    "],
-                    
-                    // Survey fieldset
-                    [
-                        '#tag' => 'fieldset',
-                        'af-fieldset' => 'Activity1',
-                        'class' => 'af-container af-container-style-pane',
-                        'af-title' => $surveyTitle,
-                        'style' => 'border: 3px solid #617de6; background-color: #ffffff',
-                        '#children' => array_merge([
-                            ['#text' => "\n      "],
-                            [
-                                '#tag' => 'div',
-                                'class' => 'af-markup',
-                                '#children' => [
-                                    ['#text' => "\n        "],
-                                    [
-                                        '#tag' => 'p',
-                                        '#children' => [
-                                            ['#text' => 'Please rate each statement using the scale: 1 = Strongly Disagree, 2 = Disagree, 3 = Neutral, 4 = Agree, 5 = Strongly Agree']
-                                        ]
-                                    ],
-                                    ['#text' => "\n        "],
-                                    [
-                                        '#tag' => 'p',
-                                        '#children' => [
-                                            ['#text' => '<strong>' . $surveyDescription . '</strong>']
-                                        ]
-                                    ],
-                                    ['#text' => "\n      "]
-                                ]
-                            ]
-                        ], $surveyFieldElements)
-                    ],
-                    
-                    ['#text' => "\n    "],
-                    
-                    // Submit button
-                    [
-                        '#tag' => 'div',
-                        'class' => 'af-container af-layout-inline',
-                        '#children' => [
-                            ['#text' => "\n      "],
-                            [
-                                '#tag' => 'button',
-                                'class' => 'af-button btn btn-primary',
-                                'crm-icon' => 'fa-check',
-                                'ng-click' => 'afform.submit()',
-                                'ng-if' => 'afform.showSubmitButton',
-                                '#children' => [['#text' => 'Submit Survey']]
-                            ],
-                            ['#text' => "\n    "]
-                        ]
-                    ],
-                    
-                    ['#text' => "\n  "]
-                ]
-            ],
-            
-            ['#text' => "\n"]
-        ]
-    ];
 }
 
 ?>

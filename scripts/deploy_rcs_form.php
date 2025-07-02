@@ -205,152 +205,2027 @@ function validateEnvironment($config) {
  * Create the complete RCS form layout
  */
 function createRCSFormLayout($config) {
-    return [
-        '#tag' => 'af-form',
-        'ctrl' => 'afform',
-        '#children' => [
-            ['#text' => "\n  "],
-            
-            // Organization entity (employer)
-            [
-                '#tag' => 'af-entity',
-                'data' => ['source' => 'Request for Consulting Services'],
-                'type' => 'Organization',
-                'name' => 'Organization1',
-                'label' => 'Organization 1',
-                'actions' => ['create' => false, 'update' => true],
-                'security' => 'FBAC',
-                'url-autofill' => '0',
-                'autofill' => 'relationship:Employer of',
-                'autofill-relationship' => 'Individual3',
-                'contact-dedupe' => 'Organization.Unsupervised'
-            ],
-            
-            ['#text' => "\n  "],
-            
-            // Individual entity (President/Board Chair)
-            [
-                '#tag' => 'af-entity',
-                'data' => ['source' => 'Request for Consulting Services'],
-                'type' => 'Individual',
-                'name' => 'Individual1',
-                'label' => 'Individual 1',
-                'actions' => ['create' => true, 'update' => true],
-                'security' => 'FBAC',
-                'autofill' => 'relationship:President of',
-                'autofill-relationship' => 'Organization1',
-                'contact-dedupe' => 'Individual.Supervised'
-            ],
-            
-            ['#text' => "\n  "],
-            
-            // Individual entity (Executive Director)
-            [
-                '#tag' => 'af-entity',
-                'data' => ['source' => 'Request for Consulting Services'],
-                'type' => 'Individual',
-                'name' => 'Individual2',
-                'label' => 'Individual 2',
-                'actions' => ['create' => true, 'update' => true],
-                'security' => 'FBAC',
-                'autofill' => 'relationship:Executive Director of',
-                'autofill-relationship' => 'Organization1',
-                'contact-dedupe' => 'Individual.Supervised'
-            ],
-            
-            ['#text' => "\n  "],
-            
-            // Individual entity (Primary Contact)
-            [
-                '#tag' => 'af-entity',
-                'data' => ['source' => 'Request for Consulting Services'],
-                'type' => 'Individual',
-                'name' => 'Individual3',
-                'label' => 'Individual 3',
-                'actions' => ['create' => false, 'update' => true],
-                'security' => 'FBAC',
-                'url-autofill' => '0',
-                'autofill' => 'entity_id',
-                'contact-dedupe' => 'Individual.Supervised'
-            ],
-            
-            ['#text' => "\n  "],
-            
-            // Case entity (Service Request)
-            [
-                '#tag' => 'af-entity',
-                'data' => [
-                    'contact_id' => 'Organization1',
-                    'case_type_id' => $config['case_types']['service_request']
-                ],
-                'actions' => ['create' => false, 'update' => true],
-                'type' => 'Case',
-                'name' => 'Case1',
-                'label' => 'Case 1',
-                'security' => 'FBAC',
-                'url-autofill' => '0',
-                'case-autofill' => 'entity_id'
-            ],
-            
-            ['#text' => "\n  "],
-            
-            // Main form container
-            [
-                '#tag' => 'div',
-                'class' => 'af-container',
-                '#children' => [
-                    ['#text' => "\n    "],
-                    
-                    // Organization fieldset
-                    createOrganizationFieldset($config),
-                    
-                    ['#text' => "\n    "],
-                    
-                    // President/Board Chair fieldset
-                    createPresidentFieldset($config),
-                    
-                    ['#text' => "\n    "],
-                    
-                    // Executive Director fieldset
-                    createExecutiveDirectorFieldset($config),
-                    
-                    ['#text' => "\n    "],
-                    
-                    // Primary Contact fieldset
-                    createPrimaryContactFieldset($config),
-                    
-                    ['#text' => "\n    "],
-                    
-                    // Request Details fieldset
-                    createRequestFieldset($config),
-                    
-                    ['#text' => "\n    "],
-                    
-                    // Terms & Conditions fieldset
-                    createTermsConditionsFieldset($config),
-                    
-                    ['#text' => "\n    "],
-                    
-                    // Donation fieldset
-                    createDonationFieldset($config),
-                    
-                    ['#text' => "\n    "],
-                    
-                    // Support information
-                    createSupportInfo($config),
-                    
-                    ['#text' => "\n    "],
-                    
-                    // Submit buttons
-                    createSubmitButtons($config),
-                    
-                    ['#text' => "\n  "]
-                ]
-            ],
-            
-            ['#text' => "\n"]
-        ]
-    ];
+    return array (
+  '#tag' => 'af-form',
+  'ctrl' => 'afform',
+  '#children' => 
+  array (
+    0 => 
+    array (
+      '#text' => '
+  ',
+    ),
+    1 => 
+    array (
+      '#tag' => 'af-entity',
+      'data' => 
+      array (
+        'source' => 'Request for Consulting Services',
+      ),
+      'type' => 'Organization',
+      'name' => 'Organization1',
+      'label' => 'Organization 1',
+      'actions' => 
+      array (
+        'create' => false,
+        'update' => true,
+      ),
+      'security' => 'FBAC',
+      'url-autofill' => '0',
+      'autofill' => 'relationship:Employer of',
+      'autofill-relationship' => 'Individual3',
+      'contact-dedupe' => 'Organization.Unsupervised',
+    ),
+    2 => 
+    array (
+      '#text' => '
+  ',
+    ),
+    3 => 
+    array (
+      '#tag' => 'af-entity',
+      'data' => 
+      array (
+        'source' => 'Request for Consulting Services',
+      ),
+      'type' => 'Individual',
+      'name' => 'Individual1',
+      'label' => 'Individual 1',
+      'actions' => 
+      array (
+        'create' => true,
+        'update' => true,
+      ),
+      'security' => 'FBAC',
+      'autofill' => 'relationship:President of',
+      'autofill-relationship' => 'Organization1',
+      'contact-dedupe' => 'Individual.Supervised',
+    ),
+    4 => 
+    array (
+      '#text' => '
+  ',
+    ),
+    5 => 
+    array (
+      '#tag' => 'af-entity',
+      'data' => 
+      array (
+        'source' => 'Request for Consulting Services',
+      ),
+      'type' => 'Individual',
+      'name' => 'Individual2',
+      'label' => 'Individual 2',
+      'actions' => 
+      array (
+        'create' => true,
+        'update' => true,
+      ),
+      'security' => 'FBAC',
+      'autofill' => 'relationship:Executive Director of',
+      'autofill-relationship' => 'Organization1',
+      'contact-dedupe' => 'Individual.Supervised',
+    ),
+    6 => 
+    array (
+      '#text' => '
+  ',
+    ),
+    7 => 
+    array (
+      '#tag' => 'af-entity',
+      'data' => 
+      array (
+        'source' => 'Request for Consulting Services',
+      ),
+      'type' => 'Individual',
+      'name' => 'Individual3',
+      'label' => 'Individual 3',
+      'actions' => 
+      array (
+        'create' => false,
+        'update' => true,
+      ),
+      'security' => 'FBAC',
+      'url-autofill' => '0',
+      'autofill' => 'entity_id',
+      'contact-dedupe' => 'Individual.Supervised',
+    ),
+    8 => 
+    array (
+      '#text' => '
+  ',
+    ),
+    9 => 
+    array (
+      '#tag' => 'af-entity',
+      'data' => 
+      array (
+        'contact_id' => 'Organization1',
+        'case_type_id' => 3,
+      ),
+      'actions' => 
+      array (
+        'create' => false,
+        'update' => true,
+      ),
+      'type' => 'Case',
+      'name' => 'Case1',
+      'label' => 'Case 1',
+      'security' => 'FBAC',
+      'url-autofill' => '0',
+      'case-autofill' => 'entity_id',
+    ),
+    10 => 
+    array (
+      '#text' => '
+  ',
+    ),
+    11 => 
+    array (
+      '#tag' => 'div',
+      'class' => 'af-container',
+      '#children' => 
+      array (
+        0 => 
+        array (
+          '#text' => '
+    ',
+        ),
+        1 => 
+        array (
+          '#tag' => 'fieldset',
+          'af-fieldset' => 'Organization1',
+          'class' => 'af-container af-container-style-pane',
+          'af-title' => 'Organization',
+          'style' => 'border: 3px solid #619ee6; background-color: #ffffff',
+          '#children' => 
+          array (
+            0 => 
+            array (
+              '#text' => '
+      ',
+            ),
+            1 => 
+            array (
+              '#tag' => 'div',
+              'class' => 'af-container af-layout-inline',
+              '#children' => 
+              array (
+                0 => 
+                array (
+                  '#text' => '
+        ',
+                ),
+                1 => 
+                array (
+                  '#tag' => 'af-field',
+                  'name' => 'organization_name',
+                  'defn' => 
+                  array (
+                    'required' => true,
+                    'input_attrs' => 
+                    array (
+                    ),
+                  ),
+                ),
+                2 => 
+                array (
+                  '#text' => '
+        ',
+                ),
+                3 => 
+                array (
+                  '#tag' => 'af-field',
+                  'name' => 'Organization.Industry',
+                  'defn' => 
+                  array (
+                    'label' => 'Industry',
+                    'input_attrs' => 
+                    array (
+                    ),
+                    'required' => true,
+                  ),
+                ),
+                4 => 
+                array (
+                  '#text' => '
+        ',
+                ),
+                5 => 
+                array (
+                  '#tag' => 'af-field',
+                  'name' => 'Organization.Budget',
+                  'defn' => 
+                  array (
+                    'label' => 'Annual Budget',
+                    'input_attrs' => 
+                    array (
+                    ),
+                    'required' => true,
+                  ),
+                ),
+                6 => 
+                array (
+                  '#text' => '
+        ',
+                ),
+                7 => 
+                array (
+                  '#tag' => 'af-field',
+                  'name' => 'Organization._Employees',
+                  'defn' => 
+                  array (
+                    'label' => '# Employees',
+                    'input_attrs' => 
+                    array (
+                    ),
+                    'required' => true,
+                  ),
+                ),
+                8 => 
+                array (
+                  '#text' => '
+        ',
+                ),
+                9 => 
+                array (
+                  '#tag' => 'af-field',
+                  'name' => 'Organization._Volunteers',
+                  'defn' => 
+                  array (
+                    'label' => '# Volunteers',
+                    'input_attrs' => 
+                    array (
+                    ),
+                    'required' => true,
+                  ),
+                ),
+                10 => 
+                array (
+                  '#text' => '
+        ',
+                ),
+                11 => 
+                array (
+                  '#tag' => 'af-field',
+                  'name' => 'Organization.Charity_Status',
+                  'defn' => 
+                  array (
+                    'required' => true,
+                    'input_attrs' => 
+                    array (
+                    ),
+                    'label' => 'Charity Status',
+                  ),
+                ),
+                12 => 
+                array (
+                  '#text' => '
+        ',
+                ),
+                13 => 
+                array (
+                  '#tag' => 'af-field',
+                  'name' => 'Organization.Charity_Business_',
+                  'defn' => 
+                  array (
+                    'label' => 'Charity/Business #',
+                    'input_attrs' => 
+                    array (
+                    ),
+                  ),
+                ),
+                14 => 
+                array (
+                  '#text' => '
+        ',
+                ),
+                15 => 
+                array (
+                  '#tag' => 'af-field',
+                  'name' => 'Organization.Notes',
+                  'defn' => 
+                  array (
+                    'label' => 'Notes',
+                  ),
+                ),
+                16 => 
+                array (
+                  '#text' => '
+      ',
+                ),
+              ),
+            ),
+            2 => 
+            array (
+              '#text' => '
+      ',
+            ),
+            3 => 
+            array (
+              '#tag' => 'div',
+              'af-join' => 'Address',
+              'actions' => 
+              array (
+                'update' => true,
+                'delete' => true,
+              ),
+              'data' => 
+              array (
+                'is_primary' => true,
+              ),
+              '#children' => 
+              array (
+                0 => 
+                array (
+                  '#text' => '
+        ',
+                ),
+                1 => 
+                array (
+                  '#tag' => 'div',
+                  'class' => 'af-container af-layout-inline',
+                  '#children' => 
+                  array (
+                    0 => 
+                    array (
+                      '#text' => '
+          ',
+                    ),
+                    1 => 
+                    array (
+                      '#tag' => 'af-field',
+                      'name' => 'street_address',
+                      'defn' => 
+                      array (
+                        'required' => true,
+                        'input_attrs' => 
+                        array (
+                        ),
+                      ),
+                    ),
+                    2 => 
+                    array (
+                      '#text' => '
+          ',
+                    ),
+                    3 => 
+                    array (
+                      '#tag' => 'af-field',
+                      'name' => 'city',
+                      'defn' => 
+                      array (
+                        'required' => true,
+                        'input_attrs' => 
+                        array (
+                        ),
+                      ),
+                    ),
+                    4 => 
+                    array (
+                      '#text' => '
+          ',
+                    ),
+                    5 => 
+                    array (
+                      '#tag' => 'af-field',
+                      'name' => 'state_province_id',
+                      'defn' => 
+                      array (
+                        'input_type' => 'Select',
+                        'input_attrs' => 
+                        array (
+                        ),
+                        'afform_default' => 1108,
+                        'label' => 'Province',
+                        'required' => true,
+                      ),
+                    ),
+                    6 => 
+                    array (
+                      '#text' => '
+          ',
+                    ),
+                    7 => 
+                    array (
+                      '#tag' => 'af-field',
+                      'name' => 'postal_code',
+                      'defn' => 
+                      array (
+                        'required' => true,
+                        'input_attrs' => 
+                        array (
+                        ),
+                      ),
+                    ),
+                    8 => 
+                    array (
+                      '#text' => '
+          ',
+                    ),
+                    9 => 
+                    array (
+                      '#tag' => 'af-field',
+                      'name' => 'country_id',
+                      'defn' => 
+                      array (
+                        'afform_default' => '1039',
+                        'input_attrs' => 
+                        array (
+                        ),
+                        'input_type' => 'Hidden',
+                        'label' => false,
+                      ),
+                    ),
+                    10 => 
+                    array (
+                      '#text' => '
+          ',
+                    ),
+                    11 => 
+                    array (
+                      '#tag' => 'af-field',
+                      'name' => 'location_type_id',
+                      'defn' => 
+                      array (
+                        'afform_default' => '1',
+                        'input_attrs' => 
+                        array (
+                        ),
+                        'input_type' => 'Hidden',
+                        'required' => false,
+                        'label' => false,
+                      ),
+                    ),
+                    12 => 
+                    array (
+                      '#text' => '
+          ',
+                    ),
+                    13 => 
+                    array (
+                      '#tag' => 'af-field',
+                      'name' => 'is_primary',
+                      'defn' => 
+                      array (
+                        'afform_default' => '1',
+                        'input_type' => 'Hidden',
+                        'label' => false,
+                      ),
+                    ),
+                    14 => 
+                    array (
+                      '#text' => '
+        ',
+                    ),
+                  ),
+                ),
+                2 => 
+                array (
+                  '#text' => '
+      ',
+                ),
+              ),
+            ),
+            4 => 
+            array (
+              '#text' => '
+      ',
+            ),
+            5 => 
+            array (
+              '#tag' => 'div',
+              'af-join' => 'Phone',
+              'actions' => 
+              array (
+                'update' => true,
+                'delete' => true,
+              ),
+              'data' => 
+              array (
+                'is_primary' => true,
+              ),
+              '#children' => 
+              array (
+                0 => 
+                array (
+                  '#text' => '
+        ',
+                ),
+                1 => 
+                array (
+                  '#tag' => 'div',
+                  'class' => 'af-container af-layout-inline',
+                  '#children' => 
+                  array (
+                    0 => 
+                    array (
+                      '#text' => '
+          ',
+                    ),
+                    1 => 
+                    array (
+                      '#tag' => 'af-field',
+                      'name' => 'phone',
+                    ),
+                    2 => 
+                    array (
+                      '#text' => '
+          ',
+                    ),
+                    3 => 
+                    array (
+                      '#tag' => 'af-field',
+                      'name' => 'location_type_id',
+                      'defn' => 
+                      array (
+                        'afform_default' => '1',
+                        'input_attrs' => 
+                        array (
+                        ),
+                        'required' => false,
+                        'label' => false,
+                        'input_type' => 'Hidden',
+                      ),
+                    ),
+                    4 => 
+                    array (
+                      '#text' => '
+          ',
+                    ),
+                    5 => 
+                    array (
+                      '#tag' => 'af-field',
+                      'name' => 'phone_type_id',
+                      'defn' => 
+                      array (
+                        'afform_default' => '1',
+                        'input_attrs' => 
+                        array (
+                        ),
+                        'label' => false,
+                        'input_type' => 'Hidden',
+                      ),
+                    ),
+                    6 => 
+                    array (
+                      '#text' => '
+          ',
+                    ),
+                    7 => 
+                    array (
+                      '#tag' => 'af-field',
+                      'name' => 'is_primary',
+                      'defn' => 
+                      array (
+                        'afform_default' => '1',
+                        'label' => false,
+                        'input_type' => 'Hidden',
+                      ),
+                    ),
+                    8 => 
+                    array (
+                      '#text' => '
+        ',
+                    ),
+                  ),
+                ),
+                2 => 
+                array (
+                  '#text' => '
+      ',
+                ),
+              ),
+            ),
+            6 => 
+            array (
+              '#text' => '
+      ',
+            ),
+            7 => 
+            array (
+              '#tag' => 'div',
+              'af-join' => 'Website',
+              'actions' => 
+              array (
+                'update' => true,
+                'delete' => true,
+              ),
+              '#children' => 
+              array (
+                0 => 
+                array (
+                  '#text' => '
+        ',
+                ),
+                1 => 
+                array (
+                  '#tag' => 'div',
+                  'actions' => 
+                  array (
+                    'update' => true,
+                    'delete' => true,
+                  ),
+                  'class' => 'af-container',
+                  '#children' => 
+                  array (
+                    0 => 
+                    array (
+                      '#text' => '
+          ',
+                    ),
+                    1 => 
+                    array (
+                      '#tag' => 'div',
+                      'class' => 'af-container af-layout-inline',
+                      '#children' => 
+                      array (
+                        0 => 
+                        array (
+                          '#text' => '
+            ',
+                        ),
+                        1 => 
+                        array (
+                          '#tag' => 'af-field',
+                          'name' => 'url',
+                        ),
+                        2 => 
+                        array (
+                          '#text' => '
+            ',
+                        ),
+                        3 => 
+                        array (
+                          '#tag' => 'af-field',
+                          'name' => 'website_type_id',
+                          'defn' => 
+                          array (
+                            'afform_default' => '2',
+                            'input_attrs' => 
+                            array (
+                            ),
+                            'label' => false,
+                            'input_type' => 'Hidden',
+                          ),
+                        ),
+                        4 => 
+                        array (
+                          '#text' => '
+          ',
+                        ),
+                      ),
+                    ),
+                    2 => 
+                    array (
+                      '#text' => '
+        ',
+                    ),
+                  ),
+                ),
+                2 => 
+                array (
+                  '#text' => '
+      ',
+                ),
+              ),
+            ),
+            8 => 
+            array (
+              '#text' => '
+    ',
+            ),
+          ),
+        ),
+        2 => 
+        array (
+          '#text' => '
+    ',
+        ),
+        3 => 
+        array (
+          '#tag' => 'fieldset',
+          'af-fieldset' => 'Individual1',
+          'class' => 'af-container af-container-style-pane',
+          'af-title' => 'President / Board Chair',
+          'style' => 'border: 3px solid #619ee6; background-color: #ffffff',
+          '#children' => 
+          array (
+            0 => 
+            array (
+              '#text' => '
+      ',
+            ),
+            1 => 
+            array (
+              '#tag' => 'div',
+              'class' => 'af-container af-layout-inline',
+              '#children' => 
+              array (
+                0 => 
+                array (
+                  '#text' => '
+        ',
+                ),
+                1 => 
+                array (
+                  '#tag' => 'af-field',
+                  'name' => 'first_name',
+                ),
+                2 => 
+                array (
+                  '#text' => '
+        ',
+                ),
+                3 => 
+                array (
+                  '#tag' => 'af-field',
+                  'name' => 'last_name',
+                ),
+                4 => 
+                array (
+                  '#text' => '
+        ',
+                ),
+                5 => 
+                array (
+                  '#tag' => 'div',
+                  'af-join' => 'Email',
+                  'actions' => 
+                  array (
+                    'update' => true,
+                    'delete' => true,
+                  ),
+                  'data' => 
+                  array (
+                    'is_primary' => true,
+                  ),
+                  '#children' => 
+                  array (
+                    0 => 
+                    array (
+                      '#text' => '
+          ',
+                    ),
+                    1 => 
+                    array (
+                      '#tag' => 'div',
+                      'actions' => 
+                      array (
+                        'update' => true,
+                        'delete' => true,
+                      ),
+                      'class' => 'af-container',
+                      '#children' => 
+                      array (
+                        0 => 
+                        array (
+                          '#text' => '
+            ',
+                        ),
+                        1 => 
+                        array (
+                          '#tag' => 'div',
+                          'class' => 'af-container af-layout-inline',
+                          '#children' => 
+                          array (
+                            0 => 
+                            array (
+                              '#text' => '
+              ',
+                            ),
+                            1 => 
+                            array (
+                              '#tag' => 'af-field',
+                              'name' => 'email',
+                              'defn' => 
+                              array (
+                                'required' => false,
+                                'input_attrs' => 
+                                array (
+                                ),
+                              ),
+                            ),
+                            2 => 
+                            array (
+                              '#text' => '
+              ',
+                            ),
+                            3 => 
+                            array (
+                              '#tag' => 'af-field',
+                              'name' => 'location_type_id',
+                              'defn' => 
+                              array (
+                                'afform_default' => '1',
+                                'input_attrs' => 
+                                array (
+                                ),
+                                'required' => false,
+                                'label' => false,
+                                'input_type' => 'Hidden',
+                              ),
+                            ),
+                            4 => 
+                            array (
+                              '#text' => '
+              ',
+                            ),
+                            5 => 
+                            array (
+                              '#tag' => 'af-field',
+                              'name' => 'is_primary',
+                              'defn' => 
+                              array (
+                                'afform_default' => '1',
+                                'label' => false,
+                                'input_type' => 'Hidden',
+                              ),
+                            ),
+                            6 => 
+                            array (
+                              '#text' => '
+            ',
+                            ),
+                          ),
+                        ),
+                        2 => 
+                        array (
+                          '#text' => '
+          ',
+                        ),
+                      ),
+                    ),
+                    2 => 
+                    array (
+                      '#text' => '
+        ',
+                    ),
+                  ),
+                ),
+                6 => 
+                array (
+                  '#text' => '
+        ',
+                ),
+                7 => 
+                array (
+                  '#tag' => 'af-field',
+                  'name' => 'do_not_email',
+                  'defn' => 
+                  array (
+                    'input_type' => 'Select',
+                    'input_attrs' => 
+                    array (
+                    ),
+                    'options' => 
+                    array (
+                      0 => 
+                      array (
+                        'id' => '1',
+                        'label' => 'Do not add to email list',
+                      ),
+                      1 => 
+                      array (
+                        'id' => '0',
+                        'label' => 'Add to email list',
+                      ),
+                    ),
+                    'label' => false,
+                  ),
+                ),
+                8 => 
+                array (
+                  '#text' => '
+        ',
+                ),
+                9 => 
+                array (
+                  '#tag' => 'af-field',
+                  'name' => 'employer_id',
+                  'defn' => 
+                  array (
+                    'afform_default' => 'Organization1',
+                    'input_attrs' => 
+                    array (
+                    ),
+                    'label' => false,
+                    'input_type' => 'Hidden',
+                  ),
+                ),
+                10 => 
+                array (
+                  '#text' => '
+        ',
+                ),
+                11 => 
+                array (
+                  '#tag' => 'af-field',
+                  'name' => 'job_title',
+                  'defn' => 
+                  array (
+                    'input_type' => 'Hidden',
+                    'input_attrs' => 
+                    array (
+                    ),
+                    'label' => false,
+                    'afform_default' => 'President',
+                  ),
+                ),
+                12 => 
+                array (
+                  '#text' => '
+      ',
+                ),
+              ),
+            ),
+            2 => 
+            array (
+              '#text' => '
+    ',
+            ),
+          ),
+        ),
+        4 => 
+        array (
+          '#text' => '
+    ',
+        ),
+        5 => 
+        array (
+          '#tag' => 'fieldset',
+          'af-fieldset' => 'Individual2',
+          'class' => 'af-container af-container-style-pane',
+          'af-title' => 'Executive Director',
+          'style' => 'border: 3px solid #619ee6',
+          '#children' => 
+          array (
+            0 => 
+            array (
+              '#text' => '
+      ',
+            ),
+            1 => 
+            array (
+              '#tag' => 'div',
+              'actions' => 
+              array (
+                'update' => true,
+                'delete' => true,
+              ),
+              'class' => 'af-container',
+              '#children' => 
+              array (
+                0 => 
+                array (
+                  '#text' => '
+        ',
+                ),
+                1 => 
+                array (
+                  '#tag' => 'div',
+                  'class' => 'af-container af-layout-inline',
+                  '#children' => 
+                  array (
+                    0 => 
+                    array (
+                      '#text' => '
+          ',
+                    ),
+                    1 => 
+                    array (
+                      '#tag' => 'af-field',
+                      'name' => 'first_name',
+                    ),
+                    2 => 
+                    array (
+                      '#text' => '
+          ',
+                    ),
+                    3 => 
+                    array (
+                      '#tag' => 'af-field',
+                      'name' => 'last_name',
+                    ),
+                    4 => 
+                    array (
+                      '#text' => '
+          ',
+                    ),
+                    5 => 
+                    array (
+                      '#tag' => 'div',
+                      'af-join' => 'Email',
+                      'actions' => 
+                      array (
+                        'update' => true,
+                        'delete' => true,
+                      ),
+                      'data' => 
+                      array (
+                        'is_primary' => true,
+                      ),
+                      '#children' => 
+                      array (
+                        0 => 
+                        array (
+                          '#text' => '
+            ',
+                        ),
+                        1 => 
+                        array (
+                          '#tag' => 'div',
+                          'class' => 'af-container af-layout-inline',
+                          '#children' => 
+                          array (
+                            0 => 
+                            array (
+                              '#text' => '
+              ',
+                            ),
+                            1 => 
+                            array (
+                              '#tag' => 'af-field',
+                              'name' => 'email',
+                              'defn' => 
+                              array (
+                                'required' => false,
+                                'input_attrs' => 
+                                array (
+                                ),
+                              ),
+                            ),
+                            2 => 
+                            array (
+                              '#text' => '
+              ',
+                            ),
+                            3 => 
+                            array (
+                              '#tag' => 'af-field',
+                              'name' => 'location_type_id',
+                              'defn' => 
+                              array (
+                                'afform_default' => '1',
+                                'input_attrs' => 
+                                array (
+                                ),
+                                'required' => false,
+                                'label' => false,
+                                'input_type' => 'Hidden',
+                              ),
+                            ),
+                            4 => 
+                            array (
+                              '#text' => '
+              ',
+                            ),
+                            5 => 
+                            array (
+                              '#tag' => 'af-field',
+                              'name' => 'is_primary',
+                              'defn' => 
+                              array (
+                                'afform_default' => '1',
+                                'label' => false,
+                                'input_type' => 'Hidden',
+                              ),
+                            ),
+                            6 => 
+                            array (
+                              '#text' => '
+            ',
+                            ),
+                          ),
+                        ),
+                        2 => 
+                        array (
+                          '#text' => '
+          ',
+                        ),
+                      ),
+                    ),
+                    6 => 
+                    array (
+                      '#text' => '
+          ',
+                    ),
+                    7 => 
+                    array (
+                      '#tag' => 'af-field',
+                      'name' => 'do_not_email',
+                      'defn' => 
+                      array (
+                        'input_type' => 'Select',
+                        'input_attrs' => 
+                        array (
+                        ),
+                        'options' => 
+                        array (
+                          0 => 
+                          array (
+                            'id' => '1',
+                            'label' => 'Do not add to email list',
+                          ),
+                          1 => 
+                          array (
+                            'id' => '0',
+                            'label' => 'Add to email list',
+                          ),
+                        ),
+                        'label' => false,
+                      ),
+                    ),
+                    8 => 
+                    array (
+                      '#text' => '
+          ',
+                    ),
+                    9 => 
+                    array (
+                      '#tag' => 'af-field',
+                      'name' => 'employer_id',
+                      'defn' => 
+                      array (
+                        'input_type' => 'Hidden',
+                        'input_attrs' => 
+                        array (
+                        ),
+                        'label' => false,
+                        'afform_default' => 'Organization1',
+                      ),
+                    ),
+                    10 => 
+                    array (
+                      '#text' => '
+          ',
+                    ),
+                    11 => 
+                    array (
+                      '#tag' => 'af-field',
+                      'name' => 'job_title',
+                      'defn' => 
+                      array (
+                        'input_type' => 'Hidden',
+                        'input_attrs' => 
+                        array (
+                        ),
+                        'label' => false,
+                        'afform_default' => 'Executive Director',
+                      ),
+                    ),
+                    12 => 
+                    array (
+                      '#text' => '
+        ',
+                    ),
+                  ),
+                ),
+                2 => 
+                array (
+                  '#text' => '
+      ',
+                ),
+              ),
+            ),
+            2 => 
+            array (
+              '#text' => '
+    ',
+            ),
+          ),
+        ),
+        6 => 
+        array (
+          '#text' => '
+    ',
+        ),
+        7 => 
+        array (
+          '#tag' => 'fieldset',
+          'af-fieldset' => 'Individual3',
+          'class' => 'af-container af-container-style-pane',
+          'af-title' => 'Primary Contact for this Request',
+          'style' => 'border: 3px solid #619ee6',
+          '#children' => 
+          array (
+            0 => 
+            array (
+              '#text' => '
+      ',
+            ),
+            1 => 
+            array (
+              '#tag' => 'div',
+              'class' => 'af-container af-layout-inline',
+              '#children' => 
+              array (
+                0 => 
+                array (
+                  '#text' => '
+        ',
+                ),
+                1 => 
+                array (
+                  '#tag' => 'af-field',
+                  'name' => 'first_name',
+                  'defn' => 
+                  array (
+                    'required' => true,
+                    'input_attrs' => 
+                    array (
+                    ),
+                  ),
+                ),
+                2 => 
+                array (
+                  '#text' => '
+        ',
+                ),
+                3 => 
+                array (
+                  '#tag' => 'af-field',
+                  'name' => 'last_name',
+                  'defn' => 
+                  array (
+                    'required' => true,
+                    'input_attrs' => 
+                    array (
+                    ),
+                  ),
+                ),
+                4 => 
+                array (
+                  '#text' => '
+        ',
+                ),
+                5 => 
+                array (
+                  '#tag' => 'div',
+                  'af-join' => 'Email',
+                  'actions' => 
+                  array (
+                    'update' => true,
+                    'delete' => true,
+                  ),
+                  'data' => 
+                  array (
+                    'is_primary' => true,
+                  ),
+                  '#children' => 
+                  array (
+                    0 => 
+                    array (
+                      '#text' => '
+          ',
+                    ),
+                    1 => 
+                    array (
+                      '#tag' => 'div',
+                      'class' => 'af-container af-layout-inline',
+                      '#children' => 
+                      array (
+                        0 => 
+                        array (
+                          '#text' => '
+            ',
+                        ),
+                        1 => 
+                        array (
+                          '#tag' => 'af-field',
+                          'name' => 'email',
+                        ),
+                        2 => 
+                        array (
+                          '#text' => '
+            ',
+                        ),
+                        3 => 
+                        array (
+                          '#tag' => 'af-field',
+                          'name' => 'location_type_id',
+                          'defn' => 
+                          array (
+                            'afform_default' => '1',
+                            'input_attrs' => 
+                            array (
+                            ),
+                            'required' => false,
+                            'label' => false,
+                            'input_type' => 'Hidden',
+                          ),
+                        ),
+                        4 => 
+                        array (
+                          '#text' => '
+            ',
+                        ),
+                        5 => 
+                        array (
+                          '#tag' => 'af-field',
+                          'name' => 'is_primary',
+                          'defn' => 
+                          array (
+                            'afform_default' => '1',
+                            'label' => false,
+                            'input_type' => 'Hidden',
+                          ),
+                        ),
+                        6 => 
+                        array (
+                          '#text' => '
+          ',
+                        ),
+                      ),
+                    ),
+                    2 => 
+                    array (
+                      '#text' => '
+        ',
+                    ),
+                  ),
+                ),
+                6 => 
+                array (
+                  '#text' => '
+        ',
+                ),
+                7 => 
+                array (
+                  '#tag' => 'div',
+                  'af-join' => 'Phone',
+                  'actions' => 
+                  array (
+                    'update' => true,
+                    'delete' => true,
+                  ),
+                  'data' => 
+                  array (
+                    'is_primary' => true,
+                  ),
+                  '#children' => 
+                  array (
+                    0 => 
+                    array (
+                      '#text' => '
+          ',
+                    ),
+                    1 => 
+                    array (
+                      '#tag' => 'div',
+                      'actions' => 
+                      array (
+                        'update' => true,
+                        'delete' => true,
+                      ),
+                      'class' => 'af-container',
+                      '#children' => 
+                      array (
+                        0 => 
+                        array (
+                          '#text' => '
+            ',
+                        ),
+                        1 => 
+                        array (
+                          '#tag' => 'div',
+                          'class' => 'af-container af-layout-inline',
+                          '#children' => 
+                          array (
+                            0 => 
+                            array (
+                              '#text' => '
+              ',
+                            ),
+                            1 => 
+                            array (
+                              '#tag' => 'af-field',
+                              'name' => 'phone',
+                            ),
+                            2 => 
+                            array (
+                              '#text' => '
+              ',
+                            ),
+                            3 => 
+                            array (
+                              '#tag' => 'af-field',
+                              'name' => 'location_type_id',
+                              'defn' => 
+                              array (
+                                'afform_default' => '1',
+                                'input_attrs' => 
+                                array (
+                                ),
+                                'required' => false,
+                                'label' => false,
+                                'input_type' => 'Hidden',
+                              ),
+                            ),
+                            4 => 
+                            array (
+                              '#text' => '
+              ',
+                            ),
+                            5 => 
+                            array (
+                              '#tag' => 'af-field',
+                              'name' => 'phone_type_id',
+                              'defn' => 
+                              array (
+                                'afform_default' => '1',
+                                'input_attrs' => 
+                                array (
+                                ),
+                                'label' => false,
+                                'input_type' => 'Hidden',
+                              ),
+                            ),
+                            6 => 
+                            array (
+                              '#text' => '
+              ',
+                            ),
+                            7 => 
+                            array (
+                              '#tag' => 'af-field',
+                              'name' => 'is_primary',
+                              'defn' => 
+                              array (
+                                'afform_default' => '1',
+                                'label' => false,
+                                'input_type' => 'Hidden',
+                              ),
+                            ),
+                            8 => 
+                            array (
+                              '#text' => '
+            ',
+                            ),
+                          ),
+                        ),
+                        2 => 
+                        array (
+                          '#text' => '
+          ',
+                        ),
+                      ),
+                    ),
+                    2 => 
+                    array (
+                      '#text' => '
+        ',
+                    ),
+                  ),
+                ),
+                8 => 
+                array (
+                  '#text' => '
+        ',
+                ),
+                9 => 
+                array (
+                  '#tag' => 'af-field',
+                  'name' => 'job_title',
+                  'defn' => 
+                  array (
+                    'label' => 'Role / Job Title',
+                    'input_attrs' => 
+                    array (
+                    ),
+                    'required' => true,
+                  ),
+                ),
+                10 => 
+                array (
+                  '#text' => '
+      ',
+                ),
+              ),
+            ),
+            2 => 
+            array (
+              '#text' => '
+    ',
+            ),
+          ),
+        ),
+        8 => 
+        array (
+          '#text' => '
+    ',
+        ),
+        9 => 
+        array (
+          '#tag' => 'fieldset',
+          'af-fieldset' => 'Case1',
+          'class' => 'af-container',
+          '#children' => 
+          array (
+            0 => 
+            array (
+              '#text' => '
+      ',
+            ),
+            1 => 
+            array (
+              '#tag' => 'fieldset',
+              'class' => 'af-container af-layout-inline af-container-style-pane',
+              'af-title' => 'Request',
+              'style' => 'border: 3px solid #617de6',
+              '#children' => 
+              array (
+                0 => 
+                array (
+                  '#text' => '
+        ',
+                ),
+                1 => 
+                array (
+                  '#tag' => 'af-field',
+                  'name' => 'subject',
+                  'defn' => 
+                  array (
+                    'label' => 'Subject',
+                    'input_attrs' => 
+                    array (
+                    ),
+                    'required' => true,
+                  ),
+                ),
+                2 => 
+                array (
+                  '#text' => '
+        ',
+                ),
+                3 => 
+                array (
+                  '#tag' => 'af-field',
+                  'name' => 'Cases_SR_Projects_.Notes',
+                  'defn' => 
+                  array (
+                    'help_pre' => 'What assistance are you
+looking for at this time?  Please
+be as specific as you can about the nature of this project  so we can find the right consultant to help
+you.',
+                    'input_attrs' => 
+                    array (
+                      'maxlength' => 1000,
+                    ),
+                    'label' => 'Details',
+                    'required' => true,
+                  ),
+                ),
+                4 => 
+                array (
+                  '#text' => '
+        ',
+                ),
+                5 => 
+                array (
+                  '#tag' => 'af-field',
+                  'name' => 'Cases_SR_Projects_.Virtual_Work',
+                  'defn' => 
+                  array (
+                    'label' => 'Work Preference',
+                    'input_attrs' => 
+                    array (
+                    ),
+                    'required' => true,
+                  ),
+                ),
+                6 => 
+                array (
+                  '#text' => '
+        ',
+                ),
+                7 => 
+                array (
+                  '#tag' => 'af-field',
+                  'name' => 'Cases_SR_Projects_.Board_Support',
+                  'defn' => 
+                  array (
+                    'label' => 'Board Support',
+                    'required' => true,
+                  ),
+                ),
+                8 => 
+                array (
+                  '#text' => '
+        ',
+                ),
+                9 => 
+                array (
+                  '#tag' => 'af-field',
+                  'name' => 'Cases_SR_Projects_.Requested_Start_Date',
+                  'defn' => 
+                  array (
+                    'label' => 'Proposed Start Date',
+                    'input_attrs' => 
+                    array (
+                    ),
+                  ),
+                ),
+                10 => 
+                array (
+                  '#text' => '
+        ',
+                ),
+                11 => 
+                array (
+                  '#tag' => 'af-field',
+                  'name' => 'Cases_SR_Projects_.Flexible_Start_Date',
+                  'defn' => 
+                  array (
+                    'label' => 'Is Start Date Flexible?',
+                  ),
+                ),
+                12 => 
+                array (
+                  '#text' => '
+      ',
+                ),
+              ),
+            ),
+            2 => 
+            array (
+              '#text' => '
+      ',
+            ),
+            3 => 
+            array (
+              '#tag' => 'fieldset',
+              'class' => 'af-container af-container-style-pane af-layout-inline',
+              'af-title' => 'Terms & Conditions',
+              'style' => 'border: 3px solid #619ee6',
+              '#children' => 
+              array (
+                0 => 
+                array (
+                  '#text' => '
+        ',
+                ),
+                1 => 
+                array (
+                  '#tag' => 'div',
+                  'class' => 'af-markup',
+                  '#children' => 
+                  array (
+                    0 => 
+                    array (
+                      '#text' => '
+          
+          ',
+                    ),
+                    1 => 
+                    array (
+                      '#tag' => 'p',
+                      '#children' => 
+                      array (
+                        0 => 
+                        array (
+                          '#text' => 'Please review the ',
+                        ),
+                        1 => 
+                        array (
+                          '#tag' => 'a',
+                          'href' => 'https://masadvise.sharepoint.com/:w:/s/ManagementAdvisoryServiceofOntario/EfvikZuLN_xKix4EDjsxR1gBlvpCcJ1XjF4ZDFMcYF2-Ow?e=INhZvD',
+                          'rel' => 'noopener noreferrer',
+                          'target' => '_blank',
+                          '#children' => 
+                          array (
+                            0 => 
+                            array (
+                              '#text' => 'MAS Terms & Conditions',
+                            ),
+                          ),
+                        ),
+                        2 => 
+                        array (
+                          '#text' => ' ',
+                        ),
+                        3 => 
+                        array (
+                          '#tag' => 'br',
+                        ),
+                        4 => 
+                        array (
+                          '#text' => ' and then click this checkbox to confirm ',
+                        ),
+                        5 => 
+                        array (
+                          '#tag' => 'br',
+                        ),
+                        6 => 
+                        array (
+                          '#text' => ' you are authorized and approve.',
+                        ),
+                      ),
+                    ),
+                    2 => 
+                    array (
+                      '#text' => '
+
+        
+        ',
+                    ),
+                  ),
+                ),
+                2 => 
+                array (
+                  '#text' => '
+        ',
+                ),
+                3 => 
+                array (
+                  '#tag' => 'af-field',
+                  'name' => 'Cases_SR_Projects_.T_C_Authorized_and_Approved',
+                  'defn' => 
+                  array (
+                    'required' => true,
+                    'label' => 'Authorized and Approved',
+                    'help_pre' => NULL,
+                    'options' => 
+                    array (
+                      0 => 
+                      array (
+                        'id' => 'Yes',
+                        'label' => 'I have reviewed the terms and conditions and am authorized to approve these conditions on behalf of my agency.',
+                      ),
+                    ),
+                  ),
+                ),
+                4 => 
+                array (
+                  '#text' => '
+        ',
+                ),
+                5 => 
+                array (
+                  '#tag' => 'af-field',
+                  'name' => 'Cases_SR_Projects_.Authorized_Name',
+                  'defn' => 
+                  array (
+                    'label' => 'Name',
+                    'input_attrs' => 
+                    array (
+                    ),
+                    'required' => true,
+                  ),
+                ),
+                6 => 
+                array (
+                  '#text' => '
+        ',
+                ),
+                7 => 
+                array (
+                  '#tag' => 'af-field',
+                  'name' => 'Cases_SR_Projects_.Authorized_Title',
+                  'defn' => 
+                  array (
+                    'label' => 'Title',
+                    'input_attrs' => 
+                    array (
+                    ),
+                    'required' => true,
+                  ),
+                ),
+                8 => 
+                array (
+                  '#text' => '
+        ',
+                ),
+                9 => 
+                array (
+                  '#tag' => 'af-field',
+                  'name' => 'Cases_SR_Projects_.Authorized_Date',
+                  'defn' => 
+                  array (
+                    'label' => 'Date',
+                    'input_attrs' => 
+                    array (
+                    ),
+                    'required' => true,
+                  ),
+                ),
+                10 => 
+                array (
+                  '#text' => '
+      ',
+                ),
+              ),
+            ),
+            4 => 
+            array (
+              '#text' => '
+      ',
+            ),
+            5 => 
+            array (
+              '#tag' => 'fieldset',
+              'class' => 'af-container af-container-style-pane',
+              'af-title' => 'Donation',
+              'style' => 'border: 3px solid #619ee6; background-color: #ffff00',
+              '#children' => 
+              array (
+                0 => 
+                array (
+                  '#text' => '
+        ',
+                ),
+                1 => 
+                array (
+                  '#tag' => 'div',
+                  'class' => 'af-markup',
+                  '#children' => 
+                  array (
+                    0 => 
+                    array (
+                      '#text' => '
+          
+          
+          
+          
+          
+          ',
+                    ),
+                    1 => 
+                    array (
+                      '#tag' => 'p',
+                      '#children' => 
+                      array (
+                        0 => 
+                        array (
+                          '#text' => 'MAS does not charge fees for its services, but we do ask organizations that are financially able to do so to consider giving MAS a donation at the completion of a project. MAS relies on donations to cover its operating expenses.',
+                        ),
+                      ),
+                    ),
+                    2 => 
+                    array (
+                      '#text' => '
+
+        
+        
+        
+        
+        
+        ',
+                    ),
+                  ),
+                ),
+                2 => 
+                array (
+                  '#text' => '
+      ',
+                ),
+              ),
+            ),
+            6 => 
+            array (
+              '#text' => '
+    ',
+            ),
+          ),
+        ),
+        10 => 
+        array (
+          '#text' => '
+    ',
+        ),
+        11 => 
+        array (
+          '#tag' => 'div',
+          'class' => 'af-markup',
+          '#children' => 
+          array (
+            0 => 
+            array (
+              '#text' => '
+      
+      
+      
+      
+      
+      
+      ',
+            ),
+            1 => 
+            array (
+              '#tag' => 'p',
+              '#children' => 
+              array (
+                0 => 
+                array (
+                  '#text' => '
+        If you have any issues with this form, please email
+        ',
+                ),
+                1 => 
+                array (
+                  '#tag' => 'a',
+                  'href' => 'mailto:info@masadvise.org',
+                  '#children' => 
+                  array (
+                    0 => 
+                    array (
+                      '#text' => 'info@masadvise.org',
+                    ),
+                  ),
+                ),
+                2 => 
+                array (
+                  '#text' => '
+      ',
+                ),
+              ),
+            ),
+            2 => 
+            array (
+              '#text' => '
+    
+    
+    
+    
+    
+    
+    ',
+            ),
+          ),
+        ),
+        12 => 
+        array (
+          '#text' => '
+    ',
+        ),
+        13 => 
+        array (
+          '#tag' => 'div',
+          'class' => 'af-container af-layout-inline',
+          '#children' => 
+          array (
+            0 => 
+            array (
+              '#text' => '
+      ',
+            ),
+            1 => 
+            array (
+              '#tag' => 'button',
+              'class' => 'af-button btn btn-primary',
+              'crm-icon' => 'fa-floppy-disk',
+              'ng-click' => 'afform.submitDraft()',
+              'ng-if' => 'afform.showSubmitButton',
+              '#children' => 
+              array (
+                0 => 
+                array (
+                  '#text' => 'Save Draft',
+                ),
+              ),
+            ),
+            2 => 
+            array (
+              '#text' => '
+      ',
+            ),
+            3 => 
+            array (
+              '#tag' => 'button',
+              'class' => 'af-button btn btn-primary',
+              'crm-icon' => 'fa-check',
+              'ng-click' => 'afform.submit()',
+              'ng-if' => 'afform.showSubmitButton',
+              '#children' => 
+              array (
+                0 => 
+                array (
+                  '#text' => 'Submit',
+                ),
+              ),
+            ),
+            4 => 
+            array (
+              '#text' => '
+    ',
+            ),
+          ),
+        ),
+        14 => 
+        array (
+          '#text' => '
+  ',
+        ),
+      ),
+    ),
+    12 => 
+    array (
+      '#text' => '
+',
+    ),
+  ),
+);
 }
 
 /**
