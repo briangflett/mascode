@@ -1,5 +1,14 @@
 # CHANGELOG
 
+## 1.0.4 (2025-07-02)
+
+### Form Enhancements and Email Improvements
+* Updated afformMASSASS with section headings to match afformMASSASF layout
+* Enhanced AfformSubmitSubscriber to send confirmation emails for all forms (RCS, SASS, SASF)
+* Synchronized deployment scripts with current development environment layouts
+* Modified survey deployment scripts to overwrite existing forms for consistent behavior
+* Updated project documentation with CV command patterns and deployment best practices
+
 ## 1.0.3 (2025-06-18)
 
 ### Enhanced Export/Import Functionality
