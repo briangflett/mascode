@@ -1,0 +1,284 @@
+<mxfile host="app.diagrams.net" agent="Claude Code AI Assistant" version="1.0.0">
+  <diagram name="AI-Augmented Workflow Architecture" id="mas-ai-workflow">
+    <mxGraphModel dx="1343" dy="688" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1654" pageHeight="1200" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="title" value="AI-Augmented Workflow Architecture" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=24;fontStyle=1;" parent="1" vertex="1">
+          <mxGeometry x="627" y="20" width="400" height="40" as="geometry" />
+        </mxCell>
+        
+        <!-- Knowledge Management Layer -->
+        <mxCell id="knowledge-bg" value="" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;strokeWidth=2;dashed=1;" parent="1" vertex="1">
+          <mxGeometry x="80" y="80" width="1480" height="120" as="geometry" />
+        </mxCell>
+        <mxCell id="knowledge-title" value="Knowledge Management Layer" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=16;fontStyle=1;color=#d6b656;" parent="1" vertex="1">
+          <mxGeometry x="720" y="90" width="200" height="30" as="geometry" />
+        </mxCell>
+        
+        <!-- Knowledge Sources -->
+        <mxCell id="kb-civicrm" value="CiviCRM&#xa;Knowledge Base" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;" parent="1" vertex="1">
+          <mxGeometry x="120" y="130" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="kb-procedures" value="Procedures &amp;&#xa;Best Practices" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;" parent="1" vertex="1">
+          <mxGeometry x="280" y="130" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="kb-templates" value="Templates &amp;&#xa;Collateral" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;" parent="1" vertex="1">
+          <mxGeometry x="440" y="130" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="kb-client-history" value="Client History &amp;&#xa;Case Studies" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;" parent="1" vertex="1">
+          <mxGeometry x="600" y="130" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="kb-learning" value="Learning &amp;&#xa;Feedback Loop" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;" parent="1" vertex="1">
+          <mxGeometry x="760" y="130" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="kb-metrics" value="Performance&#xa;Metrics" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;" parent="1" vertex="1">
+          <mxGeometry x="920" y="130" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="kb-external" value="External&#xa;Resources" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;" parent="1" vertex="1">
+          <mxGeometry x="1080" y="130" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="kb-regulations" value="Regulations &amp;&#xa;Compliance" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;" parent="1" vertex="1">
+          <mxGeometry x="1240" y="130" width="120" height="60" as="geometry" />
+        </mxCell>
+        
+        <!-- AI Touchpoints by Stage -->
+        <mxCell id="discovery-section" value="Discovery Stage" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=16;fontStyle=3;color=#333333;" parent="1" vertex="1">
+          <mxGeometry x="80" y="230" width="120" height="30" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="ai-web-chat" value="AI Web Chat&#xa;(Prospect Support)" style="ellipse;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" parent="1" vertex="1">
+          <mxGeometry x="80" y="270" width="120" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="ai-form-helper" value="AI Form Helper&#xa;(Smart Completion)" style="ellipse;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" parent="1" vertex="1">
+          <mxGeometry x="220" y="270" width="120" height="80" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="intake-section" value="Intake Stage" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=16;fontStyle=3;color=#333333;" parent="1" vertex="1">
+          <mxGeometry x="420" y="230" width="120" height="30" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="ai-intake-processor" value="AI Intake&#xa;Processor" style="ellipse;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" parent="1" vertex="1">
+          <mxGeometry x="420" y="270" width="120" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="ai-needs-assessor" value="AI Needs&#xa;Assessor" style="ellipse;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" parent="1" vertex="1">
+          <mxGeometry x="560" y="270" width="120" height="80" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="service-section" value="Service Delivery" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=16;fontStyle=3;color=#333333;" parent="1" vertex="1">
+          <mxGeometry x="760" y="230" width="120" height="30" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="ai-project-manager" value="AI Project&#xa;Manager" style="ellipse;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" parent="1" vertex="1">
+          <mxGeometry x="760" y="270" width="120" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="ai-resource-matcher" value="AI Resource&#xa;Matcher" style="ellipse;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" parent="1" vertex="1">
+          <mxGeometry x="900" y="270" width="120" height="80" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="oversight-section" value="Oversight &amp; Management" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=16;fontStyle=3;color=#333333;" parent="1" vertex="1">
+          <mxGeometry x="1120" y="230" width="160" height="30" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="ai-analyst" value="AI Performance&#xa;Analyst" style="ellipse;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" parent="1" vertex="1">
+          <mxGeometry x="1120" y="270" width="120" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="ai-strategist" value="AI Strategic&#xa;Advisor" style="ellipse;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" parent="1" vertex="1">
+          <mxGeometry x="1260" y="270" width="120" height="80" as="geometry" />
+        </mxCell>
+        
+        <!-- Decision Points -->
+        <mxCell id="decision-bg" value="" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;strokeWidth=2;dashed=1;" parent="1" vertex="1">
+          <mxGeometry x="80" y="400" width="1480" height="140" as="geometry" />
+        </mxCell>
+        <mxCell id="decision-title" value="Decision Points: AI Recommendations vs. Human Oversight" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=16;fontStyle=1;color=#b85450;" parent="1" vertex="1">
+          <mxGeometry x="640" y="410" width="320" height="30" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="decision-intake" value="Client&#xa;Qualification" style="diamond;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;" parent="1" vertex="1">
+          <mxGeometry x="140" y="460" width="100" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="decision-priority" value="Priority&#xa;Assignment" style="diamond;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;" parent="1" vertex="1">
+          <mxGeometry x="290" y="460" width="100" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="decision-resource" value="Resource&#xa;Allocation" style="diamond;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;" parent="1" vertex="1">
+          <mxGeometry x="440" y="460" width="100" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="decision-escalation" value="Escalation&#xa;Trigger" style="diamond;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;" parent="1" vertex="1">
+          <mxGeometry x="590" y="460" width="100" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="decision-completion" value="Project&#xa;Completion" style="diamond;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;" parent="1" vertex="1">
+          <mxGeometry x="740" y="460" width="100" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="decision-quality" value="Quality&#xa;Assessment" style="diamond;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;" parent="1" vertex="1">
+          <mxGeometry x="890" y="460" width="100" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="decision-capacity" value="Capacity&#xa;Planning" style="diamond;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;" parent="1" vertex="1">
+          <mxGeometry x="1040" y="460" width="100" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="decision-strategic" value="Strategic&#xa;Direction" style="diamond;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;" parent="1" vertex="1">
+          <mxGeometry x="1190" y="460" width="100" height="60" as="geometry" />
+        </mxCell>
+        
+        <!-- Data Flow Layer -->
+        <mxCell id="dataflow-bg" value="" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;strokeWidth=2;dashed=1;" parent="1" vertex="1">
+          <mxGeometry x="80" y="580" width="1480" height="140" as="geometry" />
+        </mxCell>
+        <mxCell id="dataflow-title" value="Data Flow Architecture" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=16;fontStyle=1;color=#9673a6;" parent="1" vertex="1">
+          <mxGeometry x="720" y="590" width="200" height="30" as="geometry" />
+        </mxCell>
+        
+        <!-- Data Sources -->
+        <mxCell id="data-forms" value="Form Data" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;" parent="1" vertex="1">
+          <mxGeometry x="120" y="630" width="80" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="data-civicrm" value="CiviCRM Data" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;" parent="1" vertex="1">
+          <mxGeometry x="220" y="630" width="80" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="data-interactions" value="User&#xa;Interactions" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;" parent="1" vertex="1">
+          <mxGeometry x="320" y="630" width="80" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="data-feedback" value="Feedback &amp;&#xa;Outcomes" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;" parent="1" vertex="1">
+          <mxGeometry x="420" y="630" width="80" height="40" as="geometry" />
+        </mxCell>
+        
+        <!-- Data Processing -->
+        <mxCell id="data-processor" value="AI Data&#xa;Processor" style="ellipse;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" parent="1" vertex="1">
+          <mxGeometry x="580" y="620" width="100" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="data-ml-engine" value="ML Training&#xa;Engine" style="ellipse;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" parent="1" vertex="1">
+          <mxGeometry x="720" y="620" width="100" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="data-insight" value="Insight&#xa;Generator" style="ellipse;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" parent="1" vertex="1">
+          <mxGeometry x="860" y="620" width="100" height="60" as="geometry" />
+        </mxCell>
+        
+        <!-- Data Outputs -->
+        <mxCell id="data-recommendations" value="AI&#xa;Recommendations" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;" parent="1" vertex="1">
+          <mxGeometry x="1020" y="630" width="80" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="data-reports" value="Automated&#xa;Reports" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;" parent="1" vertex="1">
+          <mxGeometry x="1120" y="630" width="80" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="data-alerts" value="Alerts &amp;&#xa;Notifications" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;" parent="1" vertex="1">
+          <mxGeometry x="1220" y="630" width="80" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="data-dashboard" value="Dashboard&#xa;Updates" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;" parent="1" vertex="1">
+          <mxGeometry x="1320" y="630" width="80" height="40" as="geometry" />
+        </mxCell>
+        
+        <!-- AI-Human Collaboration Indicators -->
+        <mxCell id="collab-auto" value="Fully&#xa;Automated" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" parent="1" vertex="1">
+          <mxGeometry x="120" y="750" width="80" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="collab-assisted" value="AI&#xa;Assisted" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;" parent="1" vertex="1">
+          <mxGeometry x="220" y="750" width="80" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="collab-review" value="Human&#xa;Review" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;" parent="1" vertex="1">
+          <mxGeometry x="320" y="750" width="80" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="collab-decision" value="Human&#xa;Decision" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;" parent="1" vertex="1">
+          <mxGeometry x="420" y="750" width="80" height="40" as="geometry" />
+        </mxCell>
+        
+        <!-- Knowledge Flow Arrows -->
+        <mxCell id="kb-arrow1" value="" style="endArrow=classic;html=1;rounded=0;strokeColor=#d6b656;strokeWidth=2;" parent="1" edge="1">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="140" y="200" as="sourcePoint" />
+            <mxPoint x="140" y="270" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="kb-arrow2" value="" style="endArrow=classic;html=1;rounded=0;strokeColor=#d6b656;strokeWidth=2;" parent="1" edge="1">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="480" y="200" as="sourcePoint" />
+            <mxPoint x="480" y="270" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="kb-arrow3" value="" style="endArrow=classic;html=1;rounded=0;strokeColor=#d6b656;strokeWidth=2;" parent="1" edge="1">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="820" y="200" as="sourcePoint" />
+            <mxPoint x="820" y="270" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="kb-arrow4" value="" style="endArrow=classic;html=1;rounded=0;strokeColor=#d6b656;strokeWidth=2;" parent="1" edge="1">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="1180" y="200" as="sourcePoint" />
+            <mxPoint x="1180" y="270" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        
+        <!-- Data Flow Arrows -->
+        <mxCell id="data-arrow1" value="" style="endArrow=classic;html=1;rounded=0;strokeColor=#9673a6;strokeWidth=2;" parent="1" edge="1">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="500" y="650" as="sourcePoint" />
+            <mxPoint x="580" y="650" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="data-arrow2" value="" style="endArrow=classic;html=1;rounded=0;strokeColor=#9673a6;strokeWidth=2;" parent="1" edge="1">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="680" y="650" as="sourcePoint" />
+            <mxPoint x="720" y="650" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="data-arrow3" value="" style="endArrow=classic;html=1;rounded=0;strokeColor=#9673a6;strokeWidth=2;" parent="1" edge="1">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="820" y="650" as="sourcePoint" />
+            <mxPoint x="860" y="650" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="data-arrow4" value="" style="endArrow=classic;html=1;rounded=0;strokeColor=#9673a6;strokeWidth=2;" parent="1" edge="1">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="960" y="650" as="sourcePoint" />
+            <mxPoint x="1020" y="650" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        
+        <!-- Feedback Loop -->
+        <mxCell id="feedback-arrow" value="Continuous Learning Loop" style="endArrow=classic;html=1;rounded=0;strokeColor=#d6b656;strokeWidth=3;curved=1;" parent="1" edge="1">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="1400" y="650" as="sourcePoint" />
+            <mxPoint x="820" y="200" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        
+        <!-- Legend -->
+        <mxCell id="legend-bg" value="" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#cccccc;" parent="1" vertex="1">
+          <mxGeometry x="80" y="820" width="1480" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="legend-title" value="Legend" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=16;fontStyle=1;" parent="1" vertex="1">
+          <mxGeometry x="100" y="830" width="60" height="20" as="geometry" />
+        </mxCell>
+        <mxCell id="legend-ai" value="AI Components" style="ellipse;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" parent="1" vertex="1">
+          <mxGeometry x="180" y="830" width="100" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="legend-knowledge" value="Knowledge" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;" parent="1" vertex="1">
+          <mxGeometry x="300" y="830" width="80" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="legend-decision" value="Decision Point" style="diamond;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;" parent="1" vertex="1">
+          <mxGeometry x="400" y="830" width="80" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="legend-data" value="Data Flow" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;" parent="1" vertex="1">
+          <mxGeometry x="500" y="830" width="80" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="legend-auto" value="Automated" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" parent="1" vertex="1">
+          <mxGeometry x="600" y="830" width="70" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="legend-assisted" value="AI Assisted" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;" parent="1" vertex="1">
+          <mxGeometry x="680" y="830" width="70" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="legend-review" value="Human Review" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;" parent="1" vertex="1">
+          <mxGeometry x="760" y="830" width="80" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="legend-human" value="Human Decision" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;" parent="1" vertex="1">
+          <mxGeometry x="850" y="830" width="90" height="30" as="geometry" />
+        </mxCell>
+        
+        <!-- Workflow Notes -->
+        <mxCell id="workflow-notes" value="AI provides intelligent automation at each stage while maintaining human oversight for critical decisions.&#xa;Knowledge management ensures continuous learning and improvement across all AI components." style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=top;whiteSpace=wrap;rounded=0;fontSize=12;fontStyle=2;color=#666666;" parent="1" vertex="1">
+          <mxGeometry x="1000" y="830" width="480" height="40" as="geometry" />
+        </mxCell>
+        
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

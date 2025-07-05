@@ -1,0 +1,366 @@
+<mxfile host="app.diagrams.net" agent="Claude Code AI Assistant" version="1.0.0">
+  <diagram name="Technology Integration Map" id="mas-tech-integration">
+    <mxGraphModel dx="1343" dy="688" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1654" pageHeight="1200" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="title" value="Technology Integration Map" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=24;fontStyle=1;" parent="1" vertex="1">
+          <mxGeometry x="627" y="20" width="400" height="40" as="geometry" />
+        </mxCell>
+        
+        <!-- CiviCRM Core Platform (Central Hub) -->
+        <mxCell id="civicrm-hub-bg" value="" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#7F8AFF;strokeColor=#4C5BFF;strokeWidth=4;" parent="1" vertex="1">
+          <mxGeometry x="640" y="350" width="360" height="280" as="geometry" />
+        </mxCell>
+        <mxCell id="civicrm-hub-title" value="CiviCRM Core Platform (Central Hub)" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=18;fontStyle=1;color=#ffffff;" parent="1" vertex="1">
+          <mxGeometry x="690" y="365" width="260" height="30" as="geometry" />
+        </mxCell>
+        
+        <!-- CiviCRM Components -->
+        <mxCell id="civicrm-contacts" value="Contact&#xa;Management" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#4C5BFF;" parent="1" vertex="1">
+          <mxGeometry x="660" y="410" width="80" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="civicrm-cases" value="Case&#xa;Management" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#4C5BFF;" parent="1" vertex="1">
+          <mxGeometry x="760" y="410" width="80" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="civicrm-activities" value="Activity&#xa;Tracking" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#4C5BFF;" parent="1" vertex="1">
+          <mxGeometry x="860" y="410" width="80" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="civicrm-forms" value="FormBuilder" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#4C5BFF;" parent="1" vertex="1">
+          <mxGeometry x="660" y="490" width="80" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="civicrm-rules" value="CiviRules" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#4C5BFF;" parent="1" vertex="1">
+          <mxGeometry x="760" y="490" width="80" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="civicrm-reports" value="Reporting&#xa;Engine" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#4C5BFF;" parent="1" vertex="1">
+          <mxGeometry x="860" y="490" width="80" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="civicrm-api" value="API Layer" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#4C5BFF;" parent="1" vertex="1">
+          <mxGeometry x="660" y="570" width="80" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="civicrm-database" value="MySQL&#xa;Database" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#4C5BFF;" parent="1" vertex="1">
+          <mxGeometry x="760" y="570" width="80" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="civicrm-auth" value="User&#xa;Authentication" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#4C5BFF;" parent="1" vertex="1">
+          <mxGeometry x="860" y="570" width="80" height="40" as="geometry" />
+        </mxCell>
+        
+        <!-- WordPress Platform (Left) -->
+        <mxCell id="wordpress-bg" value="" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;strokeWidth=3;" parent="1" vertex="1">
+          <mxGeometry x="80" y="250" width="280" height="300" as="geometry" />
+        </mxCell>
+        <mxCell id="wordpress-title" value="WordPress Platform" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=16;fontStyle=1;color=#b85450;" parent="1" vertex="1">
+          <mxGeometry x="160" y="260" width="120" height="30" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="wp-public-site" value="Public Website" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#b85450;" parent="1" vertex="1">
+          <mxGeometry x="100" y="300" width="100" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="wp-gravity-forms" value="Gravity Forms" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#b85450;" parent="1" vertex="1">
+          <mxGeometry x="220" y="300" width="100" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="wp-email-signup" value="Email Signup" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#b85450;" parent="1" vertex="1">
+          <mxGeometry x="100" y="370" width="100" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="wp-donation-page" value="Donation Pages" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#b85450;" parent="1" vertex="1">
+          <mxGeometry x="220" y="370" width="100" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="wp-user-mgmt" value="User Management" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#b85450;" parent="1" vertex="1">
+          <mxGeometry x="100" y="440" width="100" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="wp-content-mgmt" value="Content Management" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#b85450;" parent="1" vertex="1">
+          <mxGeometry x="220" y="440" width="100" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="wp-database" value="WordPress&#xa;Database" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#b85450;" parent="1" vertex="1">
+          <mxGeometry x="160" y="510" width="100" height="30" as="geometry" />
+        </mxCell>
+        
+        <!-- Microsoft 365 Platform (Right) -->
+        <mxCell id="ms365-bg" value="" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;strokeWidth=3;" parent="1" vertex="1">
+          <mxGeometry x="1280" y="250" width="280" height="300" as="geometry" />
+        </mxCell>
+        <mxCell id="ms365-title" value="Microsoft 365 Platform" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=16;fontStyle=1;color=#9673a6;" parent="1" vertex="1">
+          <mxGeometry x="1360" y="260" width="120" height="30" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="ms365-sharepoint" value="SharePoint" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#9673a6;" parent="1" vertex="1">
+          <mxGeometry x="1300" y="300" width="100" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="ms365-teams" value="Microsoft Teams" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#9673a6;" parent="1" vertex="1">
+          <mxGeometry x="1420" y="300" width="100" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="ms365-outlook" value="Outlook/Exchange" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#9673a6;" parent="1" vertex="1">
+          <mxGeometry x="1300" y="370" width="100" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="ms365-onedrive" value="OneDrive" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#9673a6;" parent="1" vertex="1">
+          <mxGeometry x="1420" y="370" width="100" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="ms365-power-platform" value="Power Platform" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#9673a6;" parent="1" vertex="1">
+          <mxGeometry x="1300" y="440" width="100" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="ms365-viva" value="Viva Insights" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#9673a6;" parent="1" vertex="1">
+          <mxGeometry x="1420" y="440" width="100" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="ms365-graph" value="Microsoft Graph&#xa;API" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#9673a6;" parent="1" vertex="1">
+          <mxGeometry x="1360" y="510" width="100" height="30" as="geometry" />
+        </mxCell>
+        
+        <!-- AI Services Platform (Top) -->
+        <mxCell id="ai-services-bg" value="" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;strokeWidth=3;" parent="1" vertex="1">
+          <mxGeometry x="480" y="80" width="680" height="180" as="geometry" />
+        </mxCell>
+        <mxCell id="ai-services-title" value="AI Services Platform" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=16;fontStyle=1;color=#6c8ebf;" parent="1" vertex="1">
+          <mxGeometry x="760" y="90" width="120" height="30" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="ai-llm-services" value="LLM Services&#xa;(Claude, GPT)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#6c8ebf;" parent="1" vertex="1">
+          <mxGeometry x="500" y="130" width="100" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="ai-vector-db" value="Vector Database&#xa;(Embeddings)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#6c8ebf;" parent="1" vertex="1">
+          <mxGeometry x="620" y="130" width="100" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="ai-ml-models" value="ML Models&#xa;(Custom)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#6c8ebf;" parent="1" vertex="1">
+          <mxGeometry x="740" y="130" width="100" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="ai-automation" value="Automation&#xa;Engine" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#6c8ebf;" parent="1" vertex="1">
+          <mxGeometry x="860" y="130" width="100" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="ai-analytics" value="Analytics&#xa;Platform" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#6c8ebf;" parent="1" vertex="1">
+          <mxGeometry x="980" y="130" width="100" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="ai-knowledge-base" value="Knowledge Base&#xa;Management" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#6c8ebf;" parent="1" vertex="1">
+          <mxGeometry x="500" y="210" width="100" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="ai-integration-layer" value="AI Integration&#xa;Layer" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#6c8ebf;" parent="1" vertex="1">
+          <mxGeometry x="620" y="210" width="100" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="ai-monitoring" value="Model Monitoring&#xa;&amp; Governance" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#6c8ebf;" parent="1" vertex="1">
+          <mxGeometry x="740" y="210" width="100" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="ai-feedback-loop" value="Feedback &amp;&#xa;Learning Loop" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#6c8ebf;" parent="1" vertex="1">
+          <mxGeometry x="860" y="210" width="100" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="ai-api-gateway" value="API Gateway &amp;&#xa;Security" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#6c8ebf;" parent="1" vertex="1">
+          <mxGeometry x="980" y="210" width="100" height="40" as="geometry" />
+        </mxCell>
+        
+        <!-- External Services (Bottom) -->
+        <mxCell id="external-bg" value="" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;strokeWidth=2;dashed=1;" parent="1" vertex="1">
+          <mxGeometry x="80" y="680" width="1480" height="100" as="geometry" />
+        </mxCell>
+        <mxCell id="external-title" value="External Services &amp; Integrations" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=16;fontStyle=1;color=#d79b00;" parent="1" vertex="1">
+          <mxGeometry x="720" y="690" width="200" height="30" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="ext-email-provider" value="Email Service&#xa;Provider" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;" parent="1" vertex="1">
+          <mxGeometry x="120" y="730" width="100" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="ext-payment" value="Payment&#xa;Gateway" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;" parent="1" vertex="1">
+          <mxGeometry x="240" y="730" width="100" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="ext-backup" value="Backup &amp;&#xa;Storage" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;" parent="1" vertex="1">
+          <mxGeometry x="360" y="730" width="100" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="ext-monitoring" value="System&#xa;Monitoring" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;" parent="1" vertex="1">
+          <mxGeometry x="480" y="730" width="100" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="ext-security" value="Security&#xa;Services" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;" parent="1" vertex="1">
+          <mxGeometry x="600" y="730" width="100" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="ext-sms" value="SMS/Text&#xa;Services" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;" parent="1" vertex="1">
+          <mxGeometry x="720" y="730" width="100" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="ext-calendar" value="Calendar&#xa;Services" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;" parent="1" vertex="1">
+          <mxGeometry x="840" y="730" width="100" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="ext-social" value="Social Media&#xa;APIs" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;" parent="1" vertex="1">
+          <mxGeometry x="960" y="730" width="100" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="ext-analytics" value="Web Analytics" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;" parent="1" vertex="1">
+          <mxGeometry x="1080" y="730" width="100" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="ext-compliance" value="Compliance&#xa;Tools" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;" parent="1" vertex="1">
+          <mxGeometry x="1200" y="730" width="100" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="ext-reporting" value="External&#xa;Reporting" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;" parent="1" vertex="1">
+          <mxGeometry x="1320" y="730" width="100" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="ext-cloud" value="Cloud Storage" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;" parent="1" vertex="1">
+          <mxGeometry x="1440" y="730" width="100" height="40" as="geometry" />
+        </mxCell>
+        
+        <!-- User Access Patterns (Left Side) -->
+        <mxCell id="users-bg" value="" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;strokeWidth=2;" parent="1" vertex="1">
+          <mxGeometry x="80" y="580" width="280" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="users-title" value="User Access Patterns" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=14;fontStyle=1;color=#666666;" parent="1" vertex="1">
+          <mxGeometry x="160" y="590" width="120" height="20" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="user-public" value="Public Users" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;" parent="1" vertex="1">
+          <mxGeometry x="100" y="620" width="80" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="user-clients" value="Clients" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;" parent="1" vertex="1">
+          <mxGeometry x="190" y="620" width="60" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="user-staff" value="Staff" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" parent="1" vertex="1">
+          <mxGeometry x="260" y="620" width="60" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="user-admin" value="Admin" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;" parent="1" vertex="1">
+          <mxGeometry x="330" y="620" width="60" height="30" as="geometry" />
+        </mxCell>
+        
+        <!-- Data Synchronization Flows -->
+        <!-- WordPress to CiviCRM -->
+        <mxCell id="sync-wp-civicrm" value="Form Data&#xa;User Sync" style="endArrow=classic;startArrow=classic;html=1;rounded=0;strokeWidth=3;strokeColor=#FF6B6B;" parent="1" edge="1">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="360" y="420" as="sourcePoint" />
+            <mxPoint x="640" y="450" as="targetPoint" />
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+        
+        <!-- CiviCRM to Microsoft 365 -->
+        <mxCell id="sync-civicrm-ms365" value="Contact Data&#xa;Calendar Sync" style="endArrow=classic;startArrow=classic;html=1;rounded=0;strokeWidth=3;strokeColor=#4ECDC4;" parent="1" edge="1">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="1000" y="450" as="sourcePoint" />
+            <mxPoint x="1280" y="420" as="targetPoint" />
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+        
+        <!-- AI Services to CiviCRM -->
+        <mxCell id="sync-ai-civicrm" value="ML Insights&#xa;Recommendations" style="endArrow=classic;startArrow=classic;html=1;rounded=0;strokeWidth=3;strokeColor=#9B59B6;" parent="1" edge="1">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="820" y="260" as="sourcePoint" />
+            <mxPoint x="820" y="350" as="targetPoint" />
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+        
+        <!-- AI Services to WordPress -->
+        <mxCell id="sync-ai-wp" value="Chat Support&#xa;Form Intelligence" style="endArrow=classic;html=1;rounded=0;strokeWidth=2;strokeColor=#9B59B6;curved=1;" parent="1" edge="1">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="480" y="200" as="sourcePoint" />
+            <mxPoint x="300" y="300" as="targetPoint" />
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+        
+        <!-- AI Services to Microsoft 365 -->
+        <mxCell id="sync-ai-ms365" value="Document Analysis&#xa;Meeting Insights" style="endArrow=classic;html=1;rounded=0;strokeWidth=2;strokeColor=#9B59B6;curved=1;" parent="1" edge="1">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="1160" y="200" as="sourcePoint" />
+            <mxPoint x="1350" y="300" as="targetPoint" />
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+        
+        <!-- External Services connections -->
+        <mxCell id="ext-wp-connection" value="" style="endArrow=classic;html=1;rounded=0;strokeWidth=2;strokeColor=#d79b00;" parent="1" edge="1">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="220" y="550" as="sourcePoint" />
+            <mxPoint x="220" y="680" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        
+        <mxCell id="ext-civicrm-connection" value="" style="endArrow=classic;html=1;rounded=0;strokeWidth=2;strokeColor=#d79b00;" parent="1" edge="1">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="820" y="630" as="sourcePoint" />
+            <mxPoint x="820" y="680" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        
+        <mxCell id="ext-ms365-connection" value="" style="endArrow=classic;html=1;rounded=0;strokeWidth=2;strokeColor=#d79b00;" parent="1" edge="1">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="1420" y="550" as="sourcePoint" />
+            <mxPoint x="1420" y="680" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        
+        <!-- User Access Arrows -->
+        <mxCell id="access-public-wp" value="" style="endArrow=classic;html=1;rounded=0;strokeWidth=2;strokeColor=#e1d5e7;" parent="1" edge="1">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="140" y="580" as="sourcePoint" />
+            <mxPoint x="180" y="550" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        
+        <mxCell id="access-clients-civicrm" value="" style="endArrow=classic;html=1;rounded=0;strokeWidth=2;strokeColor=#fff2cc;" parent="1" edge="1">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="220" y="580" as="sourcePoint" />
+            <mxPoint x="640" y="500" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        
+        <mxCell id="access-staff-all" value="" style="endArrow=classic;html=1;rounded=0;strokeWidth=2;strokeColor=#d5e8d4;" parent="1" edge="1">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="290" y="580" as="sourcePoint" />
+            <mxPoint x="820" y="350" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        
+        <mxCell id="access-admin-ms365" value="" style="endArrow=classic;html=1;rounded=0;strokeWidth=2;strokeColor=#f8cecc;" parent="1" edge="1">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="360" y="580" as="sourcePoint" />
+            <mxPoint x="1280" y="400" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        
+        <!-- Integration Notes -->
+        <mxCell id="integration-notes" value="Data Synchronization Legend:&#xa;• Real-time: Form submissions, user authentication&#xa;• Scheduled: Bulk data sync, reporting updates&#xa;• Event-driven: Workflow triggers, notifications&#xa;• API-based: All inter-platform communication" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=top;whiteSpace=wrap;rounded=0;fontSize=11;fontStyle=2;color=#666666;" parent="1" vertex="1">
+          <mxGeometry x="1200" y="580" width="350" height="80" as="geometry" />
+        </mxCell>
+        
+        <!-- Legend -->
+        <mxCell id="legend-bg" value="" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#cccccc;" parent="1" vertex="1">
+          <mxGeometry x="80" y="800" width="1480" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="legend-title" value="Technology Integration Legend" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=16;fontStyle=1;" parent="1" vertex="1">
+          <mxGeometry x="100" y="810" width="200" height="20" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="legend-core" value="Core Platform" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#7F8AFF;strokeColor=#4C5BFF;" parent="1" vertex="1">
+          <mxGeometry x="100" y="840" width="100" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="legend-wp" value="WordPress" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;" parent="1" vertex="1">
+          <mxGeometry x="220" y="840" width="80" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="legend-ms365" value="Microsoft 365" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;" parent="1" vertex="1">
+          <mxGeometry x="320" y="840" width="80" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="legend-ai" value="AI Services" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" parent="1" vertex="1">
+          <mxGeometry x="420" y="840" width="80" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="legend-external" value="External Services" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;" parent="1" vertex="1">
+          <mxGeometry x="520" y="840" width="100" height="30" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="legend-sync-bidirectional" value="Bidirectional Sync" style="endArrow=classic;startArrow=classic;html=1;rounded=0;strokeWidth=3;strokeColor=#FF6B6B;" parent="1" edge="1">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="680" y="855" as="sourcePoint" />
+            <mxPoint x="760" y="855" as="targetPoint" />
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+        
+        <mxCell id="legend-sync-unidirectional" value="Data Push" style="endArrow=classic;html=1;rounded=0;strokeWidth=2;strokeColor=#9B59B6;" parent="1" edge="1">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="800" y="855" as="sourcePoint" />
+            <mxPoint x="880" y="855" as="targetPoint" />
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+        
+        <mxCell id="legend-user-access" value="User Access" style="endArrow=classic;html=1;rounded=0;strokeWidth=2;strokeColor=#666666;" parent="1" edge="1">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="920" y="855" as="sourcePoint" />
+            <mxPoint x="1000" y="855" as="targetPoint" />
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+        
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
