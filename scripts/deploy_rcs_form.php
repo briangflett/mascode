@@ -10,6 +10,10 @@
  * 
  * IMPORTANT: Update the configuration section below for your target environment
  * NOTE: Comment out sections in the form layout that you want to skip deployment
+ * 
+ * UPDATED: July 8, 2025 - Configuration updated to match current environment
+ * TODO: Form layout in createRCSFormLayout() function needs to be updated with current form
+ *       Run /tmp/export_for_update.php to get the current layout for replacement
  */
 
 // ============================================================================
@@ -27,28 +31,37 @@ $config = [
     'is_public' => true,
     'form_permissions' => ['*always allow*'],
     
-    // Case type mappings (find these in your target environment)
+    // Case type mappings (updated for current environment)
     'case_types' => [
-        'service_request' => 3,         // Update this ID for your environment
+        'service_request' => 3,         // Service Request
+        'project' => 4,                 // Project
+        'housing_support' => 5,         // Housing Support
+        'adult_day_care_referral' => 6, // Adult Day Care Referral
     ],
     
-    // Location type mappings (find these in your target environment)
+    // Location type mappings (updated for current environment)
     'location_types' => [
-        'Home' => 1,                    // Update this ID for your environment
-        'Work' => 3,                    // Update this ID for your environment
+        'Home' => 1,                    // Home
+        'Work' => 2,                    // Work
+        'Main' => 3,                    // Main
+        'Other' => 4,                   // Other
+        'Billing' => 5,                 // Billing
     ],
     
-    // Phone type mappings (find these in your target environment)
+    // Phone type mappings (updated for current environment)
     'phone_types' => [
-        'Phone' => 1,                   // Usually consistent across environments
-        'Mobile' => 2,                  // Usually consistent across environments
-        'Fax' => 3,                     // Usually consistent across environments
+        'Phone' => 1,                   // Phone
+        'Mobile' => 2,                  // Mobile
+        'Fax' => 3,                     // Fax
+        'Pager' => 4,                   // Pager
+        'Voicemail' => 5,               // Voicemail
     ],
     
-    // Website type mappings (find these in your target environment)
+    // Website type mappings (updated for current environment)
     'website_types' => [
-        'Main' => 1,                    // Usually consistent across environments
-        'Work' => 2,                    // Usually consistent across environments
+        'Work' => 1,                    // Work
+        'Main' => 2,                    // Main
+        'Social' => 3,                  // Social
     ],
     
     // Country mappings (find these in your target environment)
@@ -65,7 +78,7 @@ $config = [
     ],
     
     // Email confirmation template (set to null if not using)
-    'email_confirmation_template_id' => 71,  // Update this ID for your environment
+    'email_confirmation_template_id' => 71,  // Template ID confirmed in environment
     
     // Custom field mappings (these should match your environment)
     'custom_fields' => [
@@ -73,6 +86,7 @@ $config = [
         'Organization.Budget' => 'Organization.Budget',
         'Organization._Employees' => 'Organization._Employees',
         'Organization._Volunteers' => 'Organization._Volunteers',
+        'Organization.Charity_Status' => 'Organization.Charity_Status',
         'Organization.Charity_Business_' => 'Organization.Charity_Business_',
         'Organization.Notes' => 'Organization.Notes',
         'Cases_SR_Projects_.Notes' => 'Cases_SR_Projects_.Notes',

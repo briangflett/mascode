@@ -42,6 +42,5 @@
     <mixin>entity-types-php@2.0.0</mixin>
     <mixin>scan-classes@1.1.0</mixin>
     <mixin>setting-admin@1.0.0</mixin>
-    <mixin>case-xml@1.0.0</mixin>
   </mixins>
 </extension>
