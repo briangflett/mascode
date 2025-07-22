@@ -20,17 +20,8 @@ You are helping develop the `mascode` CiviCRM extension for Management Advisory 
 
 3. **Development Guidelines**:
 
-   - Use CiviCRM API4 instead of API3, BAO, DAO when possible
-   - Follow PSR-12 coding standards
-   - Use Symfony EventDispatcher instead of traditional hooks
-   - Prefer modern object oriented PHP practices (PHP 8.3+)
-
-4. **Architecture**:
-
-   - CiviRules integration for business logic
-   - FormProcessor actions for form handling
-   - Event subscribers for hook handling
-   - Utility classes in `Civi\Mascode\Util\`
+   - See context.md for complete architecture and patterns
+   - Follow established conventions in context.md
 
 5. **Key Files to Understand**:
    - `CONTEXT.md` - Detailed project context

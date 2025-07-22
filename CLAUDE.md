@@ -19,6 +19,13 @@
 
 ### API User Authentication
 - **User Configuration**: See CLAUDE.local.md for specific user credentials and authentication details
+- **API4 Calls**: Always use API4 for operations in this working directory, following these patterns:
+  - Use the `\Civi\Api4\` namespace for all API4 calls
+  - Chain methods like `.get()`, `.create()`, `.update()`, `.delete()`
+  - Use `.addWhere()` for filtering
+  - Use `.addValue()` for setting values
+  - Always add `FALSE` as the first parameter to suppress default permissions
+  - End calls with `.execute()` to run the API request
 
 ### Afform Management Best Practices
 - **Updating Afforms**: Use CiviCRM API4 to update existing forms, not file manipulation

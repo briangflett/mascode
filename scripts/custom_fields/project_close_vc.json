@@ -1,0 +1,46 @@
+{
+  "name": "Project Close - VC Fields",
+  "description": "3 custom fields for Project Close VC Feedback form",
+  "environment": "prod",
+  "custom_group": {
+    "id": 12,
+    "name": "project_close_vc_fields",
+    "title": "Project Close - VC Fields"
+  },
+  "option_groups": {},
+  "fields": [
+    {
+      "name": "hours_worked",
+      "label": "Hours Worked by Volunteer Consultant",
+      "data_type": "Float",
+      "html_type": "Text",
+      "weight": 46,
+      "is_required": false,
+      "is_searchable": true,
+      "is_active": true,
+      "is_view": false
+    },
+    {
+      "name": "expenses_incurred",
+      "label": "Expenses Incurred",
+      "data_type": "Money",
+      "html_type": "Text",
+      "weight": 52,
+      "is_required": false,
+      "is_searchable": true,
+      "is_active": true,
+      "is_view": false
+    },
+    {
+      "name": "services_delivered",
+      "label": "Description of Services Delivered",
+      "data_type": "Memo",
+      "html_type": "TextArea",
+      "weight": 58,
+      "is_required": false,
+      "is_searchable": true,
+      "is_active": true,
+      "is_view": false
+    }
+  ]
+}

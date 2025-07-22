@@ -1,0 +1,271 @@
+{
+  "name": "SASS Custom Fields",
+  "description": "21 custom fields for Short Self Assessment Survey form",
+  "environment": "prod",
+  "custom_group": {
+    "id": 11,
+    "name": "Unified_Self_Assessment_Survey",
+    "title": "Short Self Assessment Survey"
+  },
+  "option_groups": {
+    "yes_no": {
+      "id": 219,
+      "name": "yes_no",
+      "title": "Yes/No"
+    }
+  },
+  "fields": [
+    {
+      "name": "q01_board_established",
+      "label": "A Board of Directors has been established with at least three individuals on it. The members are not related to each other.",
+      "data_type": "String",
+      "html_type": "Radio",
+      "option_group": "yes_no",
+      "weight": 5,
+      "is_required": false,
+      "is_searchable": true,
+      "is_active": true,
+      "is_view": false
+    },
+    {
+      "name": "q02_members_elect",
+      "label": "The organization has \"Members\" who elect the Board of Directors.",
+      "data_type": "String",
+      "html_type": "Radio",
+      "option_group": "yes_no",
+      "weight": 6,
+      "is_required": false,
+      "is_searchable": true,
+      "is_active": true,
+      "is_view": false
+    },
+    {
+      "name": "q03_board_committees",
+      "label": "The Board establishes and utilizes the help of committees when needed.",
+      "data_type": "String",
+      "html_type": "Radio",
+      "option_group": "yes_no",
+      "weight": 7,
+      "is_required": false,
+      "is_searchable": true,
+      "is_active": true,
+      "is_view": false
+    },
+    {
+      "name": "q04_legal_compliance",
+      "label": "The Board has reviewed the legal requirements for not-for-profit organizations (Ontario Not-for-profit Corporations Act for provincially registered, CRA/Income Tax Act for federally registered) and are in compliance or working toward it.",
+      "data_type": "String",
+      "html_type": "Radio",
+      "option_group": "yes_no",
+      "weight": 8,
+      "is_required": false,
+      "is_searchable": true,
+      "is_active": true,
+      "is_view": false
+    },
+    {
+      "name": "q05_governance_documents",
+      "label": "Board governance documents and policies are in place and kept on record. This includes By-laws, Articles (Letters Patent), Committee structures/roles/terms of reference, meeting Minutes (record of decisions), conflict of interest.",
+      "data_type": "String",
+      "html_type": "Radio",
+      "option_group": "yes_no",
+      "weight": 9,
+      "is_required": false,
+      "is_searchable": true,
+      "is_active": true,
+      "is_view": false
+    },
+    {
+      "name": "q06_mission_vision",
+      "label": "There are clear and succinct Vision, Mission (Mandate) statements that accurately describe what your organization strives for and does, or plans to do.",
+      "data_type": "String",
+      "html_type": "Radio",
+      "option_group": "yes_no",
+      "weight": 10,
+      "is_required": false,
+      "is_searchable": true,
+      "is_active": true,
+      "is_view": false
+    },
+    {
+      "name": "q07_unique_services",
+      "label": "There is no other organization, in your community, that offers the same services.",
+      "data_type": "String",
+      "html_type": "Radio",
+      "option_group": "yes_no",
+      "weight": 11,
+      "is_required": false,
+      "is_searchable": true,
+      "is_active": true,
+      "is_view": false
+    },
+    {
+      "name": "q08_strategic_plan",
+      "label": "There is a set of up to 6 strategic goals (Strategic Plan) updated no more than four years ago.",
+      "data_type": "String",
+      "html_type": "Radio",
+      "option_group": "yes_no",
+      "weight": 12,
+      "is_required": false,
+      "is_searchable": true,
+      "is_active": true,
+      "is_view": false
+    },
+    {
+      "name": "q09_annual_plan",
+      "label": "There is an annual plan of activities, based on/reflecting the strategic goals (Strategic Plan) of the organization. The plan includes both an identification of who is doing (responsible for) what, as well as measurable goals. The Board reviews the progress on this plan at least twice per year.",
+      "data_type": "String",
+      "html_type": "Radio",
+      "option_group": "yes_no",
+      "weight": 13,
+      "is_required": false,
+      "is_searchable": true,
+      "is_active": true,
+      "is_view": false
+    },
+    {
+      "name": "q10_board_effectiveness",
+      "label": "The Board works effectively, makes timely decisions, and positively supports the goals of the organization.",
+      "data_type": "String",
+      "html_type": "Radio",
+      "option_group": "yes_no",
+      "weight": 14,
+      "is_required": false,
+      "is_searchable": true,
+      "is_active": true,
+      "is_view": false
+    },
+    {
+      "name": "q11_financial_records",
+      "label": "There is a record of all income and expenditures, and these are regularly reviewed and 'accepted' by the Board of Directors.",
+      "data_type": "String",
+      "html_type": "Radio",
+      "option_group": "yes_no",
+      "weight": 15,
+      "is_required": false,
+      "is_searchable": true,
+      "is_active": true,
+      "is_view": false
+    },
+    {
+      "name": "q12_bank_account",
+      "label": "There is a separate bank account for the organization and bank statements are reviewed at least quarterly by the Board of Directors.",
+      "data_type": "String",
+      "html_type": "Radio",
+      "option_group": "yes_no",
+      "weight": 16,
+      "is_required": false,
+      "is_searchable": true,
+      "is_active": true,
+      "is_view": false
+    },
+    {
+      "name": "q13_budget_planning",
+      "label": "The annual plan of activities includes budget information if money is going to be raised or spent.",
+      "data_type": "String",
+      "html_type": "Radio",
+      "option_group": "yes_no",
+      "weight": 17,
+      "is_required": false,
+      "is_searchable": true,
+      "is_active": true,
+      "is_view": false
+    },
+    {
+      "name": "q14_financial_reporting",
+      "label": "Where relevant any financial reporting to CRA (Canada Revenue Agency) or any other funders is done on-time, accurately, and is reviewed and approved by the Board.",
+      "data_type": "String",
+      "html_type": "Radio",
+      "option_group": "yes_no",
+      "weight": 18,
+      "is_required": false,
+      "is_searchable": true,
+      "is_active": true,
+      "is_view": false
+    },
+    {
+      "name": "q15_donation_management",
+      "label": "If and when donations are received, they are recorded, and all donors receive appropriate acknowledgement.",
+      "data_type": "String",
+      "html_type": "Radio",
+      "option_group": "yes_no",
+      "weight": 19,
+      "is_required": false,
+      "is_searchable": true,
+      "is_active": true,
+      "is_view": false
+    },
+    {
+      "name": "q16_volunteer_involvement",
+      "label": "Volunteers are involved in the organization apart from Board members.",
+      "data_type": "String",
+      "html_type": "Radio",
+      "option_group": "yes_no",
+      "weight": 20,
+      "is_required": false,
+      "is_searchable": true,
+      "is_active": true,
+      "is_view": false
+    },
+    {
+      "name": "q17_volunteer_selection",
+      "label": "Volunteers are interviewed and selected for suitability for the work they will be doing (even if very briefly) and a record kept confirming this process with their name, contact information and what they will be doing.",
+      "data_type": "String",
+      "html_type": "Radio",
+      "option_group": "yes_no",
+      "weight": 21,
+      "is_required": false,
+      "is_searchable": true,
+      "is_active": true,
+      "is_view": false
+    },
+    {
+      "name": "q18_volunteer_screening",
+      "label": "If a volunteer will have access to money or vulnerable people (seniors, children) they are appropriately screened.",
+      "data_type": "String",
+      "html_type": "Radio",
+      "option_group": "yes_no",
+      "weight": 22,
+      "is_required": false,
+      "is_searchable": true,
+      "is_active": true,
+      "is_view": false
+    },
+    {
+      "name": "q19_volunteer_guidelines",
+      "label": "Every volunteer receives a written outline of the tasks they will be taking on, the time commitment/term and who is 'in charge' (for questions and guidance).",
+      "data_type": "String",
+      "html_type": "Radio",
+      "option_group": "yes_no",
+      "weight": 23,
+      "is_required": false,
+      "is_searchable": true,
+      "is_active": true,
+      "is_view": false
+    },
+    {
+      "name": "q20_client_involvement",
+      "label": "Individuals representing the client group served by the organization have the opportunity to contribute and/or be a volunteer.",
+      "data_type": "String",
+      "html_type": "Radio",
+      "option_group": "yes_no",
+      "weight": 24,
+      "is_required": false,
+      "is_searchable": true,
+      "is_active": true,
+      "is_view": false
+    },
+    {
+      "name": "q21_communication_guidelines",
+      "label": "There are guidelines on who may speak for the organization as well as for use of social media to share information.",
+      "data_type": "String",
+      "html_type": "Radio",
+      "option_group": "yes_no",
+      "weight": 25,
+      "is_required": false,
+      "is_searchable": true,
+      "is_active": true,
+      "is_view": false
+    }
+  ]
+}

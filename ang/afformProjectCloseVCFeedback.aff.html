@@ -1,0 +1,47 @@
+<af-form ctrl="afform">
+  <af-entity data="{}" type="Organization" name="Organization1" label="Organization 1" actions="{create: false, update: true}" security="FBAC" url-autofill="0" autofill="relationship:Employer of" autofill-relationship="Individual1" contact-dedupe="Organization.Unsupervised" />
+  <af-entity data="{}" type="Individual" name="Individual1" label="Individual 1" actions="{create: false, update: true}" security="FBAC" autofill="entity_id" contact-dedupe="Individual.Supervised" />
+  <af-entity data="{source_contact_id: 'Individual1', activity_type_id: 75, status_id: 2, assignee_contact_id: ['Organization1'], subject: 'Project Close - VC Report'}" type="Activity" name="Activity1" label="Activity 1" actions="{create: true, update: false}" security="FBAC" />
+  <af-entity data="{}" actions="{create: false, update: false}" type="Case" name="Case1" label="Case 1" security="FBAC" case-autofill="entity_id" />
+  <div class="af-container">
+    <fieldset af-fieldset="Organization1" class="af-container af-container-style-pane" af-title="Organization Information" style="border: 3px solid #619ee6; background-color: #ffffff">
+      <div class="af-container af-layout-inline">
+        <af-field name="organization_name" defn="{required: true, input_attrs: {}}" />
+      </div>
+    </fieldset>
+    <fieldset af-fieldset="Individual1" class="af-container af-container-style-pane" af-title="VC Information" style="border: 3px solid #619ee6; background-color: #ffffff">
+      <div class="af-container af-layout-inline">
+        <af-field name="first_name" defn="{required: true, input_attrs: {}}" />
+        <af-field name="last_name" defn="{required: true, input_attrs: {}}" />
+        <div af-join="Email" actions="{update: true, delete: true}" data="{is_primary: true}">
+          <div actions="{update: true, delete: true}" class="af-container">
+            <div class="af-container af-layout-inline">
+              <af-field name="email" defn="{required: true, input_attrs: {}}" />
+              <af-field name="location_type_id" defn="{afform_default: '1', input_attrs: {}, required: false, label: false, input_type: 'Hidden'}" />
+              <af-field name="is_primary" defn="{afform_default: '1', label: false, input_type: 'Hidden'}" />
+            </div>
+          </div>
+        </div>
+      </div>
+    </fieldset>
+    <fieldset af-fieldset="Case1" class="af-container af-layout-inline af-container-style-pane" af-title="Project" style="border: 3px solid #619ee6">
+      <af-field name="Projects.MAS_Project_Case_Code" defn="{label: 'MAS Project Code', input_attrs: {}, input_type: 'DisplayOnly'}" />
+      <af-field name="subject" defn="{input_type: 'DisplayOnly', input_attrs: {}, label: 'Subject'}" />
+      <af-field name="start_date" defn="{input_type: 'DisplayOnly', input_attrs: {}, label: 'Start Date'}" />
+      <af-field name="end_date" defn="{input_type: 'DisplayOnly', input_attrs: {}, label: 'End Date'}" />
+    </fieldset>
+    <fieldset af-fieldset="Activity1" class="af-container af-container-style-pane" af-title="VC Report" style="border: 3px solid #619ee6">
+      <div actions="{update: true, delete: true}" class="af-container">
+        <div class="af-markup">Complete this section with project details and hours worked.</div>
+        <af-field name="project_close_vc_fields.hours_worked" defn="{label: 'Hours Worked by Volunteer Consultant', input_attrs: {}}" />
+        <af-field name="project_close_vc_fields.expenses_incurred" defn="{label: 'Expenses Incurred', input_attrs: {}}" />
+        <af-field name="project_close_vc_fields.services_delivered" defn="{label: 'Description of Services Delivered'}" />
+        <div class="af-markup">After completing this form, the client will be notified to provide their feedback.</div>
+      </div>
+    </fieldset>
+    <div class="af-container af-layout-inline">
+      <button class="af-button btn btn-primary" crm-icon="fa-check" ng-click="afform.submit()" ng-if="afform.showSubmitButton">Submit Feedback</button>
+      <button class="af-button btn btn-primary" crm-icon="fa-floppy-disk" ng-click="afform.submitDraft()" ng-if="afform.showSubmitButton">Save Draft</button>
+    </div>
+  </div>
+</af-form>
