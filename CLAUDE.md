@@ -19,6 +19,8 @@
 
 ### API User Authentication
 - **User Configuration**: See CLAUDE.local.md for specific user credentials and authentication details
+- **Correct User**: `brian.flett@masadvise.org` (not `admin`)
+- **CV Commands**: Use `--user=brian.flett@masadvise.org` parameter
 - **API4 Calls**: Always use API4 for operations in this working directory, following these patterns:
   - Use the `\Civi\Api4\` namespace for all API4 calls
   - Chain methods like `.get()`, `.create()`, `.update()`, `.delete()`
