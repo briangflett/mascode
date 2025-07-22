@@ -43,6 +43,16 @@ cv scr <script>            # Run development scripts
 cv ext:list | grep mascode # Check extension status
 ```
 
+### File Patterns
+**Include**: `*.php`, `*.js`, `*.json`, `*.xml`, `*.md`, `*.sql`, `*.tpl`, `*.yml`, `*.yaml`
+**Exclude**: `vendor/`, `node_modules/`, `.git/`, `cache/`, `tmp/`
+
+### Development Preferences
+- **PHP Version**: 8.3
+- **Code Style**: PSR-12
+- **Max File Size**: 1MB
+- **Auto Save**: Disabled
+
 ### Making Changes
 1. Use `cv flush` after code modifications
 2. Test in development environment first

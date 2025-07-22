@@ -2,17 +2,29 @@
 
 ## Overview
 
-The MASCode extension uses script-based deployment to reliably move configurations between development and production environments. This approach replaces the previous fragile export/import system with robust, environment-aware deployment scripts.
+The MASCode extension uses a combination of script-based and file-based deployments to reliably move configurations between development and production environments. This approach replaces the previous fragile export/import system with robust, environment-aware deployment scripts.
 
 ## Deployment Strategy
 
 ### Automated Components (Script-Based)
+- **Custom Fields** (various field groups, using deploy_custom_fields.php)
 - **Self Assessment Surveys** (SASS/SASF)
-- **CiviRules** (actions, triggers, conditions)  
+- **CiviRules** (actions, triggers, conditions using deploy_civirules.php)
 - **RCS Form** (Request for Consulting Services)
 
+Use Searchkit searches to ensure all custom fields and rules are in both environments.  
+
+### File-Based Components (Version Controlled)
+- **RCS Form** (Request for Consulting Services) 
+- **SASS Form** (Short Self Assessment Survey) 
+- **SASF Form** (Full Self Assessment Survey) 
+
+These files are created by the system in the development environment at /wp-content/uploads/civicrm/ang and copied to /wp-content/uploads/civicrm/ext/mascode/ang.
+
 ### Manual Components (UI-Based)
-- **Form Processors** (reliable built-in export/import)
+- **Form Processors** (reliable built-in export/import, see deploy_form_processors.md)
+
+---
 
 ## Environment Configuration
 
@@ -260,4 +272,5 @@ cv flush
 
 ---
 
+>>>>>>> origin/master
 *This deployment guide is part of the MAS Extension unified development system. For development workflow, see [DEVELOPMENT.md](DEVELOPMENT.md).*

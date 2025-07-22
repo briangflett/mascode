@@ -10,7 +10,6 @@ require_once 'mascode.civix.php';
 
 // CiviCRM autoloads via the classloader section in info.xml
 
-use CRM_Mascode_ExtensionUtil as E;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Civi\Mascode\CompilerPass;
 
@@ -19,14 +18,7 @@ use Civi\Mascode\CompilerPass;
  */
 function mascode_civicrm_container(ContainerBuilder $container)
 {
-    // The container registrations can be removed once we move service definitions to YAML.
-
-    // Register AfformSubmitSubscriber
-    // I was able to use CiviRules to create President and Executive Director relationships,
-    // but I need to use an event subscriber to update the status and submit a confirmation email
-    $container->register('mascode.afform_submit_subscriber', \Civi\Mascode\Event\AfformSubmitSubscriber::class)
-      ->setPublic(true)
-      ->addTag('event_subscriber');
+    // AfformSubmitSubscriber is now auto-registered via scan-classes mixin and AutoSubscriber
 
     // other services like form actions may need to wait until the container is built
     $container->addCompilerPass(new CompilerPass());

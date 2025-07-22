@@ -4,14 +4,14 @@
 
 namespace Civi\Mascode\Event;
 
-use Symfony\Component\EventDispatcher\EventSubscriberInterface;
+use Civi\Core\Service\AutoSubscriber;
 use Civi\Afform\Event\AfformSubmitEvent;
 use Civi\Api4\Contact;
 use Civi\Api4\MessageTemplate;
 use Civi\Api4\AfformSubmission;
 use Civi\Token\TokenProcessor;
 
-class AfformSubmitSubscriber implements EventSubscriberInterface
+class AfformSubmitSubscriber extends AutoSubscriber
 {
     /**
      * Store entity IDs during form submission processing

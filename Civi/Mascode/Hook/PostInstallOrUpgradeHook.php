@@ -19,7 +19,6 @@ class PostInstallOrUpgradeHook
         self::createMascodeSettings();
         self::installCiviRulesComponents();
 
-        // Apply patches
         self::applyPatches();
     }
 

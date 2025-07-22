@@ -18,12 +18,8 @@
 
 ## Architectural Principles
 
-- **API Preference**: Use CiviCRM API4 instead of API3, BAO, or DAO
-- **Event Handling**: Use Symfony EventDispatcher instead of traditional hooks when possible
-- **Modern Patterns**: Prefer FormBuilder (Afform) over Smarty templates
-- **Dependency Injection**: Use Symfony Container for service management
-- **Code Organization**: Use PSR-4 namespace structure in `Civi/Mascode/`
-- **Future-Ready**: Plan for AI integration in all new features
+- See context.md for complete architecture patterns and development approach
+- Follow established conventions and technical standards defined in context.md
 
 ## Development Workflow
 

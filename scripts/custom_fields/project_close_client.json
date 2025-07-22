@@ -1,0 +1,139 @@
+{
+  "name": "Project Close - Client Fields",
+  "description": "9 custom fields for Project Close Client Feedback form",
+  "environment": "prod",
+  "custom_group": {
+    "id": 13,
+    "name": "project_close_client_fields",
+    "title": "Project Close - Client Fields"
+  },
+  "option_groups": {
+    "satisfaction": {
+      "id": 212,
+      "name": "satisfaction",
+      "title": "Satisfaction"
+    },
+    "yes_no_unsure_nc": {
+      "id": 214,
+      "name": "yes_no_unsure_nc",
+      "title": "Yes/No/Unsure/NC"
+    },
+    "yes_no_na": {
+      "id": 216,
+      "name": "yes_no_na",
+      "title": "Yes/No/NA"
+    },
+    "yes_no": {
+      "id": 219,
+      "name": "yes_no",
+      "title": "Yes/No"
+    }
+  },
+  "fields": [
+    {
+      "name": "satisfaction_rating",
+      "label": "How satisfied are you with the work done by MAS?",
+      "data_type": "String",
+      "html_type": "Radio",
+      "option_group": "satisfaction",
+      "weight": 10,
+      "is_required": false,
+      "is_searchable": true,
+      "is_active": true,
+      "is_view": false
+    },
+    {
+      "name": "satisfaction_comment",
+      "label": "Satisfaction Comment",
+      "data_type": "Memo",
+      "html_type": "TextArea",
+      "weight": 20,
+      "is_required": false,
+      "is_searchable": true,
+      "is_active": true,
+      "is_view": false
+    },
+    {
+      "name": "would_use_mas_again",
+      "label": "Would you use MAS again?",
+      "data_type": "String",
+      "html_type": "Radio",
+      "option_group": "yes_no_unsure_nc",
+      "weight": 28,
+      "is_required": false,
+      "is_searchable": true,
+      "is_active": true,
+      "is_view": false
+    },
+    {
+      "name": "reuse_comment",
+      "label": "Reuse Comment",
+      "data_type": "Memo",
+      "html_type": "TextArea",
+      "weight": 34,
+      "is_required": false,
+      "is_searchable": true,
+      "is_active": true,
+      "is_view": false
+    },
+    {
+      "name": "would_work_with_vc_again",
+      "label": "Would you consider working with the MAS Volunteer Consultant again?",
+      "data_type": "String",
+      "html_type": "Radio",
+      "option_group": "yes_no_unsure_nc",
+      "weight": 40,
+      "is_required": false,
+      "is_searchable": true,
+      "is_active": true,
+      "is_view": false
+    },
+    {
+      "name": "would_recommend_mas",
+      "label": "Would you recommend MAS to another not for profit organization?",
+      "data_type": "String",
+      "html_type": "Radio",
+      "option_group": "yes_no_unsure_nc",
+      "weight": 48,
+      "is_required": false,
+      "is_searchable": true,
+      "is_active": true,
+      "is_view": false
+    },
+    {
+      "name": "benefits_realized",
+      "label": "Please describe the benefits realized and any other additional comments",
+      "data_type": "Memo",
+      "html_type": "TextArea",
+      "weight": 54,
+      "is_required": false,
+      "is_searchable": true,
+      "is_active": true,
+      "is_view": false
+    },
+    {
+      "name": "use_in_marketing",
+      "label": "Could we use your comments in our marketing materials?",
+      "data_type": "String",
+      "html_type": "Radio",
+      "option_group": "yes_no_na",
+      "weight": 60,
+      "is_required": false,
+      "is_searchable": true,
+      "is_active": true,
+      "is_view": false
+    },
+    {
+      "name": "share_with_vc",
+      "label": "Could we share your comments with the Volunteer Consultant who worked with you?",
+      "data_type": "String",
+      "html_type": "Radio",
+      "option_group": "yes_no",
+      "weight": 64,
+      "is_required": false,
+      "is_searchable": true,
+      "is_active": true,
+      "is_view": false
+    }
+  ]
+}
