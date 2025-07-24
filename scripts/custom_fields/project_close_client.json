@@ -1,32 +1,66 @@
 {
   "name": "Project Close - Client Fields",
   "description": "9 custom fields for Project Close Client Feedback form",
-  "environment": "prod",
   "custom_group": {
-    "id": 13,
-    "name": "project_close_client_fields",
-    "title": "Project Close - Client Fields"
+    "dev": {
+      "id": 13,
+      "name": "project_close_client_fields",
+      "title": "Project Close - Client Fields"
+    },
+    "prod": {
+      "id": 13,
+      "name": "project_close_client_fields",
+      "title": "Project Close - Client Fields"
+    }
   },
   "option_groups": {
     "satisfaction": {
-      "id": 212,
-      "name": "satisfaction",
-      "title": "Satisfaction"
+      "dev": {
+        "id": 212,
+        "name": "satisfaction",
+        "title": "Satisfaction"
+      },
+      "prod": {
+        "id": 212,
+        "name": "satisfaction",
+        "title": "Satisfaction"
+      }
     },
     "yes_no_unsure_nc": {
-      "id": 214,
-      "name": "yes_no_unsure_nc",
-      "title": "Yes/No/Unsure/NC"
+      "dev": {
+        "id": 214,
+        "name": "yes_no_unsure_nc",
+        "title": "Yes/No/Unsure/NC"
+      },
+      "prod": {
+        "id": 214,
+        "name": "yes_no_unsure_nc",
+        "title": "Yes/No/Unsure/NC"
+      }
     },
     "yes_no_na": {
-      "id": 216,
-      "name": "yes_no_na",
-      "title": "Yes/No/NA"
+      "dev": {
+        "id": 216,
+        "name": "yes_no_na",
+        "title": "Yes/No/NA"
+      },
+      "prod": {
+        "id": 216,
+        "name": "yes_no_na",
+        "title": "Yes/No/NA"
+      }
     },
     "yes_no": {
-      "id": 219,
-      "name": "yes_no",
-      "title": "Yes/No"
+      "dev": {
+        "id": 219,
+        "name": "yes_no",
+        "title": "Yes/No"
+      },
+      "prod": {
+        "id": 119,
+        "name": "yes_no",
+        "title": "Yes/No"
+      }
     }
   },
   "fields": [

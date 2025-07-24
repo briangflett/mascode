@@ -1,17 +1,30 @@
 {
   "name": "SASF Custom Fields",
   "description": "35 custom fields for Full Self Assessment Survey form",
-  "environment": "prod",
   "custom_group": {
-    "id": 9,
-    "name": "Full_Self_Assessment_Survey",
-    "title": "Full Self Assessment Survey"
+    "dev": {
+      "id": 9,
+      "name": "Full_Self_Assessment_Survey",
+      "title": "Full Self Assessment Survey"
+    },
+    "prod": {
+      "id": 7,
+      "name": "Full_Self_Assessment_Survey",
+      "title": "Full Self Assessment Survey"
+    }
   },
   "option_groups": {
     "yes_no": {
-      "id": 219,
-      "name": "yes_no",
-      "title": "Yes/No"
+      "dev": {
+        "id": 219,
+        "name": "yes_no",
+        "title": "Yes/No"
+      },
+      "prod": {
+        "id": 119,
+        "name": "yes_no",
+        "title": "Yes/No"
+      }
     }
   },
   "fields": [

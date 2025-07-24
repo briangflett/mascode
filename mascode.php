@@ -83,3 +83,16 @@ function mascode_civicrm_caseSummary($caseId)
 {
     return \Civi\Mascode\Hook\CaseSummaryHook::handle($caseId);
 }
+
+/**
+ * Implements hook_civicrm_pre_case_merge().
+ * 
+ * Preserves MAS case codes before cases are merged during contact merge.
+ */
+function mascode_civicrm_pre_case_merge($mainContactId, $mainCaseId, $otherContactId, $otherCaseId, $changeClient)
+{
+    // Only preserve codes if we have a valid case ID
+    if ($otherCaseId !== null) {
+        \Civi\Mascode\Hook\CaseMergeHook::preserveCaseCodes($otherCaseId);
+    }
+}

@@ -1,17 +1,30 @@
 {
   "name": "SASS Custom Fields",
   "description": "21 custom fields for Short Self Assessment Survey form",
-  "environment": "prod",
   "custom_group": {
-    "id": 11,
-    "name": "Unified_Self_Assessment_Survey",
-    "title": "Short Self Assessment Survey"
+    "dev": {
+      "id": 11,
+      "name": "Unified_Self_Assessment_Survey",
+      "title": "Short Self Assessment Survey"
+    },
+    "prod": {
+      "id": 8,
+      "name": "Short_Self_Assessment_Survey",
+      "title": "Short Self Assessment Survey"
+    }
   },
   "option_groups": {
     "yes_no": {
-      "id": 219,
-      "name": "yes_no",
-      "title": "Yes/No"
+      "dev": {
+        "id": 219,
+        "name": "yes_no",
+        "title": "Yes/No"
+      },
+      "prod": {
+        "id": 119,
+        "name": "yes_no",
+        "title": "Yes/No"
+      }
     }
   },
   "fields": [

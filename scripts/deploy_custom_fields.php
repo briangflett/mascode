@@ -6,26 +6,24 @@
  * This script reads a JSON configuration file and creates custom fields based on the configuration.
  * 
  * USAGE:
- *   cv scr scripts/deploy_custom_fields.php sasf
- *   cv scr scripts/deploy_custom_fields.php sass
+ *   cv scr scripts/deploy_custom_fields.php <config_name> <environment>
+ *   cv scr scripts/deploy_custom_fields.php sasf dev
+ *   cv scr scripts/deploy_custom_fields.php sass prod
  *
  * The script will look for configuration files in scripts/custom_fields/{config_name}.json
  *
- * JSON Configuration Format:
+ * JSON Configuration Format (Multi-Environment):
  * {
  *   "name": "Configuration Name",
  *   "description": "Description of the configuration",
- *   "environment": "prod",
  *   "custom_group": {
- *     "id": 7,
- *     "name": "Custom_Group_Name",
- *     "title": "Custom Group Title"
+ *     "dev": { "id": 9, "name": "Group_Name", "title": "Group Title" },
+ *     "prod": { "id": 7, "name": "Group_Name", "title": "Group Title" }
  *   },
  *   "option_groups": {
  *     "group_key": {
- *       "id": 119,
- *       "name": "option_group_name",
- *       "title": "Option Group Title"
+ *       "dev": { "id": 219, "name": "option_group_name", "title": "Option Group Title" },
+ *       "prod": { "id": 119, "name": "option_group_name", "title": "Option Group Title" }
  *     }
  *   },
  *   "fields": [
@@ -49,9 +47,10 @@
 // ARGUMENT PROCESSING
 // ============================================================================
 
-if (empty($argv[1])) {
-    echo "ERROR: Configuration name is required\n";
-    echo "USAGE: cv scr scripts/deploy_custom_fields.php <config_name>\n";
+if (empty($argv[1]) || empty($argv[2])) {
+    echo "ERROR: Configuration name and environment are required\n";
+    echo "USAGE: cv scr scripts/deploy_custom_fields.php <config_name> <environment>\n";
+    echo "Environment: dev or prod\n";
     echo "Available configurations:\n";
     
     // List available configuration files
@@ -67,6 +66,14 @@ if (empty($argv[1])) {
 }
 
 $configName = $argv[1];
+$environment = $argv[2];
+
+// Validate environment
+if (!in_array($environment, ['dev', 'prod'])) {
+    echo "ERROR: Environment must be 'dev' or 'prod'\n";
+    exit(1);
+}
+
 $configFile = __DIR__ . '/custom_fields/' . $configName . '.json';
 
 if (!file_exists($configFile)) {
@@ -80,6 +87,7 @@ if (!file_exists($configFile)) {
 
 echo "=== Generic Custom Fields Deployment Script ===\n";
 echo "Configuration: $configName\n";
+echo "Environment: $environment\n";
 
 $configJson = file_get_contents($configFile);
 $config = json_decode($configJson, true);
@@ -91,7 +99,6 @@ if (!$config) {
 
 echo "Name: {$config['name']}\n";
 echo "Description: {$config['description']}\n";
-echo "Environment: {$config['environment']}\n";
 echo "Starting deployment...\n\n";
 
 $results = [];
@@ -103,25 +110,31 @@ try {
     
     echo "Step 1: Verifying Prerequisites...\n";
 
+    // Get environment-specific custom group configuration
+    $customGroupConfig = $config['custom_group'][$environment];
+    
     // Verify Custom Group exists
     $customGroup = \Civi\Api4\CustomGroup::get(false)
-        ->addWhere('id', '=', $config['custom_group']['id'])
+        ->addWhere('id', '=', $customGroupConfig['id'])
         ->execute()->first();
 
     if (!$customGroup) {
-        throw new Exception("Custom Group with ID {$config['custom_group']['id']} not found. Please create it first.");
+        throw new Exception("Custom Group with ID {$customGroupConfig['id']} not found. Please create it first.");
     }
 
     // Verify custom group name matches if provided
-    if (!empty($config['custom_group']['name']) && $customGroup['name'] !== $config['custom_group']['name']) {
-        echo "WARNING: Custom Group name mismatch. Expected '{$config['custom_group']['name']}', found '{$customGroup['name']}'\n";
+    if (!empty($customGroupConfig['name']) && $customGroup['name'] !== $customGroupConfig['name']) {
+        echo "WARNING: Custom Group name mismatch. Expected '{$customGroupConfig['name']}', found '{$customGroup['name']}'\n";
     }
 
     echo "✓ Custom Group verified: {$customGroup['title']} (ID: {$customGroup['id']})\n";
 
     // Verify Option Groups exist
     $optionGroupIds = [];
-    foreach ($config['option_groups'] as $groupKey => $optionGroupConfig) {
+    foreach ($config['option_groups'] as $groupKey => $optionGroupConfigs) {
+        // Get environment-specific option group configuration
+        $optionGroupConfig = $optionGroupConfigs[$environment];
+        
         $optionGroup = \Civi\Api4\OptionGroup::get(false)
             ->addWhere('id', '=', $optionGroupConfig['id'])
             ->execute()->first();
@@ -155,13 +168,13 @@ try {
         
         // Check if field already exists
         $existingField = \Civi\Api4\CustomField::get(false)
-            ->addWhere('custom_group_id', '=', $config['custom_group']['id'])
+            ->addWhere('custom_group_id', '=', $customGroupConfig['id'])
             ->addWhere('name', '=', $fieldName)
             ->execute()->first();
 
         // Prepare field values
         $fieldValues = [
-            'custom_group_id' => $config['custom_group']['id'],
+            'custom_group_id' => $customGroupConfig['id'],
             'name' => $fieldName,
             'label' => $fieldLabel,
             'data_type' => $fieldConfig['data_type'],
@@ -232,8 +245,9 @@ try {
     
     echo "\n=== Deployment Complete ===\n";
     echo "Configuration: {$config['name']}\n";
+    echo "Environment: $environment\n";
     echo "Summary:\n";
-    echo "- Custom Group ID: {$config['custom_group']['id']}\n";
+    echo "- Custom Group ID: {$customGroupConfig['id']}\n";
     echo "- Custom Fields: {$results['created_fields']} created, {$results['updated_fields']} updated, {$results['existing_fields']} unchanged\n";
     echo "- Total Fields Processed: " . count($config['fields']) . "\n";
 
