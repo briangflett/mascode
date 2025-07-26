@@ -5,7 +5,6 @@
 namespace Civi\Mascode\CiviRules\Action;
 
 use Civi\Mascode\Util\CodeGenerator;
-use Civi\Mascode\Hook\CaseMergeHook;
 
 class GenerateMasCode extends \CRM_Civirules_Action
 {
@@ -30,9 +29,6 @@ class GenerateMasCode extends \CRM_Civirules_Action
             ->execute()
             ->first()['name'] ?? null;
 
-        // Check if this case was created during a contact merge and has preserved codes
-        $preservedCodes = $this->getPreservedCodesForCase($caseId);
-        
         // Generate MAS SR codes for all new service requests
         if ($caseType == 'service_request') {
             $masSrCaseCode = \Civi\Api4\CiviCase::get(false)
@@ -42,16 +38,10 @@ class GenerateMasCode extends \CRM_Civirules_Action
             ->first()['Cases_SR_Projects_.MAS_SR_Case_Code'] ?? null;
             ;
 
-            // If the MAS SR code is empty, check for preserved code first
+            // If the MAS SR code is empty, generate a new one
             if (empty($masSrCaseCode)) {
-                if (!empty($preservedCodes['MAS_SR_Case_Code'])) {
-                    // Use preserved code from merge
-                    $masCode = $preservedCodes['MAS_SR_Case_Code'];
-                    \Civi::log()->info("MASCode: Using preserved SR case code {$masCode} for case {$caseId}");
-                } else {
-                    // Generate the MAS code
-                    $masCode = CodeGenerator::generate($caseType);
-                }
+                // Generate the MAS code
+                $masCode = CodeGenerator::generate($caseType);
 
                 // Update the case with the MAS Code
                 $result = \Civi\Api4\CiviCase::update(false)
@@ -68,16 +58,10 @@ class GenerateMasCode extends \CRM_Civirules_Action
                 ->first()['Projects.MAS_Project_Case_Code'] ?? null;
                 ;
 
-                // If the MAS Project code is empty, check for preserved code first
+                // If the MAS SR code is empty, generate a new one
                 if (empty($masProjectCaseCode)) {
-                    if (!empty($preservedCodes['MAS_Project_Case_Code'])) {
-                        // Use preserved code from merge
-                        $masCode = $preservedCodes['MAS_Project_Case_Code'];
-                        \Civi::log()->info("MASCode: Using preserved Project case code {$masCode} for case {$caseId}");
-                    } else {
-                        // Generate the MAS code
-                        $masCode = CodeGenerator::generate($caseType);
-                    }
+                    // Generate the MAS code
+                    $masCode = CodeGenerator::generate($caseType);
 
                     // Update the case with the MAS Code
                     $result = \Civi\Api4\CiviCase::update(false)
@@ -87,29 +71,6 @@ class GenerateMasCode extends \CRM_Civirules_Action
                 }
             }
         }
-    }
-
-    /**
-     * Check for preserved MAS codes from contact merge process.
-     * 
-     * @param int $caseId
-     * @return array
-     */
-    private function getPreservedCodesForCase(int $caseId): array
-    {
-        // Try to find preserved codes for recently merged cases
-        // We check multiple possible original case IDs since we don't have direct mapping
-        for ($i = 1; $i <= 10; $i++) {
-            $originalCaseId = $caseId - $i;
-            if ($originalCaseId > 0) {
-                $preservedCodes = CaseMergeHook::getPreservedCodes($originalCaseId);
-                if (!empty($preservedCodes)) {
-                    return $preservedCodes;
-                }
-            }
-        }
-        
-        return [];
     }
 
     /**
