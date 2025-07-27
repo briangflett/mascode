@@ -84,3 +84,33 @@ function mascode_civicrm_caseSummary($caseId)
     return \Civi\Mascode\Hook\CaseSummaryHook::handle($caseId);
 }
 
+/**
+ * Implements hook_civicrm_navigationMenu().
+ *
+ * Adds Move Cases menu item under Cases.
+ */
+function mascode_civicrm_navigationMenu(&$menu) {
+    // Find the Cases menu
+    $casesMenuId = null;
+    foreach ($menu as $id => $item) {
+        if (isset($item['attributes']['name']) && $item['attributes']['name'] === 'Cases') {
+            $casesMenuId = $id;
+            break;
+        }
+    }
+    
+    if ($casesMenuId) {
+        // Add our menu item to Cases
+        $menu[$casesMenuId]['child'][] = [
+            'attributes' => [
+                'label' => ts('Move Cases Between Organizations'),
+                'name' => 'move_cases_between_orgs',
+                'url' => 'civicrm/case/mas-move-cases?reset=1',
+                'permission' => 'access CiviCase',
+                'operator' => 'AND',
+                'separator' => 0,
+                'active' => 1,
+            ],
+        ];
+    }
+}

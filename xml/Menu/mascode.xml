@@ -6,4 +6,10 @@
     <title>Employer Relationship Action</title>
     <access_arguments>access CiviCRM</access_arguments>
   </item>
+  <item>
+    <path>civicrm/case/mas-move-cases</path>
+    <page_callback>CRM_Mascode_Form_MasCaseMove</page_callback>
+    <title>Move Cases Between Organizations</title>
+    <access_arguments>access CiviCase</access_arguments>
+  </item>
 </menu>
