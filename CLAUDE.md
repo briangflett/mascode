@@ -4,23 +4,51 @@
 
 - **Framework**: CiviCRM 6.1.0 on WordPress 6.8
 - **Branch**: dev
-- **Database Details**: See CLAUDE.local.md for sensitive database and directory information
+- **Environment Details**: See CLAUDE.local.md for sensitive paths, credentials, and local configuration
 
-## MASCode-Specific Development Context
+## Preferred Development Approaches
 
-- **Focus**: Unified export/import system for FormProcessor, Afforms, and CiviRules
-- **Pattern Learned**: CiviRules actions extend `CRM_CivirulesActions_Generic_Api`
-- **Form Integration**: Legacy PSR-0 classes required for CiviRules forms
-- **API Usage**: Use `CiviRuleRuleAction` entity for saving action parameters
-- **Database Note**: CiviRules table names start with civirules\_
-- **API Namespace**: Use `/Civi/Api4/CiviCase` not `/Civi/Api4/Case`
+### When to Use Each Approach
+
+1. **FormProcessor**: For processing WordPress forms and external data submissions
+   - Best for: WordPress form integration, data import/export, external API processing
+   - Pattern: Create action class in `Civi/Mascode/FormProcessor/Action/`
+
+2. **CiviRules**: For trigger-based logic and automated workflows
+   - Best for: Automated responses to CiviCRM events, business rule enforcement
+   - Pattern: Actions extend `CRM_CivirulesActions_Generic_Api`, use legacy PSR-0 forms
+   - Database: CiviRules table names start with `civirules_`
+
+3. **Symfony Events**: For event-based logic and cross-system integration
+   - Best for: Complex business logic, system integration, decoupled architecture
+   - Pattern: Create subscribers in `Civi/Mascode/Event/`, extend `AutoSubscriber`
+
+4. **Standalone Forms + Backend Logic**: For manually triggered administrative functions
+   - Best for: Admin tools, data management functions, one-off operations
+   - Pattern: CRM form class + navigation menu + event subscriber for business logic
+   - Example: Cases → "Move Cases Between Organizations" (recently implemented)
+
+### Form Development Guidelines
+
+- **Traditional CRM Forms**: Use for administrative functions, complex validation, legacy integration
+  - Location: `CRM/Mascode/Form/` with matching templates in `templates/CRM/Mascode/Form/`
+  - Best for: Backend admin tools, complex business logic forms
+
+- **FormBuilder (Afforms)**: Use for user-facing forms, simple data collection
+  - Location: `ang/` directory with `.aff.html` and `.aff.json` files
+  - Best for: Public forms, simple data entry, modern UI requirements
+  - Naming: Always prefix with "afformMAS" (e.g., `afformMASProjectCloseVcReport`)
+
+### Code Constraints
+- **Limitation**: Changes can be made to the mascode extension only, not core CiviCRM code
+- **Extension Directory**: All custom code must be within the extension namespace
+- **API Usage**: Always use CiviCRM API4, never direct database access except in established patterns
 
 ## CiviCRM API and Afform Management
 
 ### API User Authentication
 - **User Configuration**: See CLAUDE.local.md for specific user credentials and authentication details
-- **Correct User**: `brian.flett@masadvise.org` (not `admin`)
-- **CV Commands**: Use `--user=brian.flett@masadvise.org` parameter
+- **CV Commands**: See CLAUDE.local.md for correct user parameter and command patterns
 - **API4 Calls**: Always use API4 for operations in this working directory, following these patterns:
   - Use the `\Civi\Api4\` namespace for all API4 calls
   - Chain methods like `.get()`, `.create()`, `.update()`, `.delete()`

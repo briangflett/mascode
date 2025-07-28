@@ -8,10 +8,17 @@ Mascode enhances CiviCRM for Management Advisory Services (MAS), a nonprofit pro
 ### Preferred Development Approach
 - **API**: Always use CiviCRM API4 (not API3/BAO/DAO)
 - **Events**: Symfony EventDispatcher over traditional hooks
-- **Forms**: FormBuilder (Afform) over Smarty templates
+- **Forms**: FormBuilder (Afform) for user-facing, CRM forms for admin tools
 - **Reports**: SearchKit over custom reports
 - **Classes**: PSR-4 in `Civi/Mascode/` namespace
 - **Standards**: PSR-1/2/4, CiviCRM conventions, PHP 8.3+
+
+### Approach Selection by Use Case
+- **FormProcessor**: WordPress forms & external data processing (`Civi/Mascode/FormProcessor/Action/`)
+- **CiviRules**: Trigger-based automated workflows (extend `CRM_CivirulesActions_Generic_Api`)
+- **Symfony Events**: Complex business logic & system integration (`Civi/Mascode/Event/`, extend `AutoSubscriber`)
+- **Standalone Forms**: Administrative tools & manual operations (CRM form + navigation menu + event subscriber)
+- **Code Constraint**: Changes only within mascode extension, not core CiviCRM
 
 ### Key Components
 - **CiviRules Integration**: Custom triggers/actions for business logic
