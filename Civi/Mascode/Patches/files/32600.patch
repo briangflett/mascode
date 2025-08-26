@@ -103,11 +103,10 @@ diff --git a/ext/civi_case/info.xml b/ext/civi_case/info.xml
 index 565f80464fc8..58e142b37825 100644
 --- a/ext/civi_case/info.xml
 +++ b/ext/civi_case/info.xml
-@@ -29,7 +29,6 @@
-   </classloader>
-   <mixins>
+@@ -31,7 +31,6 @@
      <mixin>ang-php@1.0.0</mixin>
 -    <mixin>scan-classes@1.0.0</mixin>
+     <mixin>setting-php@1.0.0</mixin>
    </mixins>
    <civix>
      <namespace>CRM/Case</namespace>
