@@ -3,7 +3,7 @@
   "description": "9 custom fields for Project Close Client Feedback form",
   "custom_group": {
     "dev": {
-      "id": 13,
+      "id": 10,
       "name": "project_close_client_fields",
       "title": "Project Close - Client Fields"
     },
@@ -16,7 +16,7 @@
   "option_groups": {
     "satisfaction": {
       "dev": {
-        "id": 212,
+        "id": 120,
         "name": "satisfaction",
         "title": "Satisfaction"
       },
@@ -28,7 +28,7 @@
     },
     "yes_no_unsure_nc": {
       "dev": {
-        "id": 214,
+        "id": 121,
         "name": "yes_no_unsure_nc",
         "title": "Yes/No/Unsure/NC"
       },
@@ -40,7 +40,7 @@
     },
     "yes_no_na": {
       "dev": {
-        "id": 216,
+        "id": 122,
         "name": "yes_no_na",
         "title": "Yes/No/NA"
       },
@@ -52,12 +52,12 @@
     },
     "yes_no": {
       "dev": {
-        "id": 219,
+        "id": 119,
         "name": "yes_no",
         "title": "Yes/No"
       },
       "prod": {
-        "id": 119,
+        "id": 219,
         "name": "yes_no",
         "title": "Yes/No"
       }
