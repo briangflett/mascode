@@ -89,7 +89,8 @@ function mascode_civicrm_caseSummary($caseId)
  *
  * Adds Move Cases menu item under Cases.
  */
-function mascode_civicrm_navigationMenu(&$menu) {
+function mascode_civicrm_navigationMenu(&$menu)
+{
     // Find the Cases menu
     $casesMenuId = null;
     foreach ($menu as $id => $item) {
@@ -98,7 +99,7 @@ function mascode_civicrm_navigationMenu(&$menu) {
             break;
         }
     }
-    
+
     if ($casesMenuId) {
         // Add our menu item to Cases
         $menu[$casesMenuId]['child'][] = [
@@ -112,5 +113,14 @@ function mascode_civicrm_navigationMenu(&$menu) {
                 'active' => 1,
             ],
         ];
+    }
+}
+
+// Override envent info page to add custom css for event registration
+function mascode_civicrm_pageRun(&$page)
+{
+    if (get_class($page) == 'CRM_Event_Page_EventInfo') {
+        CRM_Core_Resources::singleton()
+          ->addStyleFile('mascode', 'css/event-registration.css');
     }
 }
