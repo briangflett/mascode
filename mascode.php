@@ -35,6 +35,18 @@ function mascode_civicrm_container(ContainerBuilder $container)
 function mascode_civicrm_config(&$config)
 {
     _mascode_civix_civicrm_config($config);
+
+    // Workaround for Smarty template path issue with afform extension
+    // Ensure afform/core templates are available to prevent
+    // "Unable to load template 'file:afform/customGroups/afblock.tpl'" errors
+    $smarty = \CRM_Core_Smarty::singleton();
+    $afformCorePath = \Civi::paths()->getPath('[civicrm.root]/ext/afform/core/templates/');
+    $templateDirs = $smarty->getTemplateDir();
+
+    // Only add if not already present
+    if (!in_array($afformCorePath, $templateDirs)) {
+        $smarty->addTemplateDir($afformCorePath);
+    }
 }
 
 /**
@@ -122,5 +134,57 @@ function mascode_civicrm_pageRun(&$page)
     if (get_class($page) == 'CRM_Event_Page_EventInfo') {
         CRM_Core_Resources::singleton()
           ->addStyleFile('mascode', 'css/event-registration.css');
+    }
+}
+
+/**
+ * Implements hook_civicrm_aclWhereClause().
+ *
+ * Add relationship-based ACL access for users in the Volunteer Consultant ACL role.
+ * This allows them to see contacts they have active relationships with.
+ */
+function mascode_civicrm_aclWhereClause($type, &$tables, &$whereTables, &$contactID, &$where)
+{
+    if (!$contactID) {
+        return;
+    }
+
+    // Check if the user is in the Volunteer Consultant ACL role (ID 3)
+    // by checking if they're in the VC ACL Group (ID 45)
+    $inVCGroup = \Civi\Api4\GroupContact::get(FALSE)
+        ->addWhere('contact_id', '=', $contactID)
+        ->addWhere('group_id', '=', 45)
+        ->addWhere('status', '=', 'Added')
+        ->execute()
+        ->count();
+
+    if (!$inVCGroup) {
+        return;
+    }
+
+    // Get all contacts this user has active relationships with
+    $relatedContacts = \Civi\Api4\Relationship::get(FALSE)
+        ->addSelect('contact_id_a', 'contact_id_b')
+        ->addWhere('is_active', '=', TRUE)
+        ->addClause('OR',
+            ['contact_id_a', '=', $contactID],
+            ['contact_id_b', '=', $contactID]
+        )
+        ->execute();
+
+    $allowedContactIds = [];
+    foreach ($relatedContacts as $relationship) {
+        // Add both sides of the relationship, excluding the current user
+        if ($relationship['contact_id_a'] != $contactID) {
+            $allowedContactIds[] = $relationship['contact_id_a'];
+        }
+        if ($relationship['contact_id_b'] != $contactID) {
+            $allowedContactIds[] = $relationship['contact_id_b'];
+        }
+    }
+
+    if (!empty($allowedContactIds)) {
+        $contactIdList = implode(',', array_unique($allowedContactIds));
+        $where = "( $where OR contact_a.id IN ($contactIdList) )";
     }
 }
