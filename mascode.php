@@ -138,53 +138,74 @@ function mascode_civicrm_pageRun(&$page)
 }
 
 /**
- * Implements hook_civicrm_aclWhereClause().
+ * Implements hook_civicrm_aclGroup().
  *
- * Add relationship-based ACL access for users in the Volunteer Consultant ACL role.
- * This allows them to see contacts they have active relationships with.
+ * Dynamically populate the "Clients_Assigned_to_Current_VC" smart group
+ * to only include contacts where the current user is a Case Coordinator.
+ *
+ * This hook is called when CiviCRM evaluates smart groups for ACL purposes.
+ * The group ID is automatically determined by name lookup, so this code
+ * works identically in both development and production environments.
+ *
+ * @param string $type The type of permission being checked
+ * @param int $contactID The contact ID of the logged-in user
+ * @param string $tableName The temporary table name to populate
+ * @param array $allGroups All group IDs that the user might have access to
+ * @param array $currentGroups Currently populated group IDs
  */
-function mascode_civicrm_aclWhereClause($type, &$tables, &$whereTables, &$contactID, &$where)
+function mascode_civicrm_aclGroup($type, $contactID, $tableName, &$allGroups, &$currentGroups)
 {
     if (!$contactID) {
         return;
     }
 
-    // Check if the user is in the Volunteer Consultant ACL role (ID 3)
-    // by checking if they're in the VC ACL Group (ID 45)
-    $inVCGroup = \Civi\Api4\GroupContact::get(FALSE)
-        ->addWhere('contact_id', '=', $contactID)
-        ->addWhere('group_id', '=', 45)
-        ->addWhere('status', '=', 'Added')
-        ->execute()
-        ->count();
+    // Look up the "Clients_Assigned_to_Current_VC" group ID by name
+    // This allows the same code to work in both dev and production
+    static $vcAssignedGroupId = NULL;
 
-    if (!$inVCGroup) {
+    if ($vcAssignedGroupId === NULL) {
+        try {
+            $group = \Civi\Api4\Group::get(FALSE)
+                ->addSelect('id')
+                ->addWhere('name', '=', 'Clients_Assigned_to_Current_VC')
+                ->execute()
+                ->first();
+
+            $vcAssignedGroupId = $group['id'] ?? FALSE;
+        } catch (Exception $e) {
+            // Group doesn't exist yet, disable this hook
+            $vcAssignedGroupId = FALSE;
+            \Civi::log()->warning('mascode ACL hook: Could not find group "Clients_Assigned_to_Current_VC"');
+        }
+    }
+
+    // Skip if group doesn't exist
+    if (!$vcAssignedGroupId) {
         return;
     }
 
-    // Get all contacts this user has active relationships with
-    $relatedContacts = \Civi\Api4\Relationship::get(FALSE)
-        ->addSelect('contact_id_a', 'contact_id_b')
-        ->addWhere('is_active', '=', TRUE)
-        ->addClause('OR',
-            ['contact_id_a', '=', $contactID],
-            ['contact_id_b', '=', $contactID]
-        )
-        ->execute();
-
-    $allowedContactIds = [];
-    foreach ($relatedContacts as $relationship) {
-        // Add both sides of the relationship, excluding the current user
-        if ($relationship['contact_id_a'] != $contactID) {
-            $allowedContactIds[] = $relationship['contact_id_a'];
-        }
-        if ($relationship['contact_id_b'] != $contactID) {
-            $allowedContactIds[] = $relationship['contact_id_b'];
-        }
+    // Only process if this group is in the allGroups
+    if (!in_array($vcAssignedGroupId, $allGroups)) {
+        return;
     }
 
-    if (!empty($allowedContactIds)) {
-        $contactIdList = implode(',', array_unique($allowedContactIds));
-        $where = "( $where OR contact_a.id IN ($contactIdList) )";
-    }
+    // Get all contacts where the current user is the Case Coordinator
+    // This uses the RelationshipCache table for performance
+    $query = "
+        INSERT INTO {$tableName} (contact_id)
+        SELECT DISTINCT rc.far_contact_id
+        FROM civicrm_relationship_cache rc
+        INNER JOIN civicrm_case c ON rc.case_id = c.id
+        WHERE rc.near_contact_id = %1
+          AND rc.near_relation = 'Case Coordinator is'
+          AND rc.is_active = 1
+          AND c.is_deleted = 0
+    ";
+
+    \CRM_Core_DAO::executeQuery($query, [
+        1 => [$contactID, 'Integer']
+    ]);
+
+    // Add this group to currentGroups to indicate we've processed it
+    $currentGroups[] = $vcAssignedGroupId;
 }

@@ -44,7 +44,6 @@ dist/
 .env.*.local
 
 # Claude Code sensitive files, temporary files, and local configurations
-CLAUDE.local.md
 .claude/
 
 # CiviCRM specific
