@@ -135,7 +135,7 @@ function mascode_civicrm_aclGroup($type, $contactID, $tableName, &$allGroups, &$
         try {
             $group = \Civi\Api4\Group::get(false)
                 ->addSelect('id')
-                ->addWhere('name', '=', 'Clients_Assigned_to_Current_VC')
+                ->addWhere('title', '=', 'Clients of Current VC')
                 ->execute()
                 ->first();
 
@@ -143,7 +143,7 @@ function mascode_civicrm_aclGroup($type, $contactID, $tableName, &$allGroups, &$
         } catch (Exception $e) {
             // Group doesn't exist yet, disable this hook
             $vcAssignedGroupId = false;
-            \Civi::log()->warning('mascode ACL hook: Could not find group "Clients_Assigned_to_Current_VC"');
+            \Civi::log()->warning('mascode ACL hook: Could not find group "Clients_of_Current_VC"');
         }
     }
 
@@ -154,6 +154,12 @@ function mascode_civicrm_aclGroup($type, $contactID, $tableName, &$allGroups, &$
 
     // Only process if this group is in the allGroups
     if (!in_array($vcAssignedGroupId, $allGroups)) {
+        return;
+    }
+
+    // Skip if called with legacy table name (CiviCRM 5.64+ compatibility)
+    // The hook is called twice: once with 'civicrm_saved_search' (legacy) and once with the temp table
+    if ($tableName === 'civicrm_saved_search' || $tableName === 'civicrm_group') {
         return;
     }
 
