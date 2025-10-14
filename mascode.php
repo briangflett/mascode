@@ -18,7 +18,8 @@ use Civi\Mascode\CompilerPass;
  */
 function mascode_civicrm_container(ContainerBuilder $container)
 {
-    // AfformSubmitSubscriber is now auto-registered via scan-classes mixin and AutoSubscriber
+    // See mascode/Civi/Mascode/Event/Subscriber for all the Event Dipatcher subscribers
+    // that are auto-registered via scan-classes mixin and AutoSubscriber
 
     // other services like form actions may need to wait until the container is built
     $container->addCompilerPass(new CompilerPass());
@@ -94,92 +95,4 @@ function mascode_civicrm_enable(): void
 function mascode_civicrm_caseSummary($caseId)
 {
     return \Civi\Mascode\Hook\CaseSummaryHook::handle($caseId);
-}
-
-// Override envent info page to add custom css for event registration
-function mascode_civicrm_pageRun(&$page)
-{
-    if (get_class($page) == 'CRM_Event_Page_EventInfo') {
-        CRM_Core_Resources::singleton()
-          ->addStyleFile('mascode', 'css/event-registration.css');
-    }
-}
-
-/**
- * Implements hook_civicrm_aclGroup().
- *
- * Dynamically populate the "Clients_Assigned_to_Current_VC" smart group
- * to only include contacts where the current user is a Case Coordinator.
- *
- * This hook is called when CiviCRM evaluates smart groups for ACL purposes.
- * The group ID is automatically determined by name lookup, so this code
- * works identically in both development and production environments.
- *
- * @param string $type The type of permission being checked
- * @param int $contactID The contact ID of the logged-in user
- * @param string $tableName The temporary table name to populate
- * @param array $allGroups All group IDs that the user might have access to
- * @param array $currentGroups Currently populated group IDs
- */
-function mascode_civicrm_aclGroup($type, $contactID, $tableName, &$allGroups, &$currentGroups)
-{
-    if (!$contactID) {
-        return;
-    }
-
-    // Look up the "Clients_Assigned_to_Current_VC" group ID by name
-    // This allows the same code to work in both dev and production
-    static $vcAssignedGroupId = null;
-
-    if ($vcAssignedGroupId === null) {
-        try {
-            $group = \Civi\Api4\Group::get(false)
-                ->addSelect('id')
-                ->addWhere('title', '=', 'Clients of Current VC')
-                ->execute()
-                ->first();
-
-            $vcAssignedGroupId = $group['id'] ?? false;
-        } catch (Exception $e) {
-            // Group doesn't exist yet, disable this hook
-            $vcAssignedGroupId = false;
-            \Civi::log()->warning('mascode ACL hook: Could not find group "Clients_of_Current_VC"');
-        }
-    }
-
-    // Skip if group doesn't exist
-    if (!$vcAssignedGroupId) {
-        return;
-    }
-
-    // Only process if this group is in the allGroups
-    if (!in_array($vcAssignedGroupId, $allGroups)) {
-        return;
-    }
-
-    // Skip if called with legacy table name (CiviCRM 5.64+ compatibility)
-    // The hook is called twice: once with 'civicrm_saved_search' (legacy) and once with the temp table
-    if ($tableName === 'civicrm_saved_search' || $tableName === 'civicrm_group') {
-        return;
-    }
-
-    // Get all contacts where the current user is the Case Coordinator
-    // This uses the RelationshipCache table for performance
-    $query = "
-        INSERT INTO {$tableName} (contact_id)
-        SELECT DISTINCT rc.far_contact_id
-        FROM civicrm_relationship_cache rc
-        INNER JOIN civicrm_case c ON rc.case_id = c.id
-        WHERE rc.near_contact_id = %1
-          AND rc.near_relation = 'Case Coordinator is'
-          AND rc.is_active = 1
-          AND c.is_deleted = 0
-    ";
-
-    \CRM_Core_DAO::executeQuery($query, [
-        1 => [$contactID, 'Integer']
-    ]);
-
-    // Add this group to currentGroups to indicate we've processed it
-    $currentGroups[] = $vcAssignedGroupId;
 }
