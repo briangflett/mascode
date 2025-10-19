@@ -18,7 +18,8 @@ use Civi\Mascode\CompilerPass;
  */
 function mascode_civicrm_container(ContainerBuilder $container)
 {
-    // AfformSubmitSubscriber is now auto-registered via scan-classes mixin and AutoSubscriber
+    // See mascode/Civi/Mascode/Event/Subscriber for all the Event Dipatcher subscribers
+    // that are auto-registered via scan-classes mixin and AutoSubscriber
 
     // other services like form actions may need to wait until the container is built
     $container->addCompilerPass(new CompilerPass());
@@ -35,6 +36,18 @@ function mascode_civicrm_container(ContainerBuilder $container)
 function mascode_civicrm_config(&$config)
 {
     _mascode_civix_civicrm_config($config);
+
+    // Workaround for Smarty template path issue with afform extension
+    // Ensure afform/core templates are available to prevent
+    // "Unable to load template 'file:afform/customGroups/afblock.tpl'" errors
+    $smarty = \CRM_Core_Smarty::singleton();
+    $afformCorePath = \Civi::paths()->getPath('[civicrm.root]/ext/afform/core/templates/');
+    $templateDirs = $smarty->getTemplateDir();
+
+    // Only add if not already present
+    if (!in_array($afformCorePath, $templateDirs)) {
+        $smarty->addTemplateDir($afformCorePath);
+    }
 }
 
 /**
@@ -82,35 +95,4 @@ function mascode_civicrm_enable(): void
 function mascode_civicrm_caseSummary($caseId)
 {
     return \Civi\Mascode\Hook\CaseSummaryHook::handle($caseId);
-}
-
-/**
- * Implements hook_civicrm_navigationMenu().
- *
- * Adds Move Cases menu item under Cases.
- */
-function mascode_civicrm_navigationMenu(&$menu) {
-    // Find the Cases menu
-    $casesMenuId = null;
-    foreach ($menu as $id => $item) {
-        if (isset($item['attributes']['name']) && $item['attributes']['name'] === 'Cases') {
-            $casesMenuId = $id;
-            break;
-        }
-    }
-    
-    if ($casesMenuId) {
-        // Add our menu item to Cases
-        $menu[$casesMenuId]['child'][] = [
-            'attributes' => [
-                'label' => ts('Move Cases Between Organizations'),
-                'name' => 'move_cases_between_orgs',
-                'url' => 'civicrm/case/mas-move-cases?reset=1',
-                'permission' => 'access CiviCase',
-                'operator' => 'AND',
-                'separator' => 0,
-                'active' => 1,
-            ],
-        ];
-    }
 }

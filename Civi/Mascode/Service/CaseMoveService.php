@@ -1,96 +1,87 @@
 <?php
 
-namespace Civi\Mascode\Event;
-
-use Civi\Core\Service\AutoSubscriber;
-use Civi\Core\Event\GenericHookEvent;
+namespace Civi\Mascode\Service;
 
 /**
- * MAS Case Action Event Subscriber
- * 
- * Handles custom case-related actions triggered via SearchKit
+ * Service for moving cases between organizations
+ *
+ * Handles the business logic for transferring cases, activities, and relationships
+ * from one organization to another.
  */
-class MasCaseActionSubscriber extends AutoSubscriber {
+class CaseMoveService {
 
   /**
-   * @return array
+   * Move cases between two organizations
+   *
+   * @param int $fromOrgId The source organization ID
+   * @param int $toOrgId The destination organization ID
+   * @return array Result information including cases moved, messages, and errors
+   * @throws \CRM_Core_Exception
    */
-  public static function getSubscribedEvents() {
-    return [
-      // We can add other events here as needed
-    ];
-  }
-
-  /**
-   * Execute the MAS Move Cases logic
-   */
-  public function executeMasMoveCases($ids) {
-    // Validate exactly 2 organizations selected
-    if (count($ids) !== 2) {
-      throw new \CRM_Core_Exception('MAS Move Cases requires exactly 2 organizations to be selected.');
+  public function moveCases($fromOrgId, $toOrgId) {
+    // Validate inputs
+    if ($fromOrgId === $toOrgId) {
+      throw new \CRM_Core_Exception('Source and destination organizations must be different.');
     }
 
     // Verify both contacts are organizations
     $contacts = \Civi\Api4\Contact::get(FALSE)
-      ->addSelect('id', 'contact_type', 'display_name', 'created_date')
-      ->addWhere('id', 'IN', $ids)
+      ->addSelect('id', 'contact_type', 'display_name')
+      ->addWhere('id', 'IN', [$fromOrgId, $toOrgId])
       ->execute()
       ->indexBy('id');
 
-    foreach ($ids as $contactId) {
+    foreach ([$fromOrgId, $toOrgId] as $contactId) {
       if (!isset($contacts[$contactId]) || $contacts[$contactId]['contact_type'] !== 'Organization') {
-        throw new \CRM_Core_Exception('MAS Move Cases can only be used with Organizations.');
+        throw new \CRM_Core_Exception('Both contacts must be Organizations.');
       }
     }
 
-    // Determine older (lower ID) and newer (higher ID) organizations
-    $olderContactId = min($ids);
-    $newerContactId = max($ids);
-    
-    $olderContact = $contacts[$olderContactId];
-    $newerContact = $contacts[$newerContactId];
+    $fromContact = $contacts[$fromOrgId];
+    $toContact = $contacts[$toOrgId];
 
-    // Find cases to move from newer organization
-    $casesToMove = $this->findCasesForContact($newerContactId);
+    // Find cases to move from source organization
+    $casesToMove = $this->findCasesForContact($fromOrgId);
 
     if (empty($casesToMove)) {
       return [
-        'message' => "No cases found to move from {$newerContact['display_name']}.",
+        'message' => "No cases found to move from {$fromContact['display_name']}.",
         'cases_moved' => 0,
-        'older_contact' => $olderContact['display_name'],
-        'newer_contact' => $newerContact['display_name'],
-        'contact_ids' => $ids,
+        'from_contact' => $fromContact['display_name'],
+        'to_contact' => $toContact['display_name'],
       ];
     }
 
     // Move the cases
     $casesMoved = 0;
     $errors = [];
-    
+
     foreach ($casesToMove as $caseId) {
       try {
-        $this->moveSingleCase($caseId, $newerContactId, $olderContactId);
+        $this->moveSingleCase($caseId, $fromOrgId, $toOrgId);
         $casesMoved++;
-        \Civi::log()->info("MASCode: Event subscriber moved case {$caseId} from {$newerContactId} to {$olderContactId}");
+        \Civi::log()->info("MASCode: Moved case {$caseId} from {$fromOrgId} to {$toOrgId}");
       } catch (\Exception $e) {
         $errors[] = "Case {$caseId}: " . $e->getMessage();
-        \Civi::log()->error("MASCode: Event subscriber error moving case {$caseId}: " . $e->getMessage());
+        \Civi::log()->error("MASCode: Error moving case {$caseId}: " . $e->getMessage());
       }
     }
 
     return [
-      'message' => "Successfully moved {$casesMoved} case(s) from {$newerContact['display_name']} to {$olderContact['display_name']}.",
+      'message' => "Successfully moved {$casesMoved} case(s) from {$fromContact['display_name']} to {$toContact['display_name']}.",
       'cases_moved' => $casesMoved,
       'total_cases_found' => count($casesToMove),
-      'older_contact' => $olderContact['display_name'],
-      'newer_contact' => $newerContact['display_name'],
-      'contact_ids' => $ids,
+      'from_contact' => $fromContact['display_name'],
+      'to_contact' => $toContact['display_name'],
       'errors' => $errors,
     ];
   }
 
   /**
    * Find all cases for a contact.
+   *
+   * @param int $contactId
+   * @return array Array of case IDs
    */
   private function findCasesForContact($contactId) {
     $sql = "
@@ -99,33 +90,41 @@ class MasCaseActionSubscriber extends AutoSubscriber {
       INNER JOIN civicrm_case_contact cc ON cc.case_id = c.id
       WHERE cc.contact_id = %1 AND c.is_deleted = 0
     ";
-    
+
     $dao = \CRM_Core_DAO::executeQuery($sql, [1 => [$contactId, 'Integer']]);
     $caseIds = [];
-    
+
     while ($dao->fetch()) {
       $caseIds[] = $dao->case_id;
     }
-    
+
     return $caseIds;
   }
 
   /**
    * Move a single case from source to destination contact.
+   *
+   * @param int $caseId
+   * @param int $sourceContactId
+   * @param int $destContactId
    */
   private function moveSingleCase($caseId, $sourceContactId, $destContactId) {
     // Update case contacts
     $this->moveCaseContacts($caseId, $sourceContactId, $destContactId);
-    
+
     // Update activity contacts for case activities
     $this->moveCaseActivityContacts($caseId, $sourceContactId, $destContactId);
-    
+
     // Update case relationships, preserving protected relationships
     $this->preserveCaseRelationships($caseId, $sourceContactId, $destContactId);
   }
 
   /**
    * Move case contacts from source to destination.
+   *
+   * @param int $caseId
+   * @param int $sourceContactId
+   * @param int $destContactId
    */
   private function moveCaseContacts($caseId, $sourceContactId, $destContactId) {
     $sql = "UPDATE civicrm_case_contact SET contact_id = %1 WHERE case_id = %2 AND contact_id = %3";
@@ -138,17 +137,21 @@ class MasCaseActionSubscriber extends AutoSubscriber {
 
   /**
    * Move activity contacts for case activities.
+   *
+   * @param int $caseId
+   * @param int $sourceContactId
+   * @param int $destContactId
    */
   private function moveCaseActivityContacts($caseId, $sourceContactId, $destContactId) {
     $sql = "
-      SELECT a.id 
+      SELECT a.id
       FROM civicrm_activity a
       INNER JOIN civicrm_case_activity ca ON ca.activity_id = a.id
       WHERE ca.case_id = %1 AND a.is_deleted = 0
     ";
-    
+
     $dao = \CRM_Core_DAO::executeQuery($sql, [1 => [$caseId, 'Integer']]);
-    
+
     while ($dao->fetch()) {
       $updateSql = "UPDATE civicrm_activity_contact SET contact_id = %1 WHERE activity_id = %2 AND contact_id = %3";
       \CRM_Core_DAO::executeQuery($updateSql, [
@@ -161,6 +164,10 @@ class MasCaseActionSubscriber extends AutoSubscriber {
 
   /**
    * Update case relationships, including Case Client Rep and Case Coordinator relationships.
+   *
+   * @param int $caseId
+   * @param int $sourceContactId
+   * @param int $destContactId
    */
   private function preserveCaseRelationships($caseId, $sourceContactId, $destContactId) {
     $sql = "
@@ -169,19 +176,19 @@ class MasCaseActionSubscriber extends AutoSubscriber {
       INNER JOIN civicrm_relationship_type rt ON r.relationship_type_id = rt.id
       WHERE r.case_id = %1 AND r.is_active = 1
     ";
-    
+
     $dao = \CRM_Core_DAO::executeQuery($sql, [1 => [$caseId, 'Integer']]);
-    
+
     while ($dao->fetch()) {
       if ($dao->contact_id_a == $sourceContactId || $dao->contact_id_b == $sourceContactId) {
-        
+
         // Check if this is a Case Client Rep or Case Coordinator relationship
         $nameAB = strtolower($dao->name_a_b ?? '');
         $nameBA = strtolower($dao->name_b_a ?? '');
-        
+
         $isCaseRelationship = (strpos($nameAB, 'case client rep') !== false || strpos($nameBA, 'case client rep') !== false ||
                               strpos($nameAB, 'case coordinator') !== false || strpos($nameBA, 'case coordinator') !== false);
-        
+
         if ($isCaseRelationship) {
           // For Case Client Rep and Case Coordinator, update the organization side
           // but preserve the individual contact side
