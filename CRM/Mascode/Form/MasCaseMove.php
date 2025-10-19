@@ -70,42 +70,40 @@ class CRM_Mascode_Form_MasCaseMove extends CRM_Core_Form {
    */
   public function postProcess() {
     $values = $this->exportValues();
-    
+
     $fromOrgId = $values['from_organization_id'];
     $toOrgId = $values['to_organization_id'];
-    
+
     try {
-      // Use the event subscriber to handle the business logic
-      $subscriber = new \Civi\Mascode\Event\MasCaseActionSubscriber();
-      $result = $subscriber->executeMasMoveCases([$fromOrgId, $toOrgId]);
-      
+      // Use the service to handle the business logic
+      $service = new \Civi\Mascode\Service\CaseMoveService();
+      $result = $service->moveCases($fromOrgId, $toOrgId);
+
       // Show success message
       if ($result['cases_moved'] > 0) {
         CRM_Core_Session::setStatus(
-          ts('Successfully moved %1 case(s) from organization %2 to organization %3. %4', [
+          ts('Successfully moved %1 case(s). %2', [
             1 => $result['cases_moved'],
-            2 => $fromOrgId,
-            3 => $toOrgId,
-            4 => $result['message']
-          ]), 
-          ts('Cases Moved'), 
+            2 => $result['message']
+          ]),
+          ts('Cases Moved'),
           'success'
         );
       } else {
         CRM_Core_Session::setStatus($result['message'], ts('No Cases Moved'), 'info');
       }
-      
+
       if (!empty($result['errors'])) {
         foreach ($result['errors'] as $error) {
           CRM_Core_Session::setStatus($error, ts('Warning'), 'warning');
         }
       }
-      
+
     } catch (\Exception $e) {
       \Civi::log()->error('MASCode: Form error in MasCaseMove: ' . $e->getMessage());
       CRM_Core_Session::setStatus(
-        ts('Error occurred while moving cases: %1', [1 => $e->getMessage()]), 
-        ts('Error'), 
+        ts('Error occurred while moving cases: %1', [1 => $e->getMessage()]),
+        ts('Error'),
         'error'
       );
     }
