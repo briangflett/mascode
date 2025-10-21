@@ -2,7 +2,7 @@
 
 ## Project Configuration
 
-- **Framework**: CiviCRM 6.1.0 on WordPress 6.8
+- **Framework**: Latest versions of CiviCRM on WordPress
 - **Branch**: dev
 - **Environment Details**: See CLAUDE.local.md for sensitive paths, credentials, and local configuration
 
@@ -34,7 +34,7 @@
   - Location: `CRM/Mascode/Form/` with matching templates in `templates/CRM/Mascode/Form/`
   - Best for: Backend admin tools, complex business logic forms
 
-- **FormBuilder (Afforms)**: Use for user-facing forms, simple data collection
+- **FormBuilder (Afforms) - Preferred**: Use for user-facing forms, simple data collection
   - Location: `ang/` directory with `.aff.html` and `.aff.json` files
   - Best for: Public forms, simple data entry, modern UI requirements
   - Naming: Always prefix with "afformMAS" (e.g., `afformMASProjectCloseVcReport`)
@@ -58,31 +58,56 @@
   - End calls with `.execute()` to run the API request
 
 ### Afform Management Best Practices
-- **Updating Afforms**: Use CiviCRM API4 to update existing forms, not file manipulation
-- **Custom Field Updates**: Use `CustomField::update()` API to modify field properties like `help_pre`
-- **Cache Management**: Always flush cache after Afform or custom field changes using CV flush command (see CLAUDE.local.md for exact paths)
-- **Field Identification**: Custom fields can be identified by custom_group_id and field name
-- **Form Layout Updates**: Export current forms first, then update deployment scripts with actual layouts
-- **Deployment Script Updates**: Replace layout generation functions with exported layouts for accuracy
-- **Afform Naming Convention**: Always prefix custom Afforms with "afformMAS" (e.g., afformMASProjectCloseVcReport)
+
+**Deployment Method**: Use `civix export` to bundle Afforms into extension files
+- **Export Afforms**: `civix export Afform afformMASFormName` from extension directory
+- **Export SearchKit + Afforms**: `civix export SavedSearch [id]` exports search with all displays/forms
+- **File Location**: Generated in `ang/` directory as `.aff.html` and `.aff.json` files
+- **Version Control**: Commit generated files to Git for deployment across environments
+
+**File-Based Deployment Benefits**:
+- Afforms in extensions serve as default/base state
+- User customizations are non-destructive (stored separately from packaged version)
+- Built-in "Revert" button to restore packaged version
+- No need for deployment scripts or API4 updates for form deployment
+
+**Field Identification** (Critical for cross-environment compatibility):
+- **Custom Fields**: Always use `custom_group_name.field_name` notation (e.g., `Project_Information.project_name`)
+- **Never use numeric IDs**: IDs differ between development and production environments
+- **Entity References**: Use names for option groups, relationship types, contact subtypes, etc.
+- **Verification**: Check exported `.aff.html` and `.aff.json` files use names, not IDs
+
+**When to Use API4 for Afforms**:
+- Runtime queries: `\Civi\Api4\Afform::get()` to read form data
+- One-off administrative operations (rare cases only)
+- **Not for deployment**: Don't use API4 updates to deploy forms to production
+
+**Naming Convention**: Always prefix with "afformMAS" (e.g., `afformMASProjectCloseVcReport`)
+**Cache Management**: Run `cv flush` after Afform changes (see CLAUDE.local.md for exact paths)
 
 ### Verified API Patterns
 ```php
-// Update custom fields
+// Update custom fields (use names, not IDs)
 \Civi\Api4\CustomField::update(FALSE)
-    ->addWhere('custom_group_id', '=', $groupId)
-    ->addWhere('name', '=', $fieldName)
+    ->addWhere('custom_group_id:name', '=', 'Custom_Group_Name')
+    ->addWhere('name', '=', 'field_name')
     ->addValue('help_pre', null)
+    ->execute();
+
+// Get custom field by group and field name
+\Civi\Api4\CustomField::get(FALSE)
+    ->addWhere('custom_group_id:name', '=', 'Custom_Group_Name')
+    ->addWhere('name', '=', 'field_name')
     ->execute();
 
 // Get Afform entities
 \Civi\Api4\Afform::get(FALSE)
-    ->addWhere('name', '=', 'afformName')
+    ->addWhere('name', '=', 'afformMASFormName')
     ->execute();
 
-// Update Afform layouts
+// Runtime Afform operations (not for deployment)
 \Civi\Api4\Afform::update(FALSE)
-    ->addWhere('name', '=', 'afformName')
+    ->addWhere('name', '=', 'afformMASFormName')
     ->addValue('layout', $newLayout)
     ->execute();
 ```
@@ -122,16 +147,11 @@ git add . && git commit -m "Message"
 printf "y\nChangelog item 1\nChangelog item 2\n\n" | ./.claude/commands/release.sh patch
 ```
 
-### Deployment Script Management
-- **Form Export Process**: Use API4 to export current form layouts from development environment
-- **Layout Function Replacement**: Replace generic layout functions with actual exported form structures
-- **Overwrite vs Skip**: Update deployment scripts to overwrite existing forms rather than skip them
-- **Multi-Form Handling**: Use separate functions for different form variants (SASS vs SASF)
-
-### Error Recovery Patterns
-- **JSON Parsing Issues**: When processing large exports, break into smaller files
-- **Complex String Replacement**: Use manual parsing and reconstruction for complex data structures
-- **Function Finding**: Use bracket counting to find function boundaries in code replacement
+### Custom Field Management
+- **Use Names for Identification**: Always use `custom_group_id:name` and field `name` in API calls
+- **Cross-Environment Compatibility**: Names remain consistent across dev/production, IDs do not
+- **Field Updates**: Use `CustomField::update()` API with name-based queries (see Verified API Patterns)
+- **Cache Management**: Always flush cache after custom field property changes
 
 ### Release Process Patterns
 - **Interactive Script Issues**: If automated release script hangs on prompts, run manual release steps
