@@ -3,7 +3,7 @@
 ## Project Configuration
 
 - **Framework**: Latest versions of CiviCRM on WordPress
-- **Branch**: dev
+- **Branch**: master
 - **Environment Details**: See CLAUDE.local.md for sensitive paths, credentials, and local configuration
 
 ## Preferred Development Approaches
@@ -132,33 +132,11 @@ gh release create "vX.X.X" --title "Title" --notes "Release notes"
 
 **Note**: See CLAUDE.local.md for specific CV binary paths, usernames, and authentication details.
 
-### Release Automation Troubleshooting
-```bash
-# If release.sh hangs on interactive prompts:
-# 1. Check working directory is clean
-git status
-git add . && git commit -m "Message"
-
-# 2. Run manual release steps
-# Update version in info.xml, CHANGELOG.md, releases.json
-# Commit, push, create PR, merge, tag, release
-
-# 3. Alternative: Use printf with input responses
-printf "y\nChangelog item 1\nChangelog item 2\n\n" | ./.claude/commands/release.sh patch
-```
-
 ### Custom Field Management
 - **Use Names for Identification**: Always use `custom_group_id:name` and field `name` in API calls
 - **Cross-Environment Compatibility**: Names remain consistent across dev/production, IDs do not
 - **Field Updates**: Use `CustomField::update()` API with name-based queries (see Verified API Patterns)
 - **Cache Management**: Always flush cache after custom field property changes
-
-### Release Process Patterns
-- **Interactive Script Issues**: If automated release script hangs on prompts, run manual release steps
-- **Clean Working Directory**: Always commit changes before running release scripts
-- **Manual Release Steps**: Update info.xml version/date → Update CHANGELOG.md → Update releases.json → Commit → PR → Tag → Release
-- **PR Creation**: Use `gh pr create --base master --head dev` for explicit branch specification
-- **Branch Management**: Always return to dev branch after release for continued development
 
 ## Extension Documentation
 
@@ -167,29 +145,6 @@ printf "y\nChangelog item 1\nChangelog item 2\n\n" | ./.claude/commands/release.
 - **Installation Guide**: See `docs/INSTALLATION.md`
 - **User Guide**: See `docs/USER-GUIDE.md`
 - **Extension Plan**: See `docs/UNIFIED-EXPORT-IMPORT-EXTENSION-PLAN.md`
-
-## Release Process
-
-**IMPORTANT**: Always use the automated release script:
-
-```bash
-./.claude/commands/release.sh [patch|minor|major]
-```
-
-The script automates:
-1. **Pre-release checks**: Validates clean working directory and dev branch
-2. **Version update**: Updates version and release date in `info.xml`
-3. **Changelog update**: Updates `CHANGELOG.md` and `releases.json`
-4. **Commit and push**: Commits version changes and pushes to dev branch
-5. **Create PR**: Creates pull request from dev to master branch
-6. **Merge to master**: Automatically merges pull request to update master branch
-7. **Create release**: Creates GitHub release with tag and release notes
-8. **Return to dev**: Switches back to dev branch for continued development
-
-### Manual Process (Only if script unavailable)
-1. Pre-release checks, version update, commit/tag, push changes
-2. Create PR from dev to master, merge PR
-3. Sync dev branch with master, verify release
 
 ## PHP Code Formatting
 

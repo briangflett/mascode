@@ -230,15 +230,33 @@ class AfformSubmitSubscriber extends AutoSubscriber
                 return;
             }
 
-            // Get the message template
+            // Map form routes to their message template names
+            $templateNames = [
+                'civicrm/mas-rcs-form' => 'RCS Form Confirmation Email',
+                'civicrm/mas-sasf-form' => 'SASF Form Confirmation Email',
+                'civicrm/mas-sass-form' => 'SASS Form Confirmation Email'
+            ];
+
+            $templateName = $templateNames[$formRoute] ?? null;
+            if (!$templateName) {
+                \Civi::log()->warning('AfformSubmitSubscriber: No template name mapped for form route', [
+                    'form_route' => $formRoute,
+                    'form_name' => $formName
+                ]);
+                return;
+            }
+
+            // Get the message template by name (environment-agnostic)
             $template = MessageTemplate::get(false)
                 ->addSelect('msg_subject', 'msg_text', 'msg_html')
-                ->addWhere('id', '=', 71)
+                ->addWhere('msg_title', '=', $templateName)
+                ->addWhere('is_active', '=', true)
                 ->execute()
                 ->first();
 
             if (!$template) {
-                \Civi::log()->warning('AfformSubmitSubscriber: Message template 71 not found', [
+                \Civi::log()->warning('AfformSubmitSubscriber: Message template not found', [
+                    'template_name' => $templateName,
                     'form_name' => $formName
                 ]);
                 return;
