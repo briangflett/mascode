@@ -82,7 +82,7 @@ class PatchManager
             // Apply the patch using patch command
             return self::applyPatchWithPatchCommand($patchFile, $civiRoot);
         } catch (\Exception $e) {
-            \Civi::log()->error('Cannot apply patch ' . basename($patchFile) . ': ' . $e->getMessage());
+            \Civi::log()->error('PatchManager.php - Cannot apply patch ' . basename($patchFile) . ': ' . $e->getMessage());
             return [
             'success' => false,
             'message' => $e->getMessage(),

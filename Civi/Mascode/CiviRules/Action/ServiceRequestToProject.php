@@ -37,8 +37,8 @@ class ServiceRequestToProject extends \CRM_Civirules_Action
         $adminId = \Civi::settings()->get('mascode_admin_contact_id') ?? null;
 
         // Log the $srCase and $adminId using Civi::log
-        \Civi::log()->info('Service Request Case Data:', ['srCase' => $srCase]);
-        \Civi::log()->info('Admin Contact ID:', ['adminId' => $adminId]);
+        \Civi::log()->info('ServiceRequestToProject.php - Service Request Case Data:', ['srCase' => $srCase]);
+        \Civi::log()->info('ServiceRequestToProject.php - Admin Contact ID:', ['adminId' => $adminId]);
 
         if (empty($srCaseId) || empty($adminId)) {
             throw new \Exception("Service Request ID or Admin Contact ID missing.");
@@ -150,7 +150,7 @@ class ServiceRequestToProject extends \CRM_Civirules_Action
                     ->execute();
             } catch (\Exception $e) {
                 // Handle duplicate error or log the message
-                \Civi::log()->error("Error creating Client relationship: " .
+                \Civi::log()->error("ServiceRequestToProject.php - Error creating Client relationship: " .
                     $e->getMessage() .
                     " for Case:$pCaseId Client:$clientContactId Client Rep:$clientRepContactId<br>");
             }

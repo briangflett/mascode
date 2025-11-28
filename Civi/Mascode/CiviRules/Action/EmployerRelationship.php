@@ -68,7 +68,7 @@ class EmployerRelationship extends \CRM_CivirulesActions_Generic_Api
             ->first();
 
         if ($existingRelationship) {
-            \Civi::log()->info('EmployerRelationship: Active relationship already exists', [
+            \Civi::log()->info('EmployerRelationship.php - Active relationship already exists', [
                 'relationship_id' => $existingRelationship['id'],
                 'contact_id' => $contactId,
                 'employer_id' => $employerId,
@@ -104,7 +104,7 @@ class EmployerRelationship extends \CRM_CivirulesActions_Generic_Api
 
             return $contact['employer_id'] ?? null;
         } catch (\Exception $e) {
-            \Civi::log()->error('SimpleEmployerRelationship: Error getting employer ID', [
+            \Civi::log()->error('EmployerRelationship.php - Error getting employer ID', [
                 'contact_id' => $contactId,
                 'message' => $e->getMessage()
             ]);

@@ -5,15 +5,15 @@
 namespace Civi\Mascode\CiviRules\Trigger;
 
 if (!class_exists('\CRM_Civirules_Trigger_Post')) {
-    \Civi::log()->warning("MailingUnsubscribe loaded before \CRM_Civirules_Trigger_Post is available!");
+    \Civi::log()->warning("MailingUnsubscribe.php - MailingUnsubscribe loaded before \CRM_Civirules_Trigger_Post is available!");
 } else {
-    \Civi::log()->info("Parent class \CRM_Civirules_Trigger_Post is ready.");
+    \Civi::log()->info("MailingUnsubscribe.php - Parent class \CRM_Civirules_Trigger_Post is ready.");
 }
 
 // Workaround to ensure base class is loaded before this class is parsed.
 if (!class_exists('\CRM_Civirules_Trigger_Post')) {
     require_once 'CRM/Civirules/Trigger/Post.php'; // Relative to CiviCRM base
-    \Civi::log()->warning("I have manually required it");
+    \Civi::log()->warning("MailingUnsubscribe.php - I have manually required it");
 }
 
 /**

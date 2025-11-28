@@ -64,7 +64,7 @@ class CodeGenerator
 
             return $field ? $field['id'] : null;
         } catch (\Exception $e) {
-            \Civi::log()->error('Error getting field ID for {group}.{field}: {message}', [
+            \Civi::log()->error('CodeGenerator.php - Error getting field ID for {group}.{field}: {message}', [
                 'group' => $groupName,
                 'field' => $fieldName,
                 'message' => $e->getMessage()

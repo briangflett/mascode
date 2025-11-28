@@ -61,7 +61,7 @@ class AfformSubmitSubscriber extends AutoSubscriber
 
         // *** EntityId is null if the entity is being created by this submission ***
 
-        \Civi::log()->debug('AfformSubmitSubscriber: Processing entity', [
+        \Civi::log()->debug('AfformSubmitSubscriber.php - Processing entity', [
             'entity_name' => $entityName,
             'entity_id' => $entityId,
             'api_request_class' => get_class($event->getApiRequest()),
@@ -148,7 +148,7 @@ class AfformSubmitSubscriber extends AutoSubscriber
             $submissionData = self::$submissionData[$sessionId] ?? [];
 
             if (empty($submissionData['case_id'])) {
-                \Civi::log()->warning('AfformSubmitSubscriber: No case ID found for status update', [
+                \Civi::log()->warning('AfformSubmitSubscriber.php - No case ID found for status update', [
                     'session_id' => $sessionId,
                     'submission_data' => $submissionData
                 ]);
@@ -164,7 +164,7 @@ class AfformSubmitSubscriber extends AutoSubscriber
                 ->first();
 
             if (!$caseStatus) {
-                \Civi::log()->error('AfformSubmitSubscriber: "RCS Completed" case status not found', [
+                \Civi::log()->error('AfformSubmitSubscriber.php - "RCS Completed" case status not found', [
                     'session_id' => $sessionId,
                     'case_id' => $submissionData['case_id']
                 ]);
@@ -177,14 +177,14 @@ class AfformSubmitSubscriber extends AutoSubscriber
                 ->addValue('status_id', $caseStatus['value'])
                 ->execute();
 
-            \Civi::log()->info('AfformSubmitSubscriber: Case status updated to "RCS Completed"', [
+            \Civi::log()->info('AfformSubmitSubscriber.php - Case status updated to "RCS Completed"', [
                 'case_id' => $submissionData['case_id'],
                 'status_value' => $caseStatus['value'],
                 'session_id' => $sessionId
             ]);
 
         } catch (\Exception $e) {
-            \Civi::log()->error('AfformSubmitSubscriber: Exception while updating case status', [
+            \Civi::log()->error('AfformSubmitSubscriber.php - Exception while updating case status', [
                 'session_id' => $sessionId,
                 'case_id' => $submissionData['case_id'] ?? 'unknown',
                 'error' => $e->getMessage(),
@@ -207,7 +207,7 @@ class AfformSubmitSubscriber extends AutoSubscriber
             $formRoute = $submissionData['form_route'] ?? '';
 
             if (empty($primaryContactId)) {
-                \Civi::log()->warning('AfformSubmitSubscriber: No primary contact ID found for form', [
+                \Civi::log()->warning('AfformSubmitSubscriber.php - No primary contact ID found for form', [
                     'session_id' => $sessionId,
                     'form_name' => $formName,
                     'submission_data' => $submissionData
@@ -223,7 +223,7 @@ class AfformSubmitSubscriber extends AutoSubscriber
                 ->first();
             
             if (empty($contactDetails['email_primary.email'])) {
-                \Civi::log()->warning('AfformSubmitSubscriber: No email found for contact', [
+                \Civi::log()->warning('AfformSubmitSubscriber.php - No email found for contact', [
                     'contact_id' => $primaryContactId,
                     'form_name' => $formName
                 ]);
@@ -239,7 +239,7 @@ class AfformSubmitSubscriber extends AutoSubscriber
 
             $templateName = $templateNames[$formRoute] ?? null;
             if (!$templateName) {
-                \Civi::log()->warning('AfformSubmitSubscriber: No template name mapped for form route', [
+                \Civi::log()->warning('AfformSubmitSubscriber.php - No template name mapped for form route', [
                     'form_route' => $formRoute,
                     'form_name' => $formName
                 ]);
@@ -255,7 +255,7 @@ class AfformSubmitSubscriber extends AutoSubscriber
                 ->first();
 
             if (!$template) {
-                \Civi::log()->warning('AfformSubmitSubscriber: Message template not found', [
+                \Civi::log()->warning('AfformSubmitSubscriber.php - Message template not found', [
                     'template_name' => $templateName,
                     'form_name' => $formName
                 ]);
@@ -274,7 +274,7 @@ class AfformSubmitSubscriber extends AutoSubscriber
             $formattedSubmissionData = '';
             if ($submission) {
                 $formattedSubmissionData = $this->formatSubmissionData($submission['data'] ?? [], $formRoute);
-                \Civi::log()->info('AfformSubmitSubscriber: Using submission data', [
+                \Civi::log()->info('AfformSubmitSubscriber.php - Using submission data', [
                     'submission_id' => $submission['id'],
                     'contact_id' => $submission['contact_id'],
                     'form_name' => $formName
@@ -330,13 +330,13 @@ class AfformSubmitSubscriber extends AutoSubscriber
 
             \CRM_Utils_Mail::send($adminMailParams);
 
-            \Civi::log()->info('AfformSubmitSubscriber: Confirmation emails sent successfully', [
+            \Civi::log()->info('AfformSubmitSubscriber.php - Confirmation emails sent successfully', [
                 'form_name' => $formName,
                 'primary_contact_id' => $primaryContactId
             ]);
 
         } catch (\Exception $e) {
-            \Civi::log()->error('AfformSubmitSubscriber: Failed to send confirmation emails', [
+            \Civi::log()->error('AfformSubmitSubscriber.php - Failed to send confirmation emails', [
                 'form_name' => $formName ?? 'Unknown',
                 'error' => $e->getMessage()
             ]);

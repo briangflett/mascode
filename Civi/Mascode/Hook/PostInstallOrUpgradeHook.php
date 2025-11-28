@@ -60,19 +60,19 @@ class PostInstallOrUpgradeHook
         if (file_exists($triggersFile)) {
             \CRM_Civirules_Utils_Upgrader::insertTriggersFromJson($triggersFile);
         } else {
-            \Civi::log()->warning("Triggers file not found: $triggersFile");
+            \Civi::log()->warning("PostInstallOrUpgradeHook.php - Triggers file not found: $triggersFile");
         }
 
         if (file_exists($actionsFile)) {
             \CRM_Civirules_Utils_Upgrader::insertActionsFromJson($actionsFile);
         } else {
-            \Civi::log()->warning("Actions file not found: $actionsFile");
+            \Civi::log()->warning("PostInstallOrUpgradeHook.php - Actions file not found: $actionsFile");
         }
 
         if (file_exists($conditionsFile)) {
             \CRM_Civirules_Utils_Upgrader::insertConditionsFromJson($conditionsFile);
         } else {
-            \Civi::log()->warning("Conditions file not found: $conditionsFile");
+            \Civi::log()->warning("PostInstallOrUpgradeHook.php - Conditions file not found: $conditionsFile");
         }
     }
 
@@ -86,7 +86,7 @@ class PostInstallOrUpgradeHook
         foreach ($results as $patchName => $result) {
             $status = $result['success'] ? 'SUCCESS' : 'FAILED';
             $message = $result['message'] ?? '';
-            \Civi::log()->info("Patch {$patchName}: {$status} - {$message}");
+            \Civi::log()->info("PostInstallOrUpgradeHook.php - Patch {$patchName}: {$status} - {$message}");
         }
     }
 }

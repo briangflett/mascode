@@ -35,7 +35,7 @@ class MasAddRole extends AbstractAction
                 return strcmp($a, $b);
             });
         } catch (\Exception $e) {
-            \Civi::log()->error('Failed to get relationship types: ' . $e->getMessage());
+            \Civi::log()->error('MasAddRole.php - Failed to get relationship types: ' . $e->getMessage());
         }
 
         return $options;
@@ -206,9 +206,9 @@ class MasAddRole extends AbstractAction
             // Set output
             $output->setParameter('relationship_id', $relationshipId);
 
-            \Civi::log()->info('Successfully added case role: ' . $relationshipId);
+            \Civi::log()->info('MasAddRole.php - Successfully added case role: ' . $relationshipId);
         } catch (\Exception $e) {
-            \Civi::log()->error('MasAddRole error: ' . $e->getMessage());
+            \Civi::log()->error('MasAddRole.php - MasAddRole error: ' . $e->getMessage());
             throw new \Exception('Error adding case role: ' . $e->getMessage());
         }
     }
@@ -222,7 +222,7 @@ class MasAddRole extends AbstractAction
     private function parseRelationshipType($relationshipType)
     {
         // Debug log the input value
-        \Civi::log()->debug('Parsing relationship type: ' . print_r($relationshipType, true));
+        \Civi::log()->debug('MasAddRole.php - Parsing relationship type: ' . print_r($relationshipType, true));
 
         if (empty($relationshipType)) {
             throw new \Exception("Relationship type not specified");

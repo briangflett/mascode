@@ -4,7 +4,9 @@
 
 - **Framework**: Latest versions of CiviCRM on WordPress
 - **Branch**: master
-- **Environment Details**: See CLAUDE.local.md for sensitive paths, credentials, and local configuration
+- **Database Credentials**: `/home/brian/.config/development/databases.env`
+- **CV Binary**: `/home/brian/buildkit/bin/cv`
+- **CV User**: `--user=admin`
 
 ## Preferred Development Approaches
 
@@ -42,13 +44,14 @@
 ### Code Constraints
 - **Limitation**: Changes can be made to the mascode extension only, not core CiviCRM code
 - **Extension Directory**: All custom code must be within the extension namespace
-- **API Usage**: Always use CiviCRM API4, never direct database access except in established patterns
+- **API Usage**: ALWAYS use CiviCRM API4 for database operations. NEVER use direct SQL queries.
 
 ## CiviCRM API and Afform Management
 
 ### API User Authentication
-- **User Configuration**: See CLAUDE.local.md for specific user credentials and authentication details
-- **CV Commands**: See CLAUDE.local.md for correct user parameter and command patterns
+- **Database Credentials**: `/home/brian/.config/development/databases.env`
+- **CV Command User**: `--user=admin`
+- **CV Binary Path**: `/home/brian/buildkit/bin/cv`
 - **API4 Calls**: Always use API4 for operations in this working directory, following these patterns:
   - Use the `\Civi\Api4\` namespace for all API4 calls
   - Chain methods like `.get()`, `.create()`, `.update()`, `.delete()`
@@ -83,7 +86,7 @@
 - **Not for deployment**: Don't use API4 updates to deploy forms to production
 
 **Naming Convention**: Always prefix with "afformMAS" (e.g., `afformMASProjectCloseVcReport`)
-**Cache Management**: Run `cv flush` after Afform changes (see CLAUDE.local.md for exact paths)
+**Cache Management**: Run `/home/brian/buildkit/bin/cv flush` after Afform changes
 
 ### Verified API Patterns
 ```php
@@ -130,7 +133,7 @@ gh pr merge [number] --squash
 gh release create "vX.X.X" --title "Title" --notes "Release notes"
 ```
 
-**Note**: See CLAUDE.local.md for specific CV binary paths, usernames, and authentication details.
+**Note**: CV binary path: `/home/brian/buildkit/bin/cv`, use `--user=admin` for authenticated commands.
 
 ### Custom Field Management
 - **Use Names for Identification**: Always use `custom_group_id:name` and field `name` in API calls
@@ -157,6 +160,16 @@ gh release create "vX.X.X" --title "Title" --notes "Release notes"
   - Consistent spacing and indentation
 - **Note**: Files created should follow these conventions to prevent automatic reformatting on save
 
-## Local Configuration
+## Database Configuration
 
-- **Sensitive Data**: See CLAUDE.local.md for database credentials and admin access (not in repo)
+**All database credentials are stored in:** `/home/brian/.config/development/databases.env`
+
+**Development Environment:**
+- WordPress Database: See `MASDEMO_WP_DB_NAME` in databases.env
+- CiviCRM Database: See `MASDEMO_CIVI_DB_NAME` in databases.env
+- User/Password: See `MYSQL_ROOT_USER` and `MYSQL_ROOT_PASSWORD` in databases.env
+
+**Production Environment (via SSH tunnel):**
+- Database: See `PROD_DB_NAME` in databases.env
+- Access via: `/home/brian/workspace/shell-scripts/db-tunnel.sh`
+- Credentials: See `PROD_DB_*` variables in databases.env

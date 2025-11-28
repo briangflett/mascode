@@ -66,12 +66,12 @@ class CRM_Mascode_CiviRules_Form_EmployerRelationship extends CRM_CivirulesActio
                 'action_params' => serialize($params),
             ]);
 
-            Civi::log()->info('EmployerRelationship Form: Action parameters saved', [
+            Civi::log()->info('EmployerRelationship.php - Action parameters saved', [
                 'rule_action_id' => $ruleActionId,
                 'params' => $params
             ]);
         } catch (Exception $e) {
-            Civi::log()->error('EmployerRelationship Form: Could not save action parameters', [
+            Civi::log()->error('EmployerRelationship.php - Could not save action parameters', [
                 'rule_action_id' => $ruleActionId,
                 'params' => $params,
                 'error' => $e->getMessage()
@@ -107,7 +107,7 @@ class CRM_Mascode_CiviRules_Form_EmployerRelationship extends CRM_CivirulesActio
                 $relationshipTypes[$type['id']] = $type['label_a_b'] ?? '';
             }
         } catch (Exception $e) {
-            Civi::log()->error('Error loading relationship types: ' . $e->getMessage());
+            Civi::log()->error('EmployerRelationship.php - Error loading relationship types: ' . $e->getMessage());
         }
 
         return $relationshipTypes;

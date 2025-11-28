@@ -100,7 +100,7 @@ class CRM_Mascode_Form_MasCaseMove extends CRM_Core_Form {
       }
 
     } catch (\Exception $e) {
-      \Civi::log()->error('MASCode: Form error in MasCaseMove: ' . $e->getMessage());
+      \Civi::log()->error('MasCaseMove.php - Form error in MasCaseMove: ' . $e->getMessage());
       CRM_Core_Session::setStatus(
         ts('Error occurred while moving cases: %1', [1 => $e->getMessage()]),
         ts('Error'),

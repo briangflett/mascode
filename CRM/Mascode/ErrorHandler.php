@@ -18,7 +18,7 @@ class CRM_Mascode_ErrorHandler
         );
 
         // Log the error using CiviCRM's logging mechanism
-        Civi::log()->warning($message);
+        Civi::log()->warning('ErrorHandler.php - ' . $message);
 
         // Don't execute PHP's internal error handler
         return true;

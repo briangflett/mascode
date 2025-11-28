@@ -60,10 +60,10 @@ class CaseMoveService {
       try {
         $this->moveSingleCase($caseId, $fromOrgId, $toOrgId);
         $casesMoved++;
-        \Civi::log()->info("MASCode: Moved case {$caseId} from {$fromOrgId} to {$toOrgId}");
+        \Civi::log()->info("CaseMoveService.php - Moved case {$caseId} from {$fromOrgId} to {$toOrgId}");
       } catch (\Exception $e) {
         $errors[] = "Case {$caseId}: " . $e->getMessage();
-        \Civi::log()->error("MASCode: Error moving case {$caseId}: " . $e->getMessage());
+        \Civi::log()->error("CaseMoveService.php - Error moving case {$caseId}: " . $e->getMessage());
       }
     }
 
@@ -195,11 +195,11 @@ class CaseMoveService {
           if ($dao->contact_id_a == $sourceContactId) {
             $updateSql = "UPDATE civicrm_relationship SET contact_id_a = %1 WHERE id = %2";
             \CRM_Core_DAO::executeQuery($updateSql, [1 => [$destContactId, 'Integer'], 2 => [$dao->id, 'Integer']]);
-            \Civi::log()->info("MASCode: UPDATED case relationship {$dao->id} ({$dao->name_a_b}) contact_id_a from {$sourceContactId} to {$destContactId}");
+            \Civi::log()->info("CaseMoveService.php - UPDATED case relationship {$dao->id} ({$dao->name_a_b}) contact_id_a from {$sourceContactId} to {$destContactId}");
           } elseif ($dao->contact_id_b == $sourceContactId) {
             $updateSql = "UPDATE civicrm_relationship SET contact_id_b = %1 WHERE id = %2";
             \CRM_Core_DAO::executeQuery($updateSql, [1 => [$destContactId, 'Integer'], 2 => [$dao->id, 'Integer']]);
-            \Civi::log()->info("MASCode: UPDATED case relationship {$dao->id} ({$dao->name_b_a}) contact_id_b from {$sourceContactId} to {$destContactId}");
+            \Civi::log()->info("CaseMoveService.php - UPDATED case relationship {$dao->id} ({$dao->name_b_a}) contact_id_b from {$sourceContactId} to {$destContactId}");
           }
         } else {
           // Update other case relationships normally
@@ -210,7 +210,7 @@ class CaseMoveService {
             $updateSql = "UPDATE civicrm_relationship SET contact_id_b = %1 WHERE id = %2";
             \CRM_Core_DAO::executeQuery($updateSql, [1 => [$destContactId, 'Integer'], 2 => [$dao->id, 'Integer']]);
           }
-          \Civi::log()->info("MASCode: UPDATED non-case relationship {$dao->id} from contact {$sourceContactId} to {$destContactId}");
+          \Civi::log()->info("CaseMoveService.php - UPDATED non-case relationship {$dao->id} from contact {$sourceContactId} to {$destContactId}");
         }
       }
     }
