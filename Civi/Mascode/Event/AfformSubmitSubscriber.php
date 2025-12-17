@@ -48,7 +48,9 @@ class AfformSubmitSubscriber extends AutoSubscriber
         $emailForms = [
             'civicrm/mas-rcs-form' => 'afformMASRCSForm',
             'civicrm/mas-sasf-form' => 'afformMASSASF',
-            'civicrm/mas-sass-form' => 'afformMASSASS'
+            'civicrm/mas-sass-form' => 'afformMASSASS',
+            'civicrm/mas-pclose-client' => 'afformProjectCloseClientFeedback',
+            'civicrm/mas-pclose-vc' => 'afformProjectCloseVCFeedback'
         ];
 
         // Check if this is one of our target forms
@@ -77,7 +79,7 @@ class AfformSubmitSubscriber extends AutoSubscriber
         // Store form type and entity IDs based on entity name
         self::$submissionData[$sessionId]['form_name'] = $formName;
         self::$submissionData[$sessionId]['form_route'] = $formRoute;
-        
+
         // Handle different form types
         if ($formRoute === 'civicrm/mas-rcs-form') {
             // RCS Form - existing logic
@@ -221,7 +223,7 @@ class AfformSubmitSubscriber extends AutoSubscriber
                 ->addWhere('id', '=', $primaryContactId)
                 ->execute()
                 ->first();
-            
+
             if (empty($contactDetails['email_primary.email'])) {
                 \Civi::log()->warning('AfformSubmitSubscriber.php - No email found for contact', [
                     'contact_id' => $primaryContactId,
@@ -232,9 +234,11 @@ class AfformSubmitSubscriber extends AutoSubscriber
 
             // Map form routes to their message template names
             $templateNames = [
-                'civicrm/mas-rcs-form' => 'RCS Form Confirmation Email',
-                'civicrm/mas-sasf-form' => 'SASF Form Confirmation Email',
-                'civicrm/mas-sass-form' => 'SASS Form Confirmation Email'
+                'civicrm/mas-rcs-form' => 'MAS Form Submission Confirmation',
+                'civicrm/mas-sasf-form' => 'MAS Form Submission Confirmation',
+                'civicrm/mas-sass-form' => 'MAS Form Submission Confirmation',
+                'civicrm/mas-pclose-client' => 'MAS Form Submission Confirmation',
+                'civicrm/mas-pclose-vc' => 'MAS Form Submission Confirmation'
             ];
 
             $templateName = $templateNames[$formRoute] ?? null;
@@ -289,7 +293,7 @@ class AfformSubmitSubscriber extends AutoSubscriber
             // Use TokenProcessor for modern token replacement
             $tokenProcessor = new TokenProcessor(\Civi::dispatcher(), [
                 'controller' => __CLASS__,
-                'smarty' => FALSE,
+                'smarty' => false,
                 'schema' => ['contactId'],
             ]);
 
@@ -353,7 +357,7 @@ class AfformSubmitSubscriber extends AutoSubscriber
         }
 
         $formatted = '';
-        
+
         foreach ($data as $entityName => $entityData) {
             if (!is_array($entityData)) {
                 continue;
@@ -371,19 +375,19 @@ class AfformSubmitSubscriber extends AutoSubscriber
                 foreach ($record['fields'] as $fieldName => $fieldValue) {
                     if ($fieldValue !== null && $fieldValue !== '') {
                         $fieldLabel = $this->getFieldLabel($fieldName, $formRoute);
-                        
+
                         // Format survey answers if they are numeric ratings
                         if ($formRoute !== 'civicrm/mas-rcs-form' && is_numeric($fieldValue) && $fieldValue >= 1 && $fieldValue <= 5) {
                             $scaleLabels = [
                                 1 => 'Strongly Disagree',
-                                2 => 'Disagree', 
+                                2 => 'Disagree',
                                 3 => 'Neutral',
                                 4 => 'Agree',
                                 5 => 'Strongly Agree'
                             ];
                             $fieldValue = $fieldValue . ' (' . ($scaleLabels[$fieldValue] ?? 'Unknown') . ')';
                         }
-                        
+
                         $formatted .= "{$fieldLabel}: {$fieldValue}\n";
                     }
                 }
@@ -404,7 +408,7 @@ class AfformSubmitSubscriber extends AutoSubscriber
             $labels = [
                 'Organization1' => 'Organization Information',
                 'Individual1' => 'President/Board Chair',
-                'Individual2' => 'Executive Director', 
+                'Individual2' => 'Executive Director',
                 'Individual3' => 'Primary Contact',
                 'Case1' => 'Request Details',
             ];
