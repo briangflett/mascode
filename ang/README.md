@@ -1,11 +1,48 @@
-Use Searchkit and Afform for custom forms and reports
-Save them in the database.
-Export them from dev and import them into prod
-- using Export/Import for Searchkit
-- using API4 for Afform 
-Or just recreate them manually
+# Afform and SearchKit Management
 
-# Tags
+## Storage Strategy
+
+**All Afforms and SearchKit searches are stored in the DATABASE, not as files.**
+
+This approach:
+- Avoids cross-environment ID conflicts
+- Prevents file sync issues between dev/prod
+- Allows easier UI-based editing and testing
+- Separates form configuration from code
+
+## Deployment to Production
+
+### Option 1: Manual Replication (Recommended)
+Recreate forms manually in production using FormBuilder UI:
+- Most reliable for complex forms
+- Ensures proper configuration in production environment
+- No ID mapping issues
+
+### Option 2: API4 Export/Import
+For simpler forms, use API4:
+
+```bash
+# In development - export Afform
+cv scr /tmp/export_afform.php --user=admin
+```
+
+```php
+// export_afform.php
+$afform = \Civi\Api4\Afform::get(FALSE)
+  ->addWhere('name', '=', 'afformMASFormName')
+  ->execute()->first();
+echo json_encode($afform, JSON_PRETTY_PRINT);
+```
+
+Then manually import in production after adjusting any environment-specific values.
+
+### Option 3: SearchKit Export/Import
+Use CiviCRM's built-in Export/Import for SearchKit searches:
+- Navigate to Search → Manage Searches
+- Export from dev, Import to prod
+- Built-in tool handles most ID mapping
+
+## Tags
 
 - **`Client`** - Client-facing forms 
   - Public forms that clients interact with
@@ -27,9 +64,11 @@ Or just recreate them manually
   - Shared fieldsets used across multiple forms
   - Examples: Project fields, Contact fields, Custom group blocks
 
-## File Naming Convention
+## Naming Convention
 
 All custom forms must be prefixed with `afformMAS` or `afblockMAS`:
-- Forms: `afformMAS{FormName}.aff.html` + `.aff.json`
-- Blocks: `afblockMAS{BlockName}.aff.html` + `.aff.json`
-- Searches: `afsearchMAS{SearchName}.aff.html` + `.aff.json` (optional)
+- Forms: `afformMAS{FormName}` (e.g., `afformMASRCSForm`)
+- Blocks: `afblockMAS{BlockName}` (e.g., `afblockMASContactFields`)
+- Searches: `afsearchMAS{SearchName}` (optional, e.g., `afsearchMASProjects`)
+
+**Note**: Names are stored in database. The `ang/` directory may contain some legacy file-based forms but new forms should be database-only.

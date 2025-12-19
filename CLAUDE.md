@@ -1,175 +1,194 @@
 # MASCode Extension Development Guide
 
-## Project Configuration
+## Quick Reference
 
-- **Framework**: Latest versions of CiviCRM on WordPress
-- **Branch**: master
+- **Framework**: CiviCRM on WordPress
+- **Branch**: master (single branch workflow)
 - **Database Credentials**: `/home/brian/.config/development/databases.env`
-- **CV Binary**: `/home/brian/buildkit/bin/cv`
-- **CV User**: `--user=admin`
+- **CV Binary**: `/home/brian/buildkit/bin/cv --user=admin`
+- **Cache Clear**: `/home/brian/buildkit/bin/cv flush` (run after all code changes)
 
-## Preferred Development Approaches
+## Development Approaches
 
-### When to Use Each Approach
+### When to Use Each Pattern
 
-1. **FormProcessor**: For processing WordPress forms and external data submissions
-   - Best for: WordPress form integration, data import/export, external API processing
-   - Pattern: Create action class in `Civi/Mascode/FormProcessor/Action/`
+1. **Afform Relationships** - Automatic relationship creation on form submission
+   - **See**: [docs/AFFORM-RELATIONSHIPS.md](docs/AFFORM-RELATIONSHIPS.md)
+   - For: RCS form, Survey forms
+   - Pattern: Event subscribers handle post-submission relationship creation
 
-2. **CiviRules**: For trigger-based logic and automated workflows
-   - Best for: Automated responses to CiviCRM events, business rule enforcement
-   - Pattern: Actions extend `CRM_CivirulesActions_Generic_Api`, use legacy PSR-0 forms
-   - Database: CiviRules table names start with `civirules_`
+2. **CiviRules** - Trigger-based automation
+   - Best for: Automated responses to CiviCRM events, business rules
+   - Pattern: Actions extend `CRM_CivirulesActions_Generic_Api`
+   - Database: Tables start with `civirules_`
 
-3. **Symfony Events**: For event-based logic and cross-system integration
-   - Best for: Complex business logic, system integration, decoupled architecture
-   - Pattern: Create subscribers in `Civi/Mascode/Event/`, extend `AutoSubscriber`
+3. **Symfony Events** - Complex business logic
+   - Best for: System integration, decoupled architecture
+   - Pattern: Subscribers in `Civi/Mascode/Event/`, extend `AutoSubscriber`
 
-4. **Standalone Forms + Backend Logic**: For manually triggered administrative functions
-   - Best for: Admin tools, data management functions, one-off operations
-   - Pattern: CRM form class + navigation menu + event subscriber for business logic
-   - Example: Cases → "Move Cases Between Organizations" (recently implemented)
+4. **FormProcessor** - External data processing
+   - Best for: WordPress forms, data import/export
+   - Pattern: Actions in `Civi/Mascode/FormProcessor/Action/`
 
-### Form Development Guidelines
+5. **CRM Forms** - Administrative functions
+   - Best for: Backend admin tools, complex validation
+   - Location: `CRM/Mascode/Form/` + `templates/CRM/Mascode/Form/`
 
-- **Traditional CRM Forms**: Use for administrative functions, complex validation, legacy integration
-  - Location: `CRM/Mascode/Form/` with matching templates in `templates/CRM/Mascode/Form/`
-  - Best for: Backend admin tools, complex business logic forms
+### Form Development
 
-- **FormBuilder (Afforms) - Preferred**: Use for user-facing forms, simple data collection
-  - Location: `ang/` directory with `.aff.html` and `.aff.json` files
-  - Best for: Public forms, simple data entry, modern UI requirements
-  - Naming: Always prefix with "afformMAS" (e.g., `afformMASProjectCloseVcReport`)
+**Afforms (Preferred for public/user forms)**:
+- **Managed in Database** - Create/edit in FormBuilder UI
+- Naming: Prefix with "afformMAS" (e.g., `afformMASRCSForm`)
+- Deployment: Manually replicate or use API4 export/import
+- **See**: "Afform Management" section below
 
-### Code Constraints
-- **Limitation**: Changes can be made to the mascode extension only, not core CiviCRM code
-- **Extension Directory**: All custom code must be within the extension namespace
-- **API Usage**: ALWAYS use CiviCRM API4 for database operations. NEVER use direct SQL queries.
+**CRM Forms (For admin tools)**:
+- Traditional approach for backend functionality
+- Complex validation and business logic
+- File-based in `CRM/Mascode/Form/` + `templates/`
 
-## CiviCRM API and Afform Management
+## API4 Patterns (CRITICAL)
 
-### API User Authentication
-- **Database Credentials**: `/home/brian/.config/development/databases.env`
-- **CV Command User**: `--user=admin`
-- **CV Binary Path**: `/home/brian/buildkit/bin/cv`
-- **API4 Calls**: Always use API4 for operations in this working directory, following these patterns:
-  - Use the `\Civi\Api4\` namespace for all API4 calls
-  - Chain methods like `.get()`, `.create()`, `.update()`, `.delete()`
-  - Use `.addWhere()` for filtering
-  - Use `.addValue()` for setting values
-  - Always add `FALSE` as the first parameter to suppress default permissions
-  - End calls with `.execute()` to run the API request
+**ALWAYS use CiviCRM API4. NEVER use direct SQL.**
 
-### Afform Management Best Practices
-
-**Deployment Method**: Use `civix export` to bundle Afforms into extension files
-- **Export Afforms**: `civix export Afform afformMASFormName` from extension directory
-- **Export SearchKit + Afforms**: `civix export SavedSearch [id]` exports search with all displays/forms
-- **File Location**: Generated in `ang/` directory as `.aff.html` and `.aff.json` files
-- **Version Control**: Commit generated files to Git for deployment across environments
-
-**File-Based Deployment Benefits**:
-- Afforms in extensions serve as default/base state
-- User customizations are non-destructive (stored separately from packaged version)
-- Built-in "Revert" button to restore packaged version
-- No need for deployment scripts or API4 updates for form deployment
-
-**Field Identification** (Critical for cross-environment compatibility):
-- **Custom Fields**: Always use `custom_group_name.field_name` notation (e.g., `Project_Information.project_name`)
-- **Never use numeric IDs**: IDs differ between development and production environments
-- **Entity References**: Use names for option groups, relationship types, contact subtypes, etc.
-- **Verification**: Check exported `.aff.html` and `.aff.json` files use names, not IDs
-
-**When to Use API4 for Afforms**:
-- Runtime queries: `\Civi\Api4\Afform::get()` to read form data
-- One-off administrative operations (rare cases only)
-- **Not for deployment**: Don't use API4 updates to deploy forms to production
-
-**Naming Convention**: Always prefix with "afformMAS" (e.g., `afformMASProjectCloseVcReport`)
-**Cache Management**: Run `/home/brian/buildkit/bin/cv flush` after Afform changes
-
-### Verified API Patterns
 ```php
-// Update custom fields (use names, not IDs)
-\Civi\Api4\CustomField::update(FALSE)
-    ->addWhere('custom_group_id:name', '=', 'Custom_Group_Name')
-    ->addWhere('name', '=', 'field_name')
-    ->addValue('help_pre', null)
+// Use FALSE as first parameter to suppress permissions
+\Civi\Api4\EntityName::action(FALSE)
+    ->addWhere('field', '=', 'value')
+    ->addValue('field', 'value')
     ->execute();
 
-// Get custom field by group and field name
+// ALWAYS use names, not IDs for cross-environment compatibility
 \Civi\Api4\CustomField::get(FALSE)
-    ->addWhere('custom_group_id:name', '=', 'Custom_Group_Name')
+    ->addWhere('custom_group_id:name', '=', 'Group_Name')
     ->addWhere('name', '=', 'field_name')
     ->execute();
-
-// Get Afform entities
-\Civi\Api4\Afform::get(FALSE)
-    ->addWhere('name', '=', 'afformMASFormName')
-    ->execute();
-
-// Runtime Afform operations (not for deployment)
-\Civi\Api4\Afform::update(FALSE)
-    ->addWhere('name', '=', 'afformMASFormName')
-    ->addValue('layout', $newLayout)
-    ->execute();
 ```
 
-### CV Command Execution Patterns
+## Afform Management
+
+**Database-First Approach** (Current Method):
+- Create and edit Afforms using FormBuilder UI in CiviCRM
+- Afforms stored in database, not files
+- Deployment: Manual replication or API4 export/import
+
+**Why Database Storage?**:
+- Avoids cross-environment ID conflicts
+- No file sync issues between dev/prod
+- Easier to modify and test in UI
+- Clean separation from code changes
+
+**Deployment Options**:
+
+1. **Manual Replication** (Recommended for complex forms):
+   - Recreate form in production using FormBuilder
+   - Copy settings and field configurations
+   - Most reliable for forms with many customizations
+
+2. **API4 Export/Import** (For simple forms):
+   ```php
+   // Export from dev
+   $afform = \Civi\Api4\Afform::get(FALSE)
+     ->addWhere('name', '=', 'afformMASFormName')
+     ->execute()->first();
+
+   // Import to prod (after adjusting any environment-specific values)
+   \Civi\Api4\Afform::create(FALSE)
+     ->setValues($afform)
+     ->execute();
+   ```
+
+**Key Principles**:
+- **Naming**: Always prefix with "afformMAS"
+- **Field References**: Use names, never IDs (custom fields, relationships, etc.)
+- **Tags**: Use Client, VC, Dashlet, Admin, or Block tags (see `ang/README.md`)
+- **Cache**: Run `cv flush` after any changes
+
+## CV Command Patterns
+
 ```bash
-# CORRECT: Use cv scr with file path (not -e flag)
-cv scr /path/to/script.php --user=<username>
+# Script execution
+cv scr /path/to/script.php --user=admin
 
-# INCORRECT: cv scr -e does not exist
-cv scr -e 'php code here'
+# With debugging
+XDEBUG_SESSION=1 cv scr /path/to/script.php --user=admin
 
-# WORKAROUND: Write temporary PHP files for complex operations
-echo '<?php /* code */' > /tmp/script.php
-cv scr /tmp/script.php --user=<username>
-
-# GitHub CLI patterns
-gh pr create --base master --head dev --title "Title" --body "Description"
-gh pr merge [number] --squash
-gh release create "vX.X.X" --title "Title" --notes "Release notes"
+# Extension management
+cv ext:list | grep mascode
+cv flush  # Always after code changes
 ```
 
-**Note**: CV binary path: `/home/brian/buildkit/bin/cv`, use `--user=admin` for authenticated commands.
+## Documentation Map
 
-### Custom Field Management
-- **Use Names for Identification**: Always use `custom_group_id:name` and field `name` in API calls
-- **Cross-Environment Compatibility**: Names remain consistent across dev/production, IDs do not
-- **Field Updates**: Use `CustomField::update()` API with name-based queries (see Verified API Patterns)
-- **Cache Management**: Always flush cache after custom field property changes
+**Core Development**:
+- [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) - Extension architecture and components
+- [docs/DEVELOPMENT.md](docs/DEVELOPMENT.md) - Development workflow and deployment
+- [docs/INSTALLATION.md](docs/INSTALLATION.md) - Setup and installation
 
-## Extension Documentation
+**Feature-Specific**:
+- [docs/AFFORM-RELATIONSHIPS.md](docs/AFFORM-RELATIONSHIPS.md) - Automatic relationship creation (RCS form)
+- [docs/TESTING.md](docs/TESTING.md) - Testing framework and practices
+- [docs/VC_ACL_SETUP_INSTRUCTIONS.md](docs/VC_ACL_SETUP_INSTRUCTIONS.md) - Volunteer Consultant ACL setup
 
-- **Architecture Details**: See `docs/ARCHITECTURE.md`
-- **Development Guide**: See `docs/DEVELOPMENT.md`
-- **Installation Guide**: See `docs/INSTALLATION.md`
-- **User Guide**: See `docs/USER-GUIDE.md`
-- **Extension Plan**: See `docs/UNIFIED-EXPORT-IMPORT-EXTENSION-PLAN.md`
+**Strategic/Planning**:
+- [docs/AI-ROADMAP.md](docs/AI-ROADMAP.md) - Future AI extension vision
+- [docs/UNIFIED-EXPORT-IMPORT-EXTENSION-PLAN.md](docs/UNIFIED-EXPORT-IMPORT-EXTENSION-PLAN.md) - Export/import architecture
+- [docs/SASS_MIGRATION_PLAN.md](docs/SASS_MIGRATION_PLAN.md) - SASS form migration strategy
 
-## PHP Code Formatting
+**Reference**:
+- [docs/USER-GUIDE.md](docs/USER-GUIDE.md) - End-user documentation
+- [docs/CONTRIBUTING.md](docs/CONTRIBUTING.md) - Contribution guidelines
+- [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md) - Production deployment process
 
-- **Auto-formatter**: PHP Intelephense with "Format" enabled automatically formats PHP files on save
-- **Standards**: Follows PSR-12 coding standards
-- **Key Conventions**: 
-  - Use lowercase boolean constants: `false`, `true`, `null` (not `FALSE`, `TRUE`, `NULL`)
-  - Array syntax: `array()` not `array ()`
-  - Function braces on new lines
-  - Consistent spacing and indentation
-- **Note**: Files created should follow these conventions to prevent automatic reformatting on save
+## Code Verification Protocol
 
-## Database Configuration
+**Before using any CiviCRM entities, actions, or methods, verify they exist:**
+- Check source in `/home/brian/buildkit/build/masdemo/web/wp-content/plugins/civicrm/civicrm/`
+- Check extensions in `/home/brian/buildkit/build/masdemo/web/wp-content/uploads/civicrm/ext/`
+- Never assume APIs exist without verification
 
-**All database credentials are stored in:** `/home/brian/.config/development/databases.env`
+## PHP Code Standards
 
-**Development Environment:**
-- WordPress Database: See `MASDEMO_WP_DB_NAME` in databases.env
-- CiviCRM Database: See `MASDEMO_CIVI_DB_NAME` in databases.env
-- User/Password: See `MYSQL_ROOT_USER` and `MYSQL_ROOT_PASSWORD` in databases.env
+- **Auto-formatter**: PHP Intelephense (PSR-12)
+- Lowercase booleans: `false`, `true`, `null`
+- Array syntax: `array()` not `array ()`
+- Files auto-format on save
 
-**Production Environment (via SSH tunnel):**
-- Database: See `PROD_DB_NAME` in databases.env
-- Access via: `/home/brian/workspace/shell-scripts/db-tunnel.sh`
-- Credentials: See `PROD_DB_*` variables in databases.env
+## Database Access
+
+**Credentials**: `/home/brian/.config/development/databases.env`
+
+**Development**:
+- WordPress DB: `MASDEMO_WP_DB_NAME`
+- CiviCRM DB: `MASDEMO_CIVI_DB_NAME`
+- User/Pass: `MYSQL_ROOT_USER`, `MYSQL_ROOT_PASSWORD`
+
+**Production** (via SSH):
+- Access: `/home/brian/workspace/shell-scripts/db-tunnel.sh`
+- Credentials: `PROD_DB_*` variables
+
+## Release Process
+
+1. Update version/releaseDate in `info.xml`
+2. Commit and push to GitHub master branch
+3. Pull from GitHub in production
+4. Run `cv flush` in production
+
+**Manual deployment only** - no automated releases.
+
+## Common Commands
+
+```bash
+# Cache management (ALWAYS after code changes)
+/home/brian/buildkit/bin/cv flush
+
+# View extension status
+/home/brian/buildkit/bin/cv ext:list | grep mascode
+
+# Debug script execution
+XDEBUG_SESSION=1 /home/brian/buildkit/bin/cv scr <script> --user=admin
+```
+
+## Need More Detail?
+
+Refer to the appropriate documentation file in `docs/` based on the area you're working on. This file provides quick reference; detailed docs contain comprehensive information for specific features and workflows.

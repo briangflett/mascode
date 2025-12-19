@@ -12,6 +12,28 @@ use CRM_Mascode_ExtensionUtil as E;
 class EmployerRelationship extends \CRM_CivirulesActions_Generic_Api
 {
     /**
+     * Override processAction to skip execution when no employer is found
+     *
+     * @param \CRM_Civirules_TriggerData_TriggerData $triggerData
+     */
+    public function processAction(\CRM_Civirules_TriggerData_TriggerData $triggerData)
+    {
+        $contactId = $triggerData->getContactId();
+        $employerId = $this->getEmployerId($contactId);
+
+        // Skip execution if no employer found
+        if (empty($employerId)) {
+            \Civi::log()->info('EmployerRelationship.php - No employer found, skipping action', [
+                'contact_id' => $contactId
+            ]);
+            return;
+        }
+
+        // Proceed with normal execution
+        parent::processAction($triggerData);
+    }
+
+    /**
      * Method to set the api entity
      *
      * @return string
@@ -50,11 +72,8 @@ class EmployerRelationship extends \CRM_CivirulesActions_Generic_Api
             throw new \Exception("Relationship type ID not configured");
         }
 
-        // Get the employer ID
+        // Get the employer ID (we know it exists because processAction already checked)
         $employerId = $this->getEmployerId($contactId);
-        if (empty($employerId)) {
-            throw new \Exception("No employer found for contact ID: {$contactId}");
-        }
 
         // Check if there is already an active relationship of this type
         $existingRelationship = \Civi\Api4\Relationship::get(false)
@@ -68,13 +87,14 @@ class EmployerRelationship extends \CRM_CivirulesActions_Generic_Api
             ->first();
 
         if ($existingRelationship) {
-            \Civi::log()->info('EmployerRelationship.php - Active relationship already exists', [
+            \Civi::log()->info('EmployerRelationship.php - Active relationship already exists, skipping', [
                 'relationship_id' => $existingRelationship['id'],
                 'contact_id' => $contactId,
                 'employer_id' => $employerId,
                 'relationship_type_id' => $actionParams['relationship_type_id']
             ]);
-            throw new \Exception("Relationship already exists");
+            // Return empty params to signal CiviRules to skip this action
+            return [];
         }
 
         // Set up the relationship parameters
