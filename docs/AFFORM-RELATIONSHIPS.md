@@ -24,26 +24,64 @@ When the Request for Consulting Services form is submitted, the following relati
 
 **File:** `Civi/Mascode/Event/AfformSubmitSubscriber.php`
 
-**Method:** `createRCSRelationshipsPostCommit()`
+**Methods:**
+- `onFormSubmitPreProcess()` - Pre-processing (priority +1, before Afform saves)
+- `onFormSubmit()` - Post-processing (priority -100, after Afform saves)
+- `createRCSRelationshipsPostCommit()` - Creates relationships
+- `endPresidentRelationship()` - Ends old president relationship on replacement
+- `endExecutiveDirectorRelationship()` - Ends old executive director relationship on replacement
 
 **Process:**
-1. Form submission triggers the `civi.afform.submit` event
-2. AfformSubmitSubscriber collects entity IDs as each entity is processed
-3. When Case1 (the final entity) is processed, relationship creation is triggered
+
+**Pre-Processing (Priority +1 - Before Afform Saves):**
+1. Form submission triggers `civi.afform.submit` event
+2. For Individual1 (President) and Individual2 (Executive Director):
+   - Checks if contact has an ID (autofilled from existing relationship)
+   - Compares submitted last_name with current contact's last_name
+   - If different → **Role replacement detected**:
+     - Stores old contact ID for later
+     - Removes contact ID from submission → Forces Afform to create NEW contact
+3. Afform then processes at priority 0 (creates/updates contacts)
+
+**Post-Processing (Priority -100 - After Afform Saves):**
+1. AfformSubmitSubscriber collects new entity IDs as each entity is processed
+2. When Case1 (the final entity) is processed, relationship management is triggered
+3. For President and Executive Director:
+   - If old contact ID was stored (role replacement):
+     - Ends old contact's role relationship (sets `is_active=false`, `end_date=today`)
+   - Creates new role relationship for new contact
 4. Relationships are checked for existence before creation to avoid duplicates
 5. Each relationship type is looked up by name (environment-agnostic)
 6. Case-specific relationships include the case_id for proper context
+
+### Role Replacement Logic
+
+**President (Individual 1) and Executive Director (Individual 2):**
+
+When the RCS form is submitted for an organization with existing President or Executive Director:
+- The form autofills with the current role holder's contact information
+- **If user changes the last name** → System treats this as a role replacement:
+  1. Creates NEW contact with the new last name
+  2. Ends old contact's role relationship (inactive, with end_date)
+  3. Creates new role relationship for new contact
+  4. Old contact retains all their historical data and relationships
+- **If user changes first name or email** → Updates same contact, no relationship changes
+
+**Rationale:**
+- Last name changes more likely indicate a different person in the role
+- First name/email changes more likely indicate corrections to same person's data
+- Preserves historical data for both contacts (old and new role holders)
 
 ### Relationship Type Mapping
 
 The following relationship types must exist in CiviCRM:
 
-| Relationship Type | Direction | Used For |
-|------------------|-----------|----------|
-| Employee of | Individual → Organization | All individuals |
-| President of | Individual → Organization | Individual 1 |
-| Executive Director of | Individual → Organization | Individual 2 |
-| Case Client Rep is | Individual → Organization | Individual 3 (case-specific) |
+| Relationship Type | Direction | Used For | Exclusive? |
+|------------------|-----------|----------|------------|
+| Employee of | Individual → Organization | All individuals | No |
+| President of | Individual → Organization | Individual 1 | Yes (one active per org) |
+| Executive Director of | Individual → Organization | Individual 2 | Yes (one active per org) |
+| Case Client Rep is | Individual → Organization | Individual 3 (case-specific) | Per case |
 
 ### CiviRules Integration
 
@@ -81,6 +119,16 @@ The following relationship types must exist in CiviCRM:
 - This is normal behavior - system checks and skips duplicates
 - Logged at INFO level, not an error
 
+**Role replacement not working:**
+1. Check logs for "replacement detected in pre-process" messages
+2. Verify last name was actually changed (not just first name/email)
+3. Confirm old relationship was ended (check `is_active=false`, `end_date` set)
+4. Verify new contact was created (different contact_id)
+
+**Contact updated instead of new contact created:**
+- This happens when only first name or email changed (expected behavior)
+- Last name must change to trigger role replacement
+
 **CiviRules causing rollbacks:**
 - Ensure `EmployerRelationship` action properly overrides `processAction()`
 - Verify it returns early when no employer_id is found
@@ -112,7 +160,7 @@ case 'NewForm1':
 
 ## Testing
 
-### Manual Testing
+### Manual Testing - Initial Form Submission
 1. Submit afformMASRCSForm with new contacts for Individual 1, 2, and 3
 2. Verify all contacts created successfully
 3. Check each contact's Relationships tab:
@@ -121,6 +169,38 @@ case 'NewForm1':
    - Individual 3: Employee of + Case Client Rep is
 4. Verify Case Client Rep relationship shows correct case ID
 
+### Manual Testing - Role Replacement
+**Test President Replacement:**
+1. Open RCS form for organization with existing president
+2. Verify Individual1 autofills with current president's information
+3. Change president's last name to a new name
+4. Submit form
+5. Verify:
+   - New contact created with new last name
+   - Old president's "President of" relationship has `is_active=false` and `end_date=today`
+   - New president's "President of" relationship is active
+   - Old president retains all other data and relationships
+
+**Test Executive Director Replacement:**
+1. Open RCS form for organization with existing executive director
+2. Verify Individual2 autofills with current executive director's information
+3. Change executive director's last name to a new name
+4. Submit form
+5. Verify:
+   - New contact created with new last name
+   - Old executive director's "Executive Director of" relationship has `is_active=false` and `end_date=today`
+   - New executive director's "Executive Director of" relationship is active
+   - Old executive director retains all other data and relationships
+
+**Test Name/Email Updates (No Replacement):**
+1. Open RCS form for organization with existing president
+2. Change only first name or email (keep last name same)
+3. Submit form
+4. Verify:
+   - Same contact updated (no new contact created)
+   - "President of" relationship remains unchanged
+   - Contact information updated with new first name/email
+
 ### Log Verification
 ```bash
 tail -f /home/brian/buildkit/build/masdemo/web/wp-content/uploads/civicrm/ConfigAndLog/CiviCRM.*.log | grep AfformSubmitSubscriber
@@ -128,11 +208,26 @@ tail -f /home/brian/buildkit/build/masdemo/web/wp-content/uploads/civicrm/Config
 
 ### Database Verification
 ```php
-// Check relationships for contact
-$rels = \Civi\Api4\Relationship::get(false)
+// Check active relationships for contact
+$activeRels = \Civi\Api4\Relationship::get(false)
   ->addWhere('contact_id_a', '=', $contactId)
   ->addWhere('is_active', '=', true)
-  ->addSelect('id', 'contact_id_b.display_name', 'relationship_type_id:label', 'case_id')
+  ->addSelect('id', 'contact_id_b.display_name', 'relationship_type_id:label', 'case_id', 'start_date', 'end_date')
+  ->execute();
+
+// Check inactive relationships (ended role relationships)
+$inactiveRels = \Civi\Api4\Relationship::get(false)
+  ->addWhere('contact_id_a', '=', $contactId)
+  ->addWhere('is_active', '=', false)
+  ->addSelect('id', 'contact_id_b.display_name', 'relationship_type_id:label', 'start_date', 'end_date')
+  ->execute();
+
+// Check for active role relationships for an organization
+$currentPresident = \Civi\Api4\Relationship::get(false)
+  ->addWhere('relationship_type_id:name', '=', 'President of')
+  ->addWhere('contact_id_b', '=', $organizationId)
+  ->addWhere('is_active', '=', true)
+  ->addSelect('contact_id_a.display_name', 'start_date')
   ->execute();
 ```
 

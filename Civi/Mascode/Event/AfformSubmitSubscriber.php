@@ -29,8 +29,99 @@ class AfformSubmitSubscriber extends AutoSubscriber
         //     civicrm/ext/afform/core/afform.php:  $dispatcher->addListener('civi.afform.submit',
         //          ['\Civi\Api4\Action\Afform\Submit', 'processGenericEntity'], 0);
         return [
-            'civi.afform.submit' => ['onFormSubmit', -100],
+            'civi.afform.submit' => [
+                ['onFormSubmitPreProcess', 1],  // Before Afform processes (priority > 0)
+                ['onFormSubmit', -100],          // After Afform processes (priority < 0)
+            ],
         ];
+    }
+
+    /**
+     * Pre-process form submission BEFORE Afform saves data
+     * Detects when president last name changes and forces creation of new contact
+     *
+     * @param \Civi\Afform\Event\AfformSubmitEvent $event
+     */
+    public function onFormSubmitPreProcess(AfformSubmitEvent $event): void
+    {
+        $afform = $event->getAfform();
+        $formRoute = $afform['server_route'] ?? null;
+        $formName = $afform['name'] ?? null;
+
+        // Only process RCS form
+        if ($formRoute !== 'civicrm/mas-rcs-form' || $formName !== 'afformMASRCSForm') {
+            return;
+        }
+
+        $entityName = $event->getEntityName();
+
+        // Only process Individual1 (President) and Individual2 (Executive Director)
+        if ($entityName !== 'Individual1' && $entityName !== 'Individual2') {
+            return;
+        }
+
+        $records = $event->getRecords();
+        if (empty($records[0]['fields'])) {
+            return;
+        }
+
+        $fields = $records[0]['fields'];
+        $submittedLastName = $fields['last_name'] ?? null;
+        $contactId = $records[0]['fields']['id'] ?? null;
+
+        // If no contact ID (new contact) or no last name, nothing to check
+        if (empty($contactId) || empty($submittedLastName)) {
+            return;
+        }
+
+        // Get the current last name of the autofilled contact
+        try {
+            $contact = \Civi\Api4\Contact::get(false)
+                ->addSelect('last_name', 'display_name')
+                ->addWhere('id', '=', $contactId)
+                ->execute()
+                ->first();
+
+            $currentLastName = $contact['last_name'] ?? null;
+
+            // If last names differ, this is a role replacement
+            if ($currentLastName !== $submittedLastName) {
+                $sessionId = $this->getSessionId();
+                $roleLabel = $entityName === 'Individual1' ? 'President' : 'Executive Director';
+                $storageKey = $entityName === 'Individual1' ? 'old_president_id' : 'old_executive_director_id';
+
+                \Civi::log()->info('AfformSubmitSubscriber.php - ' . $roleLabel . ' replacement detected in pre-process', [
+                    'session_id' => $sessionId,
+                    'entity_name' => $entityName,
+                    'role' => $roleLabel,
+                    'old_contact_id' => $contactId,
+                    'old_last_name' => $currentLastName,
+                    'new_last_name' => $submittedLastName,
+                    'old_contact_display_name' => $contact['display_name'] ?? null
+                ]);
+
+                // Store old contact ID for post-processing
+                if (!isset(self::$submissionData[$sessionId])) {
+                    self::$submissionData[$sessionId] = [];
+                }
+                self::$submissionData[$sessionId][$storageKey] = $contactId;
+
+                // Remove the ID so Afform creates a NEW contact instead of updating
+                unset($records[0]['fields']['id']);
+                $event->setRecords($records);
+
+                \Civi::log()->info('AfformSubmitSubscriber.php - Removed contact ID to force new contact creation', [
+                    'session_id' => $sessionId,
+                    'role' => $roleLabel,
+                    'old_contact_id' => $contactId
+                ]);
+            }
+        } catch (\Exception $e) {
+            \Civi::log()->error('AfformSubmitSubscriber.php - Error in pre-process president check', [
+                'error' => $e->getMessage(),
+                'contact_id' => $contactId
+            ]);
+        }
     }
 
     /**
@@ -196,6 +287,17 @@ class AfformSubmitSubscriber extends AutoSubscriber
                 }
 
                 try {
+                    // Check if this is a president replacement (old president ID stored in pre-process)
+                    if (!empty($submissionData['old_president_id'])) {
+                        $this->endPresidentRelationship(
+                            $submissionData['old_president_id'],
+                            $organizationId,
+                            $presidentTypeId,
+                            $sessionId
+                        );
+                    }
+
+                    // Now create the new president relationship
                     $this->createRelationshipIfNotExists(
                         $submissionData['president_id'],
                         $organizationId,
@@ -229,6 +331,17 @@ class AfformSubmitSubscriber extends AutoSubscriber
                 }
 
                 try {
+                    // Check if this is an executive director replacement (old executive director ID stored in pre-process)
+                    if (!empty($submissionData['old_executive_director_id'])) {
+                        $this->endExecutiveDirectorRelationship(
+                            $submissionData['old_executive_director_id'],
+                            $organizationId,
+                            $executiveDirectorTypeId,
+                            $sessionId
+                        );
+                    }
+
+                    // Now create the new executive director relationship
                     $this->createRelationshipIfNotExists(
                         $submissionData['executive_director_id'],
                         $organizationId,
@@ -295,6 +408,118 @@ class AfformSubmitSubscriber extends AutoSubscriber
                 'session_id' => $sessionId,
                 'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString()
+            ]);
+        }
+    }
+
+    /**
+     * End president relationship for old president when replacement occurs
+     *
+     * @param int $oldPresidentId Contact ID of the old president
+     * @param int $organizationId Organization contact ID
+     * @param int $presidentTypeId Relationship type ID for "President of"
+     * @param string $sessionId Session ID for logging
+     */
+    protected function endPresidentRelationship(
+        int $oldPresidentId,
+        int $organizationId,
+        int $presidentTypeId,
+        string $sessionId
+    ): void {
+        try {
+            // Find active "President of" relationship for the old president
+            $existingRelationship = \Civi\Api4\Relationship::get(false)
+                ->addWhere('contact_id_a', '=', $oldPresidentId)
+                ->addWhere('contact_id_b', '=', $organizationId)
+                ->addWhere('relationship_type_id', '=', $presidentTypeId)
+                ->addWhere('is_active', '=', true)
+                ->execute()
+                ->first();
+
+            if ($existingRelationship) {
+                // End the relationship
+                \Civi\Api4\Relationship::update(false)
+                    ->addValue('is_active', false)
+                    ->addValue('end_date', date('Y-m-d'))
+                    ->addWhere('id', '=', $existingRelationship['id'])
+                    ->execute();
+
+                \Civi::log()->info('AfformSubmitSubscriber.php - Ended previous President relationship', [
+                    'session_id' => $sessionId,
+                    'relationship_id' => $existingRelationship['id'],
+                    'old_president_id' => $oldPresidentId,
+                    'organization_id' => $organizationId,
+                    'end_date' => date('Y-m-d')
+                ]);
+            } else {
+                \Civi::log()->warning('AfformSubmitSubscriber.php - No active President relationship found to end', [
+                    'session_id' => $sessionId,
+                    'old_president_id' => $oldPresidentId,
+                    'organization_id' => $organizationId
+                ]);
+            }
+
+        } catch (\Exception $e) {
+            \Civi::log()->error('AfformSubmitSubscriber.php - Failed to end president relationship', [
+                'session_id' => $sessionId,
+                'old_president_id' => $oldPresidentId,
+                'error' => $e->getMessage()
+            ]);
+        }
+    }
+
+    /**
+     * End executive director relationship for old executive director when replacement occurs
+     *
+     * @param int $oldExecutiveDirectorId Contact ID of the old executive director
+     * @param int $organizationId Organization contact ID
+     * @param int $executiveDirectorTypeId Relationship type ID for "Executive Director of"
+     * @param string $sessionId Session ID for logging
+     */
+    protected function endExecutiveDirectorRelationship(
+        int $oldExecutiveDirectorId,
+        int $organizationId,
+        int $executiveDirectorTypeId,
+        string $sessionId
+    ): void {
+        try {
+            // Find active "Executive Director of" relationship for the old executive director
+            $existingRelationship = \Civi\Api4\Relationship::get(false)
+                ->addWhere('contact_id_a', '=', $oldExecutiveDirectorId)
+                ->addWhere('contact_id_b', '=', $organizationId)
+                ->addWhere('relationship_type_id', '=', $executiveDirectorTypeId)
+                ->addWhere('is_active', '=', true)
+                ->execute()
+                ->first();
+
+            if ($existingRelationship) {
+                // End the relationship
+                \Civi\Api4\Relationship::update(false)
+                    ->addValue('is_active', false)
+                    ->addValue('end_date', date('Y-m-d'))
+                    ->addWhere('id', '=', $existingRelationship['id'])
+                    ->execute();
+
+                \Civi::log()->info('AfformSubmitSubscriber.php - Ended previous Executive Director relationship', [
+                    'session_id' => $sessionId,
+                    'relationship_id' => $existingRelationship['id'],
+                    'old_executive_director_id' => $oldExecutiveDirectorId,
+                    'organization_id' => $organizationId,
+                    'end_date' => date('Y-m-d')
+                ]);
+            } else {
+                \Civi::log()->warning('AfformSubmitSubscriber.php - No active Executive Director relationship found to end', [
+                    'session_id' => $sessionId,
+                    'old_executive_director_id' => $oldExecutiveDirectorId,
+                    'organization_id' => $organizationId
+                ]);
+            }
+
+        } catch (\Exception $e) {
+            \Civi::log()->error('AfformSubmitSubscriber.php - Failed to end executive director relationship', [
+                'session_id' => $sessionId,
+                'old_executive_director_id' => $oldExecutiveDirectorId,
+                'error' => $e->getMessage()
             ]);
         }
     }
