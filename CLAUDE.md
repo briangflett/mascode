@@ -1,5 +1,7 @@
 # MASCode Extension Development Guide
 
+**Note:** When updating key project information in this file, also update the summary in `/home/brian/workspace/claude/context/mas-claude-context/claude-code/projects/mascode.md`
+
 ## Quick Reference
 
 - **Framework**: CiviCRM on WordPress
@@ -49,21 +51,15 @@
 
 ## API4 Patterns (CRITICAL)
 
-**ALWAYS use CiviCRM API4. NEVER use direct SQL.**
+**For complete API4 patterns, CV commands, and code verification protocol, see:**
+**[/home/brian/workspace/claude/context/mas-claude-context/claude-code/global/protocols/api4.md](/home/brian/workspace/claude/context/mas-claude-context/claude-code/global/protocols/api4.md)**
 
-```php
-// Use FALSE as first parameter to suppress permissions
-\Civi\Api4\EntityName::action(FALSE)
-    ->addWhere('field', '=', 'value')
-    ->addValue('field', 'value')
-    ->execute();
-
-// ALWAYS use names, not IDs for cross-environment compatibility
-\Civi\Api4\CustomField::get(FALSE)
-    ->addWhere('custom_group_id:name', '=', 'Group_Name')
-    ->addWhere('name', '=', 'field_name')
-    ->execute();
-```
+**Quick Reference:**
+- **ALWAYS use CiviCRM API4** - NEVER use direct SQL
+- **Use FALSE** as first parameter to suppress permissions
+- **Use names, not IDs** for cross-environment compatibility
+- **Common pattern**: `\Civi\Api4\EntityName::action(FALSE)->addWhere()->execute()`
+- **Verify first**: Always check source code before using APIs
 
 ## Afform Management
 
@@ -106,16 +102,13 @@
 
 ## CV Command Patterns
 
+**See [protocols/api4.md](/home/brian/workspace/claude/context/mas-claude-context/claude-code/global/protocols/api4.md) for complete CV command reference**
+
+**Quick commands:**
 ```bash
-# Script execution
+cv flush  # ALWAYS after code changes
 cv scr /path/to/script.php --user=admin
-
-# With debugging
 XDEBUG_SESSION=1 cv scr /path/to/script.php --user=admin
-
-# Extension management
-cv ext:list | grep mascode
-cv flush  # Always after code changes
 ```
 
 ## Documentation Map
@@ -142,10 +135,9 @@ cv flush  # Always after code changes
 
 ## Code Verification Protocol
 
-**Before using any CiviCRM entities, actions, or methods, verify they exist:**
-- Check source in `/home/brian/buildkit/build/masdemo/web/wp-content/plugins/civicrm/civicrm/`
-- Check extensions in `/home/brian/buildkit/build/masdemo/web/wp-content/uploads/civicrm/ext/`
-- Never assume APIs exist without verification
+**See [protocols/api4.md](/home/brian/workspace/claude/context/mas-claude-context/claude-code/global/protocols/api4.md#api-and-code-verification-critical) for complete verification procedures**
+
+**Critical:** Before using any CiviCRM entities, actions, or methods, verify they exist in source code - never assume APIs exist
 
 ## PHP Code Standards
 
