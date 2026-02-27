@@ -181,6 +181,16 @@ XDEBUG_SESSION=1 cv scr /path/to/script.php --user=admin
 XDEBUG_SESSION=1 /home/brian/buildkit/bin/cv scr <script> --user=admin
 ```
 
+## Klaus Integration
+
+This project uses Klaus for session persistence, memory, and task tracking. Klaus capabilities are provided via the globally available `klaus-workflows` skill and MCP servers. Private project context (workflow IDs, session protocol) is maintained in the claude.ai web project settings.
+
+---
+
 ## Need More Detail?
 
 Refer to the appropriate documentation file in `docs/` based on the area you're working on. This file provides quick reference; detailed docs contain comprehensive information for specific features and workflows.
+
+---
+
+**Last Updated**: 2026-02-26
