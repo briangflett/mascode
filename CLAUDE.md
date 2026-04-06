@@ -181,6 +181,16 @@ XDEBUG_SESSION=1 cv scr /path/to/script.php --user=admin
 XDEBUG_SESSION=1 /home/brian/buildkit/bin/cv scr <script> --user=admin
 ```
 
+## Playwright Browser Access (CiviCRM Admin)
+
+Klaus can browse the CiviCRM admin UI via Playwright MCP using cookie injection (no login form needed):
+
+1. **Generate cookies**: `wp eval` with `wp_generate_auth_cookie()` for user ID 42 (brian.flett), valid 24h
+2. **Inject**: `browser_run_code` → `context.addCookies()` — logged_in cookie at `/`, secure_auth at `/wp-admin`
+3. **Navigate**: `https://masdemo.localhost/wp-admin/admin.php?page=CiviCRM`
+
+**Requires**: Playwright MCP with `--ignore-https-errors` flag. See Klaus memory `reference_playwright_civicrm_auth.md` for full recipe.
+
 ## Session Lifecycle
 
 - **Start**: `/bootstrap` (loads Klaus context, checks pending handoffs)
