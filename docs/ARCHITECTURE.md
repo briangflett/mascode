@@ -37,8 +37,7 @@ Services registered in `mascode_civicrm_container()`:
 - `mas_add_relationship_to_employer`: Create configurable relationships with employers
 
 #### Triggers
-- `mas_unsubscribe_mailingevent`: Mailing unsubscribe events
-- `mas_new_case`: Case creation events
+- Defined in `Civi/Mascode/CiviRules/triggers.json` (no custom trigger classes currently implemented)
 
 ### Core Utilities
 - **CodeGenerator**: Generates sequential MAS codes (R25001, P25001 format)
@@ -72,24 +71,9 @@ Services registered in `mascode_civicrm_container()`:
 - **Validation**: Enhanced form validation and error handling
 
 ### Deployment System
-- **Script-Based Deployment**: Robust deployment scripts replacing fragile export/import
-- **Environment-Specific Configuration**: Production-ready ID mapping and configuration
-- **Automated Component Deployment**: CiviRules, Afforms, and Custom Fields
-- **Manual Component Support**: Documentation for Form Processor deployment
-
-### AI Integration Strategy
-
-#### Phase 1: Direct API Integration (Planned)
-- **Primary LLM**: OpenAI GPT-4 for function calling and cost efficiency
-- **Secondary LLM**: Anthropic Claude for complex analysis tasks
-- **Architecture**: PHP-native integration with existing stack
-- **Use Cases**: Contact enhancement, report generation, donor analysis
-
-#### Phase 2: Advanced Features (Future)
-- **Intelligent Routing**: AI-powered case assignment
-- **Predictive Analytics**: Donor behavior modeling
-- **Content Generation**: Automated report narratives
-- **Form Optimization**: AI-driven form improvement suggestions
+- **Script-Based Deployment**: CiviRules and custom fields via deployment scripts
+- **File-Based Deployment**: Afforms version-controlled in `ang/` directory
+- **Manual Deployment**: Form Processors via CiviCRM export/import UI
 
 ### Patch Management
 Automated application of CiviCRM core enhancements:
@@ -134,13 +118,11 @@ Automated application of CiviCRM core enhancements:
 
 ### Configuration & Templates
 ```
-scripts/                 # Deployment scripts
-├── deploy_self_assessment_surveys.php
+scripts/                 # Deployment and utility scripts
 ├── deploy_civirules.php
-├── deploy_rcs_form.php
+├── deploy_custom_fields.php
 ├── deploy_form_processors.md
-├── export_afform.php    # Legacy export tool
-└── import_afform.php    # Legacy import tool
+└── [utility scripts]
 templates/               # Smarty templates (minimize use)
 ├── CRM/Mascode/CiviRules/Form/  # CiviRules form templates
 xml/Menu/                # Menu definitions
@@ -237,33 +219,13 @@ class MyAction extends \CRM_CivirulesActions_Generic_Api {
 
 ## Deployment Architecture
 
-### Script-Based Deployment
-The extension uses environment-aware deployment scripts to replace fragile export/import functionality:
-
-- **Self Assessment Surveys**: Automated deployment of activity types, custom fields, and Afforms
-- **CiviRules**: Automated deployment of custom actions, triggers, and conditions
-- **RCS Form**: Automated deployment of complete form structure with entity relationships
-- **Form Processors**: Manual deployment via CiviCRM UI with comprehensive documentation
-
-### Environment Configuration
-Each deployment script includes environment-specific configuration sections:
-```php
-$config = [
-    'environment' => 'prod',  // 'dev' or 'prod'
-    'case_types' => [
-        'service_request' => 3,  // Production-specific ID
-    ],
-    // ... other environment-specific mappings
-];
-```
-
 ### Deployment Workflow
 1. **Development**: Create and test components in dev environment
-2. **Version Control**: Commit changes to dev branch, create PR to master
-3. **Production**: Pull latest code, update script configurations, run deployment scripts
-4. **Verification**: Test deployed components and clear cache
+2. **Version Control**: Commit and push to master
+3. **Production**: Pull latest code, run deployment scripts if config changed, `cv flush`
+
+See [DEPLOYMENT.md](DEPLOYMENT.md) for details.
 
 ---
-*Last Updated: June 2025*  
-*Extension Version: 1.0.3*  
+*Last Updated: April 2026*  
 *CiviCRM Compatibility: 6.1+*

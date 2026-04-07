@@ -36,29 +36,18 @@ cv ext:list | grep mascode
    git push origin dev
    ```
 
-3. **Create and Merge Pull Request**
-   - Create PR from `dev` to `master` branch on GitHub
-   - Review changes and merge to `master`
-   - Use automated release script if creating a release:
-     ```bash
-     ./.claude/commands/release.sh [patch|minor|major]
-     ```
+3. **Push to Master**
+   - Push directly to `master` or create PR from feature branch
+   - Update version in `info.xml` for releases
 
 4. **Deploy to Production Environment**
    ```bash
    # Pull latest changes in production
    git pull origin master
    
-   # Update deployment script configurations for production environment
-   # Edit these files with production-specific IDs:
-   # - scripts/deploy_self_assessment_surveys.php
-   # - scripts/deploy_civirules.php  
-   # - scripts/deploy_rcs_form.php
-   
-   # Run deployment scripts in production
-   cv scr scripts/deploy_self_assessment_surveys.php --user=admin
-   cv scr scripts/deploy_civirules.php --user=admin  
-   cv scr scripts/deploy_rcs_form.php --user=admin
+   # Run deployment scripts if config changed
+   cv scr scripts/deploy_custom_fields.php --user=admin
+   cv scr scripts/deploy_civirules.php --user=admin
    
    # For Form Processors, follow manual process in:
    # scripts/deploy_form_processors.md
@@ -68,9 +57,8 @@ cv ext:list | grep mascode
    ```
 
 5. **Production Deployment Checklist**
-   - [ ] Update foreign key IDs in deployment script configurations
    - [ ] Verify all dependencies exist in production (case types, message templates, etc.)
-   - [ ] Run deployment scripts in correct order
+   - [ ] Run deployment scripts if configuration changed
    - [ ] Test deployed components thoroughly
    - [ ] Monitor logs for any errors
 

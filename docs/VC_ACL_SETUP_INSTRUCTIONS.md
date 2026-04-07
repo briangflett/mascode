@@ -229,18 +229,18 @@ These rules define what contacts VCs can view.
 
 ---
 
-## Part 6: Verify Custom Hook (Already Implemented)
+## Part 6: Custom Hook for Dynamic ACL Filtering
 
-The Smart Group "Clients Assigned to Current VC" uses a custom hook to filter by the logged-in user. This hook is already implemented in the mascode extension and automatically looks up the group by name, so it works in both dev and production without any configuration needed.
+> **STATUS: NOT YET IMPLEMENTED.** The `mascode_civicrm_aclGroup` hook described below needs to be created in `mascode.php` to enable dynamic filtering of the "Clients Assigned to Current VC" smart group by the logged-in user.
 
-**What it does:**
-- When a VC accesses CiviCRM, the hook dynamically filters the "Clients Assigned to Current VC" group
-- Only shows contacts where the current user is assigned as "Case Coordinator"
-- Uses the group name "Clients_Assigned_to_Current_VC" to find the correct group ID automatically
+**What it should do:**
+- When a VC accesses CiviCRM, dynamically filter the "Clients Assigned to Current VC" group
+- Only show contacts where the current user is assigned as "Case Coordinator"
+- Use the group name "Clients_Assigned_to_Current_VC" to find the correct group ID automatically
 
-**Location:** `/path/to/civicrm/ext/mascode/mascode.php` (function `mascode_civicrm_aclGroup`)
+**Implementation needed in:** `mascode.php` (function `mascode_civicrm_aclGroup`)
 
-**No configuration needed** - the hook will automatically work once you create the smart group with the correct name in Part 1.2.
+Without this hook, the smart group from Part 1.2 will show all contacts with any Case Coordinator, not just the current user's assignments. Parts 1-5 and 7+ still work for the "Open Service Requests" group which doesn't need per-user filtering.
 
 ---
 

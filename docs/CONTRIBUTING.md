@@ -22,9 +22,8 @@
    cv ext:enable mascode
    
    # Deploy core components
-   cv scr scripts/deploy_self_assessment_surveys.php --user=admin
+   cv scr scripts/deploy_custom_fields.php --user=admin
    cv scr scripts/deploy_civirules.php --user=admin
-   cv scr scripts/deploy_rcs_form.php --user=admin
    
    # Clear cache
    cv flush
@@ -187,12 +186,9 @@ git push origin feature/description
 1. **Development**: All changes go to `dev` branch
 2. **Testing**: Thorough testing in development environment
 3. **PR Review**: Code review and approval process
-4. **Merge to Master**: Use automated release script:
-   ```bash
-   ./.claude/commands/release.sh [patch|minor|major]
-   ```
-5. **GitHub Release**: Automated creation with changelog
-6. **Documentation**: Update installation and deployment guides
+4. **Merge to Master**: Push or merge PR to master
+5. **Tag Release**: Update version in `info.xml`, commit, tag
+6. **Deploy**: Pull in production, run deployment scripts if needed, `cv flush`
 
 ## Community Guidelines
 

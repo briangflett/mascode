@@ -77,18 +77,17 @@ cv flush
 After installation, deploy the core components:
 
 ```bash
-# Deploy Self Assessment Survey system
-cv scr scripts/deploy_self_assessment_surveys.php --user=admin
+# Deploy custom fields
+cv scr scripts/deploy_custom_fields.php --user=admin
 
 # Deploy CiviRules configuration
 cv scr scripts/deploy_civirules.php --user=admin
 
-# Deploy RCS form
-cv scr scripts/deploy_rcs_form.php --user=admin
-
 # Clear cache
 cv flush
 ```
+
+Afforms are version-controlled in `ang/` and deploy automatically with the code.
 
 ### Form Processor Setup (If Using)
 
@@ -184,8 +183,7 @@ cv api4 CiviRulesTrigger.get | grep mas
 
 After successful installation:
 
-1. **Review User Guide**: See [USER-GUIDE.md](USER-GUIDE.md) for end-user documentation
-2. **Configure Forms**: Customize form fields and workflows as needed
-3. **Test Workflows**: Verify case management and automation workflows
-4. **Production Deployment**: Follow [DEPLOYMENT.md](DEPLOYMENT.md) for production deployment
-5. **Monitor Usage**: Review CiviCRM logs and form submission patterns
+1. **Configure Forms**: Customize form fields and workflows as needed
+2. **Test Workflows**: Verify case management and automation workflows
+3. **Production Deployment**: Follow [DEPLOYMENT.md](DEPLOYMENT.md) for production deployment
+4. **Monitor Usage**: Review CiviCRM logs and form submission patterns
