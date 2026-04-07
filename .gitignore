@@ -45,6 +45,7 @@ dist/
 
 # Claude Code sensitive files, temporary files, and local configurations
 .claude/
+docs/claude-ai-project-instructions.md
 
 # CiviCRM specific
 sites/default/files/civicrm/ConfigAndLog/

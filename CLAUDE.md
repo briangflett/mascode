@@ -122,14 +122,9 @@ XDEBUG_SESSION=1 cv scr /path/to/script.php --user=admin
 - [docs/AFFORM-RELATIONSHIPS.md](docs/AFFORM-RELATIONSHIPS.md) - Automatic relationship creation (RCS form)
 - [docs/TESTING.md](docs/TESTING.md) - Testing framework and practices
 - [docs/VC_ACL_SETUP_INSTRUCTIONS.md](docs/VC_ACL_SETUP_INSTRUCTIONS.md) - Volunteer Consultant ACL setup
-
-**Strategic/Planning**:
-- [docs/AI-ROADMAP.md](docs/AI-ROADMAP.md) - Future AI extension vision
-- [docs/UNIFIED-EXPORT-IMPORT-EXTENSION-PLAN.md](docs/UNIFIED-EXPORT-IMPORT-EXTENSION-PLAN.md) - Export/import architecture
-- [docs/SASS_MIGRATION_PLAN.md](docs/SASS_MIGRATION_PLAN.md) - SASS form migration strategy
+- [docs/PRODUCTION-OPS.md](docs/PRODUCTION-OPS.md) - Production operations
 
 **Reference**:
-- [docs/USER-GUIDE.md](docs/USER-GUIDE.md) - End-user documentation
 - [docs/CONTRIBUTING.md](docs/CONTRIBUTING.md) - Contribution guidelines
 - [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md) - Production deployment process
 
@@ -194,7 +189,7 @@ Klaus can browse the CiviCRM admin UI via Playwright MCP using cookie injection 
 ## Session Lifecycle
 
 - **Start**: `/bootstrap` (loads Klaus context, checks pending handoffs)
-- **End**: `/wrapup` (logs summary, updates SESSIONS, handles handoffs, checks git)
+- **End**: `/wrapup` (logs summary to Postgres, handles handoffs, checks git)
 
 Klaus capabilities are provided via the globally available `klaus-workflows`, `bootstrap`, and `wrapup` skills.
 
@@ -206,4 +201,4 @@ Refer to the appropriate documentation file in `docs/` based on the area you're 
 
 ---
 
-**Last Updated**: 2026-03-15
+**Last Updated**: 2026-04-07
