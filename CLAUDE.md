@@ -194,4 +194,4 @@ Refer to the appropriate documentation file in `docs/` based on the area you're 
 
 ---
 
-**Last Updated**: 2026-07-08
+**Last Updated**: 2026-09-07
