@@ -81,6 +81,28 @@ easier to tune but is another cron job.
 |----------|--------|-------|
 | Medium | Small–Medium | Needs a coordinator decision on how long "no response" takes to declare |
 
+### Dev clone: mas_lifecycle_vc_close_chase is silently dead (rule 11)
+
+Found during the PR #30 review. On the dev clone, rule 11's NULL-link
+`case_type` condition sits at weight 24 — **after** both `AND` conditions
+(`case_status_changed` 22, `case_status` 23). `CRM_Civirules_Engine::areConditionsValid()`
+exempts only the *first* condition's link, so the later NULL link hits the
+switch's `default:` branch, logs "invalid condition_link operator" and forces
+the rule FALSE. The VC close-report chase therefore never fires in dev.
+
+**Production is NOT affected** — checked 2026-09-09, all seven `mas_*` rules
+there have their NULL-link `case_type` condition sorting first (rule 11:
+weights 12/13/14). This is stale dev data, probably from hand-building the rule
+in dev before `LifecycleRuleProvisioner` existed.
+
+It still matters, because it makes **dev an unreliable place to test the VC
+close chase** — it will appear broken there for a reason that has nothing to do
+with the code under test. Either re-weight the dev row or re-clone.
+
+| Priority | Effort | Notes |
+|----------|--------|-------|
+| Low (dev only) | Tiny | Re-weight rule 11's conditions in dev, or pick it up on the next /mas-clone |
+
 ### Prod CiviRules errors: "Contact ID is not numeric" and Relationship.create mandatory keys
 
 The August/September production logs carry recurring

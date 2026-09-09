@@ -81,13 +81,28 @@ For each case in the approved batch:
 ```
 1. Confirm the case is still at "Request RCS" and still has an active
    Case Client Rep. If either is false, skip it and say so.
-2. Move the case to "Ongoing"      (status_id:name = 'Open')
-3. Move the case to "Request RCS"  (status_id:name = 'Request RCS')
+2. Record the current status, so step 4 can restore it.
+3. Move the case to "Ongoing"      (status_id:name = 'Open')
+4. Move the case to "Request RCS"  (status_id:name = 'Request RCS')
+5. Re-read the status. If it is not "Request RCS", RESTORE the value from
+   step 2 and abort the whole batch, loudly.
 ```
 
-Step 2 is inert: `mas_lifecycle_rcs_chase` requires the *new* value to be
+Step 3 is inert: `mas_lifecycle_rcs_chase` requires the *new* value to be
 "Request RCS", which that move is not, and no other rule is on
-service_request + `changed_case`. Step 3 is the arming transition.
+service_request + `changed_case`. Step 4 is the arming transition.
+
+**Steps 2 and 5 are not ceremony — they are the whole safety story.** If a run
+dies between steps 3 and 4, the Service Request is silently parked at "Ongoing":
+it drops out of the "Request RCS" queue the coordinator works from, and it gets
+no chase either. That is a live client case made worse, invisibly. Wrap each
+case's pair so a failure restores rather than leaves it half-moved, and never
+run the batch without checking each case's end state.
+
+Note each remediated case gains two status-change entries in its history (the
+API4 writes themselves add no "Change Case Status" activity, but `modified_date`
+moves and the case log reflects both writes). That is the visible cost of
+re-arming and is worth mentioning to the coordinator before the first batch.
 
 **This two-step is verified working** — measured on dev 2026-09-09, a case at
 "Request RCS" taken down to "Ongoing" and back armed the chase (rule log 0 → 0 → 1).

@@ -105,11 +105,14 @@ class RcsChaseOnCreateWiringTest extends TestCase
             . 'would duplicate mas_lifecycle_rcs_chase and STILL never arm manual intake, because a case '
             . 'created at the status never transitions into it.'
         );
+        // Match the SELECT specifically rather than the bare word: the docblock
+        // legitimately mentions changed_case when contrasting the two rules, and
+        // a whole-body grep would fire on a comment.
         $this->assertStringNotContainsString(
-            'changed_case',
+            "WHERE name = 'changed_case'",
             $body,
-            'The created-at-status builder references changed_case. It must arm on creation, not on a '
-            . 'transition — see tests/Live/RcsChaseArmingTest.php scenarios A4 and B2.'
+            'The created-at-status builder selects the changed_case trigger. It must arm on creation, '
+            . 'not on a transition — see tests/Live/RcsChaseArmingTest.php scenarios A4 and B2.'
         );
     }
 
@@ -128,12 +131,57 @@ class RcsChaseOnCreateWiringTest extends TestCase
             . 'previous value for it to compare against, so the rule would silently never match and the '
             . 'chase would go back to missing every manually-created Service Request.'
         );
-        // The two conditions it MUST carry: the right case type and the right status.
-        $this->assertStringContainsString(
-            "foreach (['case_type', 'case_status'] as \$n)",
-            $body,
-            'The created-at-status condition set changed shape. It must resolve exactly case_type and '
-            . 'case_status — dropping case_type would arm this chase on Project creation too.'
+        // The two conditions it MUST carry, matched independently so a quote-style
+        // change or a phpcbf run does not break the tripwire.
+        foreach (['case_type', 'case_status'] as $needed) {
+            $this->assertStringContainsString(
+                "'$needed'",
+                $body,
+                "The created-at-status condition set no longer resolves '$needed'. It must carry both "
+                . 'case_type and case_status — dropping case_type would arm this chase on Project '
+                . 'creation too.'
+            );
+        }
+    }
+
+    /**
+     * N1: the NULL-link condition must be written FIRST.
+     *
+     * writeConditions() assigns ascending weights in array order, and
+     * CRM_Civirules_Engine::areConditionsValid() ignores only the FIRST
+     * condition's link — a later NULL link falls to its switch default, logs
+     * "invalid condition_link operator" and forces the whole rule FALSE. So
+     * swapping the two array entries silently kills the rule with no runtime
+     * error. This is not hypothetical: on the dev clone
+     * mas_lifecycle_vc_close_chase carries its NULL-link case_type last and is
+     * dead there.
+     */
+    public function testTheNullLinkConditionIsWrittenFirst(): void
+    {
+        $body = $this->methodBody(
+            $this->contents(self::PROVISIONER, 'LifecycleRuleProvisioner is gone.'),
+            'private static function ensureCreatedAtStatusChaseRule(',
+            'ensureCreatedAtStatusChaseRule() is gone.'
+        );
+
+        $caseTypeAt = strpos($body, "condIds['case_type']");
+        $caseStatusAt = strpos($body, "condIds['case_status']");
+        $this->assertNotFalse($caseTypeAt, 'The case_type condition row is gone from the builder.');
+        $this->assertNotFalse($caseStatusAt, 'The case_status condition row is gone from the builder.');
+        $this->assertLessThan(
+            $caseStatusAt,
+            $caseTypeAt,
+            'case_type (condition_link NULL) is no longer written BEFORE case_status (link AND). '
+            . 'writeConditions() weights them in array order and the engine only exempts the first '
+            . "condition's link, so this ordering swap makes the rule silently never match."
+        );
+
+        // And the links themselves must still be NULL-then-AND.
+        $nullLinkAt = strpos($body, 'case_type_id' . "' => [\$caseTypeId]]), null]");
+        $this->assertNotFalse(
+            $nullLinkAt,
+            'The case_type condition no longer passes a NULL condition_link. The first condition must '
+            . 'have no link operator.'
         );
     }
 

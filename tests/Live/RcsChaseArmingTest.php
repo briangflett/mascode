@@ -39,18 +39,42 @@
  *
  * mas_lifecycle_rcs_chase_on_create closes that on the mas_new_case trigger.
  *
- * THE ASSERTIONS THAT ARE THE POINT OF THIS FILE are A2 and A3 together:
- * a manually-created SR is armed EXACTLY ONCE. Not "at least once" — a fix that
- * stacked a second 21/42 pair onto a live cadence would be worse than the
- * missing chase it replaced, and the coordinator does re-touch these cases
- * (18828 got a manual ask five days after an automated chase, with its 42-day
- * chase still queued). Exactly-once here is structural rather than guarded:
- * mas_new_case fires on op = create, which happens once per case, ever.
+ * THE ASSERTIONS THAT ARE THE POINT OF THIS FILE are A2, A3 and G4 together:
+ * a manually-created SR is armed, armed with a coherent 21/42 cadence, and
+ * armed by ONE cadence rather than two stacked on each other. That last part
+ * matters because the coordinator does re-touch these cases (18828 got a manual
+ * ask five days after an automated chase, with its 42-day chase still queued),
+ * and a fix that stacked a second pair onto a live cadence would be worse than
+ * the missing chase it replaced.
+ *
+ * WHAT IS AND IS NOT "ONCE" HERE — READ THIS BEFORE TIGHTENING A COUNT
+ * The create EVENT happens once per case, but CRM_CivirulesPostTrigger_Case::
+ * triggerTrigger() fires the RULE once for the base event, then once per case
+ * client, then once per case role, all from that one event — so the firing
+ * count is 1 through 3+ depending on how many of those exist when the trigger
+ * runs, which in turn depends on whether a transaction is open. API4
+ * CiviCase::create() (what these fixtures use) writes the CaseContact row after
+ * the post hook and holds no transaction, so the trigger runs inline with no
+ * clients visible: 1 firing. The CiviCRM "New Case" UI wraps postProcess() in a
+ * transaction, so the trigger is deferred to PHASE_POST_COMMIT and the client
+ * and coordinator role both exist by then: 3 firings, which is what every
+ * recent UI-created service_request on the dev clone actually shows.
+ *
+ * So this file does NOT assert a firing count of 1 — that would pass only for
+ * the fixture's API4 path and go red against the production path it exists to
+ * protect. It asserts the invariants that hold on both: at least one firing,
+ * a queue that is exactly two chases per firing at +21 and +42 days, and a
+ * count that does not grow when the case leaves the status and comes back.
+ * Duplicate SENDS from the extra firings are collapsed by
+ * LifecycleMailer::findDuplicate() (same case + template within 23 hours),
+ * exactly as they already are for the transition rule — which is why
+ * fully-chased production cases show two "Sent Automated Email" activities and
+ * not four.
  *
  * SCENARIOS (each on its own independent case, so none can mask another):
  *   A  SR created AT "Request RCS"     -> A1 status preserved
- *                                        A2 on-create rule armed EXACTLY once
- *                                        A3 exactly one 21-day + one 42-day chase
+ *                                        A2 on-create rule armed
+ *                                        A3 two chases per firing, at +21/+42
  *                                        A4 transition rule did NOT also arm
  *   B  SR created at "Ongoing", then   -> B1 transition rule armed (the proven
  *      transitioned to "Request RCS"         path still works — measured, not
@@ -103,36 +127,52 @@
  * function refers to a different (always empty) variable and the summary line
  * reports success no matter what the assertions did.
  */
-class T
+class RcsChaseArmingT
 {
     public static array $failures = [];
     public static int $passes = 0;
 }
 
-function note(string $s): void
+function rcsArming_note(string $s): void
 {
     echo $s . "\n";
 }
 
-function pass(string $label): void
+function rcsArming_pass(string $label): void
 {
-    T::$passes++;
-    note("  [PASS] $label");
+    RcsChaseArmingT::$passes++;
+    rcsArming_note("  [PASS] $label");
 }
 
-function fail(string $label, string $detail): void
+function rcsArming_fail(string $label, string $detail): void
 {
-    T::$failures[] = "$label — $detail";
-    note("  [FAIL] $label — $detail");
+    RcsChaseArmingT::$failures[] = "$label — $detail";
+    rcsArming_note("  [FAIL] $label — $detail");
 }
 
-function check(string $label, $got, $want): void
+function rcsArming_check(string $label, $got, $want): void
 {
     if ($got === $want) {
-        pass($label);
+        rcsArming_pass($label);
         return;
     }
-    fail($label, sprintf('got %s, want %s', var_export($got, true), var_export($want, true)));
+    rcsArming_fail($label, sprintf('got %s, want %s', var_export($got, true), var_export($want, true)));
+}
+
+// --- Environment guard ------------------------------------------------------
+// This script hard-deletes contacts (setUseTrash(false)) and DELETEs rows from
+// civicrm_queue_item and civirule_rule_log. All of it is scoped to fixtures it
+// created itself, but the blast radius if a matcher ever went wrong is real, so
+// refuse to run anywhere that does not look like a development site. Override
+// deliberately with MASCODE_ALLOW_LIVE_TEST=1 if your dev host is named
+// differently.
+$baseUrl = (string) \CRM_Utils_System::baseURL();
+$looksLikeDev = (bool) preg_match('~(localhost|\.local|masdemo|127\.0\.0\.1)~i', $baseUrl);
+if (!$looksLikeDev && getenv('MASCODE_ALLOW_LIVE_TEST') !== '1') {
+    rcsArming_note("ABORT: this does not look like a development site (baseURL: $baseUrl).");
+    rcsArming_note('       This script creates and hard-deletes fixture data. If this host really is');
+    rcsArming_note('       a dev environment, re-run with MASCODE_ALLOW_LIVE_TEST=1. Nothing was created.');
+    exit(2);
 }
 
 $stamp = 'srintaketest' . time();
@@ -158,20 +198,20 @@ $onCreate = $ruleIdByName('mas_lifecycle_rcs_chase_on_create');
 
 foreach (['mas_lifecycle_rcs_chase' => $transition, 'mas_lifecycle_rcs_chase_on_create' => $onCreate] as $n => $row) {
     if (!$row) {
-        note("ABORT: CiviRules rule \"$n\" does not exist in this environment.");
-        note('       Provision both: cv upgrade:db   (or, on a fresh install,');
-        note('       cv scr scripts/create-rcs-chase-rule.php --user=<admin>)');
-        note('       Nothing was created.');
+        rcsArming_note("ABORT: CiviRules rule \"$n\" does not exist in this environment.");
+        rcsArming_note('       Provision both: cv upgrade:db   (or, on a fresh install,');
+        rcsArming_note('       cv scr scripts/create-rcs-chase-rule.php --user=<admin>)');
+        rcsArming_note('       Nothing was created.');
         exit(2);
     }
     if ($row['is_active'] !== 1) {
-        note("ABORT: rule $n (id {$row['id']}) exists but is_active = {$row['is_active']}. Nothing was created.");
+        rcsArming_note("ABORT: rule $n (id {$row['id']}) exists but is_active = {$row['is_active']}. Nothing was created.");
         exit(2);
     }
 }
 $transitionId = $transition['id'];
 $onCreateId = $onCreate['id'];
-note("Rules: mas_lifecycle_rcs_chase = id $transitionId, mas_lifecycle_rcs_chase_on_create = id $onCreateId. Both active.");
+rcsArming_note("Rules: mas_lifecycle_rcs_chase = id $transitionId, mas_lifecycle_rcs_chase_on_create = id $onCreateId. Both active.");
 
 $queueName = \CRM_Civirules_Engine::QUEUE_NAME;
 
@@ -316,87 +356,108 @@ try {
     $e = $makeCase('E', 'service_request', 'RCS Completed');
     $f = $makeCase('F', 'project', 'Awaiting VC Project Definition');
 
-    note("Fixtures: A(case={$a['case']}) B(case={$b['case']}) D(case={$d['case']}) "
+    rcsArming_note("Fixtures: A(case={$a['case']}) B(case={$b['case']}) D(case={$d['case']}) "
         . "E(case={$e['case']}) F(case={$f['case']})");
-    note('');
+    rcsArming_note('');
 
     // --- A: the defect ------------------------------------------------------
-    note('A: SR created directly at "Request RCS" (manual intake — the defect)');
-    check('A1: case ends AT "Request RCS" (coordinator\'s choice preserved)', $statusOf($a['case']), 'Request RCS');
+    rcsArming_note('A: SR created directly at "Request RCS" (manual intake — the defect)');
+    rcsArming_check('A1: case ends AT "Request RCS" (coordinator\'s choice preserved)', $statusOf($a['case']), 'Request RCS');
 
     $aOnCreate = $firings($onCreateId, $a['case']);
-    check('A2: armed EXACTLY once by the on-create rule', $aOnCreate, 1);
+    if ($aOnCreate >= 1) {
+        rcsArming_pass("A2: armed by the on-create rule (fired $aOnCreate time(s))");
+    } else {
+        rcsArming_fail('A2: armed by the on-create rule', 'rule never fired — a manually-created SR is still leaking');
+    }
 
+    // Two chase actions (21d + 42d) per firing. Asserted as a RATIO, not a
+    // fixed 2: the firing count is 1 here and 3 on the transaction-wrapped UI
+    // path (see the docblock), so a hardcoded count would pass only against
+    // these fixtures. What must hold everywhere is that each arming queues
+    // exactly its pair and nothing else.
     $aQueue = $queueRows($a['case']);
-    check('A3a: exactly two chases queued (the 21- and 42-day pair)', count($aQueue), 2);
+    rcsArming_check('A3a: exactly two chases queued per firing', count($aQueue), 2 * $aOnCreate);
+
+    // DISTINCT offsets, for the same reason: 3 firings legitimately produce
+    // three items at +21 and three at +42.
     $offsets = [];
     foreach ($aQueue as $release) {
-        $offsets[] = (int) round((strtotime($release) - time()) / 86400);
+        $offsets[(int) round((strtotime($release) - time()) / 86400)] = true;
     }
+    $offsets = array_keys($offsets);
     sort($offsets);
-    check('A3b: queued at +21 and +42 days', $offsets, [21, 42]);
+    rcsArming_check('A3b: queued at +21 and +42 days (distinct offsets)', $offsets, [21, 42]);
 
-    check('A4: transition rule did NOT also arm (no double-arming)', $firings($transitionId, $a['case']), 0);
+    rcsArming_check('A4: transition rule did NOT also arm (no double-arming)', $firings($transitionId, $a['case']), 0);
 
     // --- B: the control -----------------------------------------------------
-    note('B: SR created at "Ongoing" then transitioned (web-form path)');
+    rcsArming_note('B: SR created at "Ongoing" then transitioned (web-form path)');
     \Civi\Api4\CiviCase::update(false)
         ->addWhere('id', '=', $b['case'])->addValue('status_id:name', 'Request RCS')->execute();
-    check('B0: case is AT "Request RCS"', $statusOf($b['case']), 'Request RCS');
+    rcsArming_check('B0: case is AT "Request RCS"', $statusOf($b['case']), 'Request RCS');
     $bTransition = $firings($transitionId, $b['case']);
     if ($bTransition > 0) {
-        pass("B1: transition rule armed (fired $bTransition time(s)) — the proven path still works");
+        rcsArming_pass("B1: transition rule armed (fired $bTransition time(s)) — the proven path still works");
     } else {
-        fail('B1: transition rule armed', 'the web-form path itself did not arm, so this run cannot '
+        rcsArming_fail('B1: transition rule armed', 'the web-form path itself did not arm, so this run cannot '
             . 'interpret A either — the rule or its conditions are broken');
     }
-    check('B2: on-create rule did NOT also arm (no double-arming)', $firings($onCreateId, $b['case']), 0);
+    rcsArming_check('B2: on-create rule did NOT also arm (no double-arming)', $firings($onCreateId, $b['case']), 0);
 
     // --- D: no over-reach ---------------------------------------------------
-    note('D: SR created at "Ongoing" and left alone');
-    check('D1: still at "Ongoing"', $statusOf($d['case']), 'Open');
-    check('D2: on-create rule NOT armed', $firings($onCreateId, $d['case']), 0);
-    check('D3: transition rule NOT armed', $firings($transitionId, $d['case']), 0);
-    check('D4: nothing queued', count($queueRows($d['case'])), 0);
+    rcsArming_note('D: SR created at "Ongoing" and left alone');
+    rcsArming_check('D1: still at "Ongoing"', $statusOf($d['case']), 'Open');
+    rcsArming_check('D2: on-create rule NOT armed', $firings($onCreateId, $d['case']), 0);
+    rcsArming_check('D3: transition rule NOT armed', $firings($transitionId, $d['case']), 0);
+    rcsArming_check('D4: nothing queued', count($queueRows($d['case'])), 0);
 
     // --- E: a non-arming creation status ------------------------------------
-    note('E: SR created at "RCS Completed"');
-    check('E1: status untouched', $statusOf($e['case']), 'RCS Completed');
-    check('E2: on-create rule NOT armed', $firings($onCreateId, $e['case']), 0);
-    check('E3: nothing queued', count($queueRows($e['case'])), 0);
+    rcsArming_note('E: SR created at "RCS Completed"');
+    rcsArming_check('E1: status untouched', $statusOf($e['case']), 'RCS Completed');
+    rcsArming_check('E2: on-create rule NOT armed', $firings($onCreateId, $e['case']), 0);
+    rcsArming_check('E3: nothing queued', count($queueRows($e['case'])), 0);
 
     // --- F: case-type guard -------------------------------------------------
-    note('F: Project created at "Awaiting VC Project Definition"');
-    check('F1: status untouched', $statusOf($f['case']), 'Awaiting VC Project Definition');
-    check('F2: on-create rule NOT armed', $firings($onCreateId, $f['case']), 0);
-    check('F3: transition rule NOT armed', $firings($transitionId, $f['case']), 0);
+    rcsArming_note('F: Project created at "Awaiting VC Project Definition"');
+    rcsArming_check('F1: status untouched', $statusOf($f['case']), 'Awaiting VC Project Definition');
+    rcsArming_check('F2: on-create rule NOT armed', $firings($onCreateId, $f['case']), 0);
+    rcsArming_check('F3: transition rule NOT armed', $firings($transitionId, $f['case']), 0);
 
     // --- G: a genuine RE-entry must still arm -------------------------------
-    note('G: case A leaves "Request RCS" and is asked again');
+    rcsArming_note('G: case A leaves "Request RCS" and is asked again');
     \Civi\Api4\CiviCase::update(false)
         ->addWhere('id', '=', $a['case'])->addValue('status_id:name', 'RCS Completed')->execute();
-    check('G1: A moved off to "RCS Completed"', $statusOf($a['case']), 'RCS Completed');
+    rcsArming_check('G1: A moved off to "RCS Completed"', $statusOf($a['case']), 'RCS Completed');
     \Civi\Api4\CiviCase::update(false)
         ->addWhere('id', '=', $a['case'])->addValue('status_id:name', 'Request RCS')->execute();
-    check('G2: A is back at "Request RCS"', $statusOf($a['case']), 'Request RCS');
+    rcsArming_check('G2: A is back at "Request RCS"', $statusOf($a['case']), 'Request RCS');
 
     $aTransitionAfter = $firings($transitionId, $a['case']);
     if ($aTransitionAfter > 0) {
-        pass("G3: re-entry armed again via the TRANSITION rule (fired $aTransitionAfter time(s)): "
+        rcsArming_pass("G3: re-entry armed again via the TRANSITION rule (fired $aTransitionAfter time(s)): "
             . 'still once per ENTRY, not once per case');
     } else {
-        fail(
+        rcsArming_fail(
             'G3: re-entry armed again via the transition rule',
             'the transition rule never fired for a real re-entry — a client who returned one form and '
             . 'was later asked again would silently never be chased'
         );
     }
-    check('G4: on-create rule still fired only once (creation happens once, ever)', $firings($onCreateId, $a['case']), 1);
+    // The real invariant, and the one a once-per-case latch or a widened
+    // trigger would break: leaving and re-entering the status must not make
+    // the CREATE rule fire again. Compared against A's own earlier count
+    // rather than a literal, so it holds at any multiplicity.
+    rcsArming_check(
+        'G4: on-create rule did NOT fire again on re-entry (creation cannot recur)',
+        $firings($onCreateId, $a['case']),
+        $aOnCreate
+    );
 } catch (\Throwable $ex) {
-    fail('rcs chase arming', get_class($ex) . ': ' . $ex->getMessage());
+    rcsArming_fail('rcs chase arming', get_class($ex) . ': ' . $ex->getMessage());
 } finally {
-    note('');
-    note('Cleanup...');
+    rcsArming_note('');
+    rcsArming_note('Cleanup...');
     foreach ($createdCases as $id) {
         // Queue rows first: once the case is gone the blob can no longer be
         // matched back to it, and the row would sit in the queue until its
@@ -420,13 +481,13 @@ try {
 
 // --- Summary -----------------------------------------------------------------
 
-note('');
-if (T::$failures) {
-    note('RESULT: RED — ' . count(T::$failures) . ' failure(s), ' . T::$passes . ' pass(es)');
-    foreach (T::$failures as $f) {
-        note("  - $f");
+rcsArming_note('');
+if (RcsChaseArmingT::$failures) {
+    rcsArming_note('RESULT: RED — ' . count(RcsChaseArmingT::$failures) . ' failure(s), ' . RcsChaseArmingT::$passes . ' rcsArming_pass(es)');
+    foreach (RcsChaseArmingT::$failures as $f) {
+        rcsArming_note("  - $f");
     }
     exit(1);
 }
-note('RESULT: GREEN — all ' . T::$passes . ' assertions passed');
+rcsArming_note('RESULT: GREEN — all ' . RcsChaseArmingT::$passes . ' assertions passed');
 exit(0);

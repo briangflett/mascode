@@ -102,7 +102,7 @@ final class LifecycleRuleProvisioner
      * value for that condition to compare against.
      *
      * THE TWO RULES CANNOT DOUBLE-ARM ONE ENTRY, and this is measured, not
-     * assumed (tests/Live/RcsChaseArmingTest.php, scenarios A/B/H):
+     * assumed (tests/Live/RcsChaseArmingTest.php, scenarios A4 and B2):
      *   - created AT "Request RCS"  -> this rule fires; there is no transition
      *     for the changed_case rule to match.
      *   - created at "Ongoing"      -> this rule does not match on create, and
@@ -110,9 +110,39 @@ final class LifecycleRuleProvisioner
      *     mas_new_case only fires on op = create. The changed_case rule arms
      *     that one, exactly as it does today.
      * A later RE-entry (RCS form returns -> "RCS Completed" -> asked again) is
-     * a genuine second entry and arms via the changed_case rule; creation
-     * happens once per case, ever, so this rule cannot contribute to it. That
-     * is why arming is idempotent per ENTRY without any dedupe guard.
+     * a genuine second entry and arms via the changed_case rule; the create
+     * event happens once per case, ever, so this rule cannot contribute to a
+     * re-entry and cannot be re-armed by a re-sent ask email.
+     *
+     * HOW MANY TIMES THIS RULE FIRES PER CASE — NOT ONCE
+     * The create EVENT happens once, but CRM_CivirulesPostTrigger_Case::
+     * triggerTrigger() fires the RULE once for the base event, then once per
+     * case client, then once per case role, all from that one event. How many
+     * of those exist yet depends on whether a transaction is open:
+     *
+     *   - API4 CiviCase::create() writes the CaseContact row AFTER the post
+     *     hook and holds no transaction, so the trigger runs inline with no
+     *     clients visible: 1 firing.
+     *   - The CiviCRM "New Case" UI — the path this rule exists for — wraps
+     *     postProcess() in a transaction, so the trigger is deferred to
+     *     PHASE_POST_COMMIT and by then the client row and the coordinator
+     *     role both exist: 3 firings.
+     *
+     * Measured on the dev clone against rule generate_a_mas_case_code, which
+     * sits on this same trigger with only a case_type condition and so samples
+     * the multiplicity directly: 384 cases at 1 firing, 223 at 2, 126 at 3, and
+     * a tail at 4 and 6. Every recent UI-created service_request shows 3.
+     *
+     * So expect 3 rule-log rows and 6 queue items per manually-created SR.
+     * That is not a defect and not new: the changed_case sibling fires twice
+     * per entry for the same reason (once per client, once per role), and the
+     * duplicate SEND is collapsed by LifecycleMailer::findDuplicate() — same
+     * case + same template within 23 hours — which is why fully-chased cases
+     * on production show two "Sent Automated Email" activities and not four.
+     * Per-entry idempotency therefore rests on findDuplicate(), exactly as it
+     * already does for the transition rule; what is structural here is only
+     * that creation cannot recur, so this rule can never stack a SECOND
+     * cadence onto a case that is already being chased.
      *
      * WHY NOT MODIFY RULE 9 INSTEAD
      * Because the change would never reach production. ensureStatusChaseRule()
@@ -867,9 +897,16 @@ final class LifecycleRuleProvisioner
      * changed_case, and the condition set omits case_status_changed.
      *
      * Condition ORDER is load-bearing. The condition whose condition_link is
-     * NULL must sort first: CiviRules concatenates the links in weight order,
-     * so a NULL link arriving second produces a broken expression and the rule
-     * silently never matches.
+     * NULL must sort FIRST. CRM_Civirules_Engine::areConditionsValid() ignores
+     * the first condition's link and switches on it for every later one, so a
+     * NULL link arriving second falls to the switch's default: branch, which
+     * logs "invalid condition_link operator" and forces the result FALSE — the
+     * rule then silently never matches. writeConditions() assigns ascending
+     * weights in array order, so the array order below IS the guarantee.
+     * (Live example of getting this wrong: on the dev clone
+     * mas_lifecycle_vc_close_chase carries its NULL-link case_type at weight
+     * 24, after both AND conditions, and is therefore dead there. Production's
+     * copy is correctly ordered — checked 2026-09-09.)
      */
     private static function ensureCreatedAtStatusChaseRule(
         string $name,
