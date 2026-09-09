@@ -530,6 +530,63 @@ class CRM_Mascode_Upgrader extends \CRM_Extension_Upgrader_Base
   }
 
   /**
+   * Provision the manual-intake RCS chase.
+   *
+   * mas_lifecycle_rcs_chase arms off a status TRANSITION into "Request RCS",
+   * so it only ever armed Service Requests that came in through the web form
+   * (created at "Ongoing", advanced later by the ask email). A Service Request
+   * created directly at "Request RCS" in the CiviCRM "New Case" UI — the
+   * MAJORITY intake path — never transitions into the status and was never
+   * chased: 0 of 23 since the rule was created, against 19 of 19 for the web
+   * form. mas_lifecycle_rcs_chase_on_create closes that on the mas_new_case
+   * trigger.
+   *
+   * This step is deliberately additive. Editing rule 9 would have been the
+   * obvious move and would have done nothing: the ensure*() methods
+   * short-circuit on the rule NAME, so a changed trigger or condition set is
+   * silently skipped wherever the rule already exists — as upgrade_5011 found
+   * out. A new name is created normally.
+   *
+   * NOT a backfill. The 39 Service Requests already sitting in "Request RCS"
+   * unarmed are untouched by this step and by the new rule (mas_new_case fires
+   * on creation only). Nine of them have been silent for up to two years, so
+   * what goes to those clients is a decision for the coordinator, not an
+   * upgrade step — see docs/RCS-CHASE-BACKLOG.md.
+   */
+  public function upgrade_5012(): bool {
+    $this->ctx->log->info('Applying update 5012 - RCS chase for manually-created SRs (opened AT Request RCS)');
+
+    // The new rule sits on the mas_new_case trigger, and the provisioner throws
+    // if that civirule_trigger row is missing. Our triggers.json is normally
+    // registered from hook_civicrm_postUpgrade($op == 'finish') — which runs
+    // AFTER this whole upgrade queue — so on an installed site that predates the
+    // trigger, this step would abort `cv upgrade:db` midway. Register first;
+    // insertTriggersFromJson() is idempotent, so this is a no-op wherever the
+    // row already exists (production included, verified 2026-09-09).
+    $triggersFile = \CRM_Mascode_ExtensionUtil::path('Civi/Mascode/CiviRules/triggers.json');
+    if (file_exists($triggersFile) && class_exists('\CRM_Civirules_Utils_Upgrader')) {
+      \CRM_Civirules_Utils_Upgrader::insertTriggersFromJson($triggersFile);
+      $this->ctx->log->info('5012: registered CiviRules triggers from triggers.json (idempotent)');
+    }
+    else {
+      // Return rather than fall through: ensureRcsChaseOnCreateRule() throws on
+      // the missing trigger row, which would re-create the very mid-upgrade
+      // abort this block exists to prevent. Only reachable with CiviRules
+      // uninstalled, where mascode does not function anyway.
+      $this->ctx->log->warning(
+        "5012: SKIPPED - triggers.json not found or CiviRules absent at $triggersFile. "
+        . 'Provision the rule later with: cv scr scripts/create-rcs-chase-rule.php'
+      );
+      return TRUE;
+    }
+
+    $onCreate = \Civi\Mascode\Service\LifecycleRuleProvisioner::ensureRcsChaseOnCreateRule();
+    $this->ctx->log->info('5012: ensureRcsChaseOnCreateRule => ' . json_encode($onCreate));
+
+    return TRUE;
+  }
+
+  /**
    * Example: Run an external SQL script when the module is installed.
    *
    * Note that if a file is present sql\auto_install that will run regardless of this hook.
