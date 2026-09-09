@@ -30,6 +30,9 @@ CiviCRM scans this directory (and the rest of the extension) for `*.mgd.php` fil
 | `MessageTemplate_MAS_SAS_Template_Deactivate.mgd.php` | MessageTemplate | cleanup pin | Deactivates legacy "MAS SAS Template" (id 72 — superseded by the RCS template which now includes both SAS variants). |
 | `MessageTemplate_pd_signoff_notify__vc.mgd.php` | MessageTemplate | VC record email | Tells the assigned VC the client authorized the Project Definition, with a complete printable record (header + definition + authorization). Sent by `AfformSubmitSubscriber`, not a CiviRules rule — hence no `mas_lifecycle_` prefix. |
 | `MessageTemplate_close_feedback_share__vc.mgd.php` | MessageTemplate | VC record email | Forwards the client's project-close feedback to the VC when `Project_Close_Client.share_with_vc` is Yes. Sent by `AfformSubmitSubscriber`, not a CiviRules rule — hence no `mas_lifecycle_` prefix. |
+| `SavedSearch_MAS_Sent_Email_Log.mgd.php` | SavedSearch + SearchDisplay | ops tooling | Combined log of every outbound email CiviCRM recorded (Email, Bulk Email, Sent Automated Email, Reminder Sent). Surfaced via `afformMASSentEmailLog`, which carries the `edit all contacts` gate. |
+
+> The other `SavedSearch_*.mgd.php` files predate this table and are not yet inventoried individually — pre-existing gap, not a licence to skip the row for a new one.
 
 ## Sidecar `.body.html` files
 
@@ -49,8 +52,9 @@ When the in-UI body diverges from the sidecar:
 | CustomField | `never` | Schema-level drop = permanent data loss; uninstalling mascode should NOT remove fields |
 | CaseType | `never` | Cases reference case types via FK; dropping a case type would orphan thousands of cases |
 | MessageTemplate | `never` | Templates may be referenced by historical activities; uninstall should NOT delete |
+| SavedSearch / SearchDisplay | `unused` | Nothing references a search by FK, so dropping one on uninstall is safe. `unused` (not `never`) keeps a search that an Afform still embeds by name, since that reference is not an FK CiviCRM can see. |
 
-`update` is `always` on case-type config (mascode is authoritative; UI drift reverts on next reconcile — Brian is the sole editor). MessageTemplate entries use `update='unmodified'`: mascode plants the skeleton (name, subject, structure, merge-tag scaffolding), but body edits in the Civi admin UI survive subsequent reconciles. Nina/Brian/Steve own template body content; mascode owns the structure around it.
+`update` is `always` on case-type config (mascode is authoritative; UI drift reverts on next reconcile — Brian is the sole editor). MessageTemplate entries use `update='unmodified'`: mascode plants the skeleton (name, subject, structure, merge-tag scaffolding), but body edits in the Civi admin UI survive subsequent reconciles. Nina/Brian/Steve own template body content; mascode owns the structure around it. SavedSearch/SearchDisplay entries default to `update='unmodified'`, with one deliberate exception: `SavedSearch_MAS_Sent_Email_Log.mgd.php` uses `always`, because it is authoritative ops config nobody should hand-edit and a stray UI tweak would otherwise detach the file from reconciliation permanently. The trade-off is that UI edits to that one search are silently reverted on the next flush.
 
 ## Post-CiviCase-upgrade checklist
 

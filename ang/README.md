@@ -16,6 +16,12 @@ Packaged forms (`base_module = mascode`):
 | `afformProjectCloseVCFeedback` | `civicrm/mas-pclose-vc` | `Project Close - VC Report` Activity on a Case |
 | `afformProjectCloseClientFeedback` | `civicrm/mas-pclose-client` | `Project Close - Client Feedback` Activity on a Case |
 
+Staff-facing packaged forms — read-only, create nothing, and gated rather than public:
+
+| Form | Route | Shows | Gate |
+|------|-------|-------|------|
+| `afformMASSentEmailLog` | `civicrm/mas-sent-email-log` | Sent Email Log — embeds `MAS_Sent_Email_Log_Table` | `edit all contacts` |
+
 This approach:
 - Version-controls the forms with the rest of the extension
 - Removes cross-environment ID drift — all pseudoconstant references are by **name**
@@ -153,6 +159,59 @@ normal confirmation screen.
   The probe is safe against production and is the intended post-deploy
   verification. The `cv scr` test must be run as a non-staff VC — it aborts
   rather than passing vacuously if you run it as staff.
+
+## Security: staff-only forms and the `edit all contacts` gate
+
+A staff-only form or dashlet is gated on **`edit all contacts`**, not on
+`access all cases and activities` or bare `access CiviCRM`. The reason is what
+production's WordPress roles actually carry:
+
+| Role | `access_civicrm` | `view_all_activities` / `view_all_contacts` | `edit_all_contacts` |
+|------|------------------|---------------------------------------------|---------------------|
+| administrator / editor / author | yes | yes | **yes** |
+| **contributor** (Volunteer Consultants) | yes | **yes** | **no** |
+| subscriber | yes | no | no |
+
+Because VCs hold `view_all_activities` **and** `view_all_contacts`, a form gated
+on anything weaker than `edit all contacts` is visible to every VC, and CiviCRM's
+own ACLs add no restriction on top — `addSelectWhereClause()` returns nothing to
+filter by when a user holds view-all. Dev is not a reliable check here: dev VCs
+do not have these capabilities, so a form that looks correctly gated in dev can
+be wide open on production.
+
+**An Afform gate alone does not close the bare SearchKit route.** A
+SearchDisplay is also reachable at `civicrm/search#/display/<Search>/<Display>`,
+which requires only `access CiviCRM` — so gating the Afform protects the
+intended entry point and nothing else. To actually close that route, set
+`'acl_bypass' => TRUE` on the SearchDisplay: core then refuses to run the
+display unless it is loaded through an Afform the viewer may access
+(`AbstractRunAction::_run`), and the bare route returns *Access denied* —
+unless the viewer holds `all CiviCRM permissions and ACLs`, which is exempted.
+The check is real, not nominal: core verifies the named Afform actually embeds
+this search **and** display, and throws *Afform does not contain search display*
+otherwise.
+
+`MAS_Sent_Email_Log_Table` does this; so do the VC Portal displays.
+
+Two consequences to respect when you use `acl_bypass`:
+
+- The inner query runs with `checkPermissions => FALSE`, so **the Afform's
+  permission becomes the only control**. Do not embed an `acl_bypass` display on
+  a second, less-gated Afform — that Afform silently becomes the new boundary.
+- Because ACLs no longer filter the query, every viewer sees identical rows and
+  counts — and **trashed contacts and trashed cases are included**, since
+  `access deleted contacts` and `administer CiviCase` no longer gate them. That
+  is the intent for a staff report; it would be wrong for anything per-user,
+  where the VC Portal's filter-as-security predicate is the right tool instead.
+
+**`acl_bypass` closes a route, not the data.** It stops the SearchKit URL; it does
+nothing about the capability that made the data readable in the first place. A role
+holding `view all contacts` / `view all activities` can still reach equivalent
+information through native CiviCRM screens — `civicrm/activity/search` and
+`afsearchFindActivities` are ACL-filtered, which means unfiltered for exactly those
+users, and `VcNativeScreenGuardSubscriber` deliberately waves view-all holders
+through the native contact and case screens. Where that matters, **the only real fix
+is trimming the capability from the role** — not adding another Afform permission.
 
 ## Replacing a person on a form (the join-id trap)
 
