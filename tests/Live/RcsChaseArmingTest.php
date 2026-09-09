@@ -371,23 +371,31 @@ try {
         rcsArming_fail('A2: armed by the on-create rule', 'rule never fired — a manually-created SR is still leaking');
     }
 
-    // Two chase actions (21d + 42d) per firing. Asserted as a RATIO, not a
-    // fixed 2: the firing count is 1 here and 3 on the transaction-wrapped UI
-    // path (see the docblock), so a hardcoded count would pass only against
-    // these fixtures. What must hold everywhere is that each arming queues
-    // exactly its pair and nothing else.
+    // The cadence, asserted per OFFSET rather than as a total. Expressed
+    // relative to the firing count, not as a fixed 2: the count is 1 here and 3
+    // on the transaction-wrapped UI path (see the docblock), so a hardcoded
+    // total would pass only against these fixtures. Per-offset rather than a
+    // bare ratio because a total alone is satisfiable by the wrong shape —
+    // 3 firings with five items at +21 and one at +42 has the right count and
+    // the right distinct offsets, and is broken.
     $aQueue = $queueRows($a['case']);
-    rcsArming_check('A3a: exactly two chases queued per firing', count($aQueue), 2 * $aOnCreate);
-
-    // DISTINCT offsets, for the same reason: 3 firings legitimately produce
-    // three items at +21 and three at +42.
-    $offsets = [];
+    $offsetCounts = [];
     foreach ($aQueue as $release) {
-        $offsets[(int) round((strtotime($release) - time()) / 86400)] = true;
+        $days = (int) round((strtotime($release) - time()) / 86400);
+        $offsetCounts[$days] = ($offsetCounts[$days] ?? 0) + 1;
     }
-    $offsets = array_keys($offsets);
-    sort($offsets);
-    rcsArming_check('A3b: queued at +21 and +42 days (distinct offsets)', $offsets, [21, 42]);
+    ksort($offsetCounts);
+    if ($aOnCreate > 0) {
+        rcsArming_check(
+            'A3: one +21d and one +42d chase per firing, and nothing else',
+            $offsetCounts,
+            [21 => $aOnCreate, 42 => $aOnCreate]
+        );
+    } else {
+        // Guarded because [] === [] would otherwise report a pass for a case
+        // that was never armed at all. A2 has already failed in that branch.
+        rcsArming_fail('A3: cadence queued', 'not evaluated — nothing was armed (see A2)');
+    }
 
     rcsArming_check('A4: transition rule did NOT also arm (no double-arming)', $firings($transitionId, $a['case']), 0);
 
@@ -483,7 +491,7 @@ try {
 
 rcsArming_note('');
 if (RcsChaseArmingT::$failures) {
-    rcsArming_note('RESULT: RED — ' . count(RcsChaseArmingT::$failures) . ' failure(s), ' . RcsChaseArmingT::$passes . ' rcsArming_pass(es)');
+    rcsArming_note('RESULT: RED — ' . count(RcsChaseArmingT::$failures) . ' failure(s), ' . RcsChaseArmingT::$passes . ' pass(es)');
     foreach (RcsChaseArmingT::$failures as $f) {
         rcsArming_note("  - $f");
     }

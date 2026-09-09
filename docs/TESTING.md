@@ -44,7 +44,7 @@ tests/
 │   └── afform-prefill-anon-probe.sh # anonymous HTTP probe; safe against production
 ├── Live/                            # NOT a phpunit suite — `cv scr`, live site, non-security
 │   ├── ClientRepChangeTest.php      # client-rep change on the two VC project forms
-│   └── RcsChaseArmingTest.php       # RCS chase arms for BOTH intake paths, exactly once each
+│   └── RcsChaseArmingTest.php       # RCS chase arms for BOTH intake paths, neither double-arming
 ├── Fixtures/
 ├── TestCase.php                     # Base test class
 └── bootstrap.php                    # Test environment setup

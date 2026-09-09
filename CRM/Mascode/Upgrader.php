@@ -563,13 +563,21 @@ class CRM_Mascode_Upgrader extends \CRM_Extension_Upgrader_Base
     // trigger, this step would abort `cv upgrade:db` midway. Register first;
     // insertTriggersFromJson() is idempotent, so this is a no-op wherever the
     // row already exists (production included, verified 2026-09-09).
-    $triggersFile = \CRM_Mascode_ExtensionUtil::path('/Civi/Mascode/CiviRules/triggers.json');
+    $triggersFile = \CRM_Mascode_ExtensionUtil::path('Civi/Mascode/CiviRules/triggers.json');
     if (file_exists($triggersFile) && class_exists('\CRM_Civirules_Utils_Upgrader')) {
       \CRM_Civirules_Utils_Upgrader::insertTriggersFromJson($triggersFile);
       $this->ctx->log->info('5012: registered CiviRules triggers from triggers.json (idempotent)');
     }
     else {
-      $this->ctx->log->warning("5012: triggers.json not found or CiviRules absent at $triggersFile");
+      // Return rather than fall through: ensureRcsChaseOnCreateRule() throws on
+      // the missing trigger row, which would re-create the very mid-upgrade
+      // abort this block exists to prevent. Only reachable with CiviRules
+      // uninstalled, where mascode does not function anyway.
+      $this->ctx->log->warning(
+        "5012: SKIPPED - triggers.json not found or CiviRules absent at $triggersFile. "
+        . 'Provision the rule later with: cv scr scripts/create-rcs-chase-rule.php'
+      );
+      return TRUE;
     }
 
     $onCreate = \Civi\Mascode\Service\LifecycleRuleProvisioner::ensureRcsChaseOnCreateRule();

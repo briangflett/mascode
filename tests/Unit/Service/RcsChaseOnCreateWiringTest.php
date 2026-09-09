@@ -76,17 +76,39 @@ class RcsChaseOnCreateWiringTest extends TestCase
     {
         $start = strpos($source, $signature);
         $this->assertNotFalse($start, $missingMessage);
-        // Up to the next method declaration at class-body indentation. Accepts
-        // protected/private too, so making a method non-public does not silently
-        // swallow the rest of the class into one "body".
+
+        // Up to the next method declaration at class-body indentation.
+        //
+        // The STATIC forms are not optional here, and leaving them out is a
+        // silent no-op rather than an error: every method in
+        // LifecycleRuleProvisioner is `public static` or `private static`, so a
+        // delimiter list of only the non-static forms matches nothing, $end
+        // stays false, and the "body" becomes signature-to-EOF — 890 of 1050
+        // lines for the first method. Every assertion below then greps most of
+        // the file and passes on text belonging to a different rule. That is
+        // the exact failure this helper exists to prevent, so the list below
+        // covers all six visibility/static combinations.
+        $delimiters = [];
+        foreach (['public', 'protected', 'private'] as $visibility) {
+            $delimiters[] = "\n    $visibility function ";
+            $delimiters[] = "\n    $visibility static function ";
+        }
+
         $end = false;
-        foreach (["\n    public function ", "\n    protected function ", "\n    private function "] as $next) {
+        foreach ($delimiters as $next) {
             $at = strpos($source, $next, $start + 1);
             if ($at !== false && ($end === false || $at < $end)) {
                 $end = $at;
             }
         }
-        return $end === false ? substr($source, $start) : substr($source, $start, $end - $start);
+        $this->assertNotFalse(
+            $end,
+            "methodBody() found no method following '$signature'. If that is genuinely the last method "
+            . 'in the file, extend the delimiter list rather than letting the body run to EOF — an '
+            . 'over-captured body makes every assertion on it grep unrelated code and pass for the '
+            . 'wrong reason.'
+        );
+        return substr($source, $start, $end - $start);
     }
 
     public function testCreatedAtStatusBuilderUsesTheCreateTrigger(): void
