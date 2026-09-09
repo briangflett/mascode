@@ -25,8 +25,10 @@ declare(strict_types=1);
  * holds view_all_activities and view_all_contacts, so without acl_bypass every
  * VC could read this whole log from the bare route. Consequence to respect: if
  * this display is ever embedded on a second, less-gated Afform, that Afform
- * becomes the security boundary. See ang/README.md §"Security: staff-only
- * forms".
+ * becomes the security boundary. Because ACLs no longer apply to the inner
+ * query, trashed contacts and trashed cases are included too — they would
+ * otherwise be filtered by "access deleted contacts" and "administer CiviCase".
+ * See ang/README.md §"Security: staff-only forms".
  *
  * Honest limit on reading this as an audit log: it lists what CiviCRM
  * *recorded*, not what was *delivered*. Mail sent by a path that writes no

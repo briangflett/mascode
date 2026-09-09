@@ -185,7 +185,12 @@ which requires only `access CiviCRM` — so gating the Afform protects the
 intended entry point and nothing else. To actually close that route, set
 `'acl_bypass' => TRUE` on the SearchDisplay: core then refuses to run the
 display unless it is loaded through an Afform the viewer may access
-(`AbstractRunAction::_run`), and the bare route returns *Access denied*.
+(`AbstractRunAction::_run`), and the bare route returns *Access denied* —
+unless the viewer holds `all CiviCRM permissions and ACLs`, which is exempted.
+The check is real, not nominal: core verifies the named Afform actually embeds
+this search **and** display, and throws *Afform does not contain search display*
+otherwise.
+
 `MAS_Sent_Email_Log_Table` does this; so do the VC Portal displays.
 
 Two consequences to respect when you use `acl_bypass`:
@@ -194,9 +199,19 @@ Two consequences to respect when you use `acl_bypass`:
   permission becomes the only control**. Do not embed an `acl_bypass` display on
   a second, less-gated Afform — that Afform silently becomes the new boundary.
 - Because ACLs no longer filter the query, every viewer sees identical rows and
-  counts. That is the intent for a staff report; it would be wrong for anything
-  per-user, where the VC Portal's filter-as-security predicate is the right tool
-  instead.
+  counts — and **trashed contacts and trashed cases are included**, since
+  `access deleted contacts` and `administer CiviCase` no longer gate them. That
+  is the intent for a staff report; it would be wrong for anything per-user,
+  where the VC Portal's filter-as-security predicate is the right tool instead.
+
+**`acl_bypass` closes a route, not the data.** It stops the SearchKit URL; it does
+nothing about the capability that made the data readable in the first place. A role
+holding `view all contacts` / `view all activities` can still reach equivalent
+information through native CiviCRM screens — `civicrm/activity/search` and
+`afsearchFindActivities` are ACL-filtered, which means unfiltered for exactly those
+users, and `VcNativeScreenGuardSubscriber` deliberately waves view-all holders
+through the native contact and case screens. Where that matters, **the only real fix
+is trimming the capability from the role** — not adding another Afform permission.
 
 ## Replacing a person on a form (the join-id trap)
 
