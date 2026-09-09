@@ -1,0 +1,25 @@
+<div af-fieldset="">
+  <div class="af-markup">
+    <h2>Sent Email Log</h2>
+    <p class="text-muted">
+      Every outbound email CiviCRM recorded — one row per message, newest first.
+      Covers Send Email, CiviMail bulk sends, automated lifecycle email and
+      scheduled reminders. Sort any column; use the pager to change page size.
+    </p>
+    <div class="help">
+      <p>
+        This lists what CiviCRM <strong>recorded</strong>, not what the mail relay
+        <strong>delivered</strong>. Mail sent by a path that writes no activity leaves no
+        trace here, and CiviCRM's outbound mail does not pass through the info@ mailbox,
+        so that mailbox's Sent folder will not show these either.
+      </p>
+      <p>
+        For a bulk send, <strong>To</strong> shows the first recipient only and
+        <strong>Recipients</strong> gives the total; per-recipient delivery, bounce and
+        open detail lives in CiviMail's own reports.
+      </p>
+    </div>
+  </div>
+
+  <crm-search-display-table search-name="MAS_Sent_Email_Log" display-name="MAS_Sent_Email_Log_Table"></crm-search-display-table>
+</div>

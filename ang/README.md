@@ -15,6 +15,7 @@ Packaged forms (`base_module = mascode`):
 | `afformMASSASS` | `civicrm/mas-sass-form` | `Short Self Assessment Survey (SAS)` Activity |
 | `afformProjectCloseVCFeedback` | `civicrm/mas-pclose-vc` | `Project Close - VC Report` Activity on a Case |
 | `afformProjectCloseClientFeedback` | `civicrm/mas-pclose-client` | `Project Close - Client Feedback` Activity on a Case |
+| `afformMASSentEmailLog` | `civicrm/mas-sent-email-log` | *(staff, read-only)* Sent Email Log — embeds `MAS_Sent_Email_Log_Table`; gated on `edit all contacts` |
 
 This approach:
 - Version-controls the forms with the rest of the extension
@@ -153,6 +154,32 @@ normal confirmation screen.
   The probe is safe against production and is the intended post-deploy
   verification. The `cv scr` test must be run as a non-staff VC — it aborts
   rather than passing vacuously if you run it as staff.
+
+## Security: staff-only forms and the `edit all contacts` gate
+
+A staff-only form or dashlet is gated on **`edit all contacts`**, not on
+`access all cases and activities` or bare `access CiviCRM`. The reason is what
+production's WordPress roles actually carry:
+
+| Role | `access_civicrm` | `view_all_activities` / `view_all_contacts` | `edit_all_contacts` |
+|------|------------------|---------------------------------------------|---------------------|
+| administrator / editor / author | yes | yes | **yes** |
+| **contributor** (Volunteer Consultants) | yes | **yes** | **no** |
+| subscriber | yes | no | no |
+
+Because VCs hold `view_all_activities` **and** `view_all_contacts`, a form gated
+on anything weaker than `edit all contacts` is visible to every VC, and CiviCRM's
+own ACLs add no restriction on top — `addSelectWhereClause()` returns nothing to
+filter by when a user holds view-all. Dev is not a reliable check here: dev VCs
+do not have these capabilities, so a form that looks correctly gated in dev can
+be wide open on production.
+
+Known limit, worth stating rather than assuming away: the gate lives on the
+**Afform**, and a SavedSearch's SearchDisplay is *also* reachable directly at
+`civicrm/search#/display/<Search>/<Display>`, a route that requires only
+`access CiviCRM`. So the Afform gate controls the intended entry point, not
+every path to the data. Where that residual exposure matters, the fix is to trim
+the offending capability from the role — not to add more Afform permissions.
 
 ## Replacing a person on a form (the join-id trap)
 

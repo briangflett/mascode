@@ -5,25 +5,28 @@ declare(strict_types=1);
 /**
  * "MAS - Sent Email Log": every outbound email CiviCRM recorded, in one list.
  *
- * Background: production relays through Amazon SES rather than the
- * info@masadvise.org Microsoft 365 mailbox, so nothing CiviCRM sends ever
- * appears in that mailbox's Sent folder. CiviCRM's own record of a send is an
- * activity, but it is spread across four activity types with no combined view.
- * This search is that view.
+ * Why it exists: CiviCRM's outbound mail does not pass through the
+ * info@masadvise.org mailbox, so that mailbox's Sent folder is not a record of
+ * what CiviCRM sent. CiviCRM's own record of a send is an activity, but it is
+ * spread across four activity types with no combined view. This search is that
+ * view. Surfaced through afformMASSentEmailLog, which carries the permission
+ * gate; see ang/README.md.
  *
  * Grain is one row per message, not per recipient — per-recipient delivery,
- * bounce and open data for bulk sends already lives in CiviMail's reports, and
- * duplicating it here would bury the 1:1 mail. Bulk rows therefore list every
- * recipient in the Recipients cell (103 on a typical newsletter); that is
- * deliberate, since an audit log that hides who was written to answers the
- * wrong question.
+ * bounce and open data for bulk sends already lives in CiviMail's reports.
+ * Recipients are therefore summarised as "first recipient + count" rather than
+ * listed: real bulk sends here reach ~4,000 addresses, and concatenating those
+ * into one table cell puts ~80KB of names in a single <td>.
  *
- * Coverage caveat worth knowing before trusting this as complete: it lists what
- * CiviCRM *recorded*, not what SES *delivered*. Mail sent by a path that writes
- * no activity — most CiviRules "send email" actions unless configured to
- * record, password resets, some system notifications — leaves no trace here.
- * The authoritative per-message log would be an SES Configuration Set event
- * destination, which is not currently configured.
+ * Two honest limits on reading this as an audit log:
+ *  - It lists what CiviCRM *recorded*, not what was *delivered*. Mail sent by a
+ *    path that writes no activity — most CiviRules "send email" actions unless
+ *    configured to record, password resets, some system notifications — leaves
+ *    no trace here. Delivery truth lives with the mail relay, not CiviCRM.
+ *  - Recipient counts are viewer-dependent. API4 applies contact ACLs to the
+ *    joined Contact, so a viewer without "view all contacts" sees a count
+ *    covering only the recipients they may see. The intended audience is
+ *    view-all staff, which the afform's "edit all contacts" gate enforces.
  *
  * Types included, and what writes them:
  *   Email                 core Contact → Send Email
@@ -32,13 +35,19 @@ declare(strict_types=1);
  *   Reminder Sent         scheduled reminders with record_activity on
  * "Draft Email - Needs Review" is excluded: a draft has not been sent. Once a
  * draft is sent, LifecycleMailer writes a separate "Sent Automated Email".
+ * If CiviContribute invoicing is ever enabled, add "Emailed Invoice" — it is
+ * a genuine outbound type and currently has zero rows, so it is omitted.
  */
 return [
   [
     'name' => 'SavedSearch_MAS_Sent_Email_Log',
     'entity' => 'SavedSearch',
     'cleanup' => 'unused',
-    'update' => 'unmodified',
+    // 'always', not 'unmodified': nobody is meant to hand-edit this search, and
+    // under 'unmodified' a single column drag in the SearchKit UI would mark
+    // the row modified and permanently stop cv flush from re-applying this
+    // file — dev and prod would then diverge with nothing surfacing it.
+    'update' => 'always',
     'params' => [
       'version' => 4,
       'values' => [
@@ -54,12 +63,14 @@ return [
             'subject',
             'status_id:label',
             'case_id',
-            'case_id.subject',
             'case_id.Cases_SR_Projects_.MAS_SR_Case_Code',
             'case_id.Projects.MAS_Project_Case_Code',
-            'GROUP_CONCAT(DISTINCT Activity_ActivityContact_Contact_01.display_name) AS recipients',
+            // GROUP_FIRST, not GROUP_CONCAT: see the docblock on cell size.
+            'GROUP_FIRST(Activity_ActivityContact_Contact_01.display_name) AS recipient_first',
+            // DISTINCT on the contact id, so the two bridge joins below cannot
+            // inflate the count by cross-multiplying targets against sources.
             'COUNT(DISTINCT Activity_ActivityContact_Contact_01.id) AS recipient_count',
-            'GROUP_CONCAT(DISTINCT Activity_ActivityContact_Contact_02.display_name) AS sender',
+            'GROUP_FIRST(Activity_ActivityContact_Contact_02.display_name) AS sender',
           ],
           'orderBy' => [],
           'where' => [
@@ -75,8 +86,10 @@ return [
           // bulk send into one row per recipient.
           'groupBy' => ['id'],
           'join' => [
-            // LEFT, not INNER: an email whose target contact was since deleted
-            // must still appear in the log rather than vanish from it.
+            // LEFT, not INNER: an activity with no target rows at all — a type
+            // that writes none, or a hard-deleted contact whose
+            // civicrm_activity_contact row cascaded away — must still appear in
+            // the log rather than drop silently out of it.
             [
               'Contact AS Activity_ActivityContact_Contact_01',
               'LEFT',
@@ -84,10 +97,11 @@ return [
               ['id', '=', 'Activity_ActivityContact_Contact_01.activity_id'],
               ['Activity_ActivityContact_Contact_01.record_type_id:name', '=', '"Activity Targets"'],
             ],
-            // Sender needs its own join: Activity.source_contact_id resolves as
-            // a bare id, but the implicit join source_contact_id.display_name
-            // is silently dropped from the result on CiviCRM 6.16 — verified
-            // against production, not assumed.
+            // Sender needs its own join. Activity.source_contact_id is a
+            // pseudo-field with no implicit-join support, so
+            // source_contact_id.display_name is silently dropped from the
+            // result — no error, the key is simply absent. Verified on 6.16.1;
+            // not version-specific.
             [
               'Contact AS Activity_ActivityContact_Contact_02',
               'LEFT',
@@ -106,7 +120,7 @@ return [
     'name' => 'SearchDisplay_MAS_Sent_Email_Log_Table',
     'entity' => 'SearchDisplay',
     'cleanup' => 'unused',
-    'update' => 'unmodified',
+    'update' => 'always',
     'params' => [
       'version' => 4,
       'values' => [
@@ -146,15 +160,18 @@ return [
               'key' => 'sender',
               'label' => 'Sent By',
             ],
+            // First recipient only. For the 1:1 mail that dominates this log
+            // that is the whole recipient list; for a bulk send the adjacent
+            // count is what carries the meaning.
             [
               'type' => 'field',
-              'key' => 'recipients',
-              'label' => 'Recipients',
+              'key' => 'recipient_first',
+              'label' => 'To',
             ],
             [
               'type' => 'field',
               'key' => 'recipient_count',
-              'label' => '#',
+              'label' => 'Recipients',
               'sortable' => TRUE,
             ],
             [
@@ -163,16 +180,17 @@ return [
               'label' => 'Status',
               'sortable' => TRUE,
             ],
-            // Case code, linked to Manage Case. Same link shape as the Drafts
-            // tile: CaseView derives the client contact from the case id, so
-            // no cid is needed (SearchKit would not supply one). One of the
-            // two code fields is populated depending on case type; the rewrite
-            // concatenates so whichever exists shows.
+            // Case code, linked to Manage Case. A case carries the SR code or
+            // the Project code, never both, so empty_value expresses the
+            // either/or directly; SearchKit checks it before rewrite and runs
+            // token replacement on it. A concatenating rewrite would render
+            // "S26001P26038" if a converted case ever left both populated.
+            // No cid needed: CaseView derives the client from the case id.
             [
               'type' => 'field',
               'key' => 'case_id.Cases_SR_Projects_.MAS_SR_Case_Code',
+              'empty_value' => '[case_id.Projects.MAS_Project_Case_Code]',
               'label' => 'Case',
-              'rewrite' => '[case_id.Cases_SR_Projects_.MAS_SR_Case_Code][case_id.Projects.MAS_Project_Case_Code]',
               'link' => [
                 'path' => 'civicrm/contact/view/case?action=view&reset=1&id=[case_id]',
                 'entity' => '',
