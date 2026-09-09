@@ -33,7 +33,7 @@ NOT reproduce it, because that skips the real bootstrap and passes.
 tests/
 ├── Unit/                            # runs in CI — no CiviCRM available here
 │   ├── Util/CodeGeneratorTest.php   # MAS code generation (R25xxx, P25xxx)
-│   ├── Service/                     # lifecycle queue reporting
+│   ├── Service/                     # lifecycle queue reporting + RCS on-create wiring tripwire
 │   └── Security/                    # afform arg policy + guard wiring tripwire
 ├── Integration/                     # self-skips in CI (needs a bootstrapped Civi)
 │   ├── CiviRules/
@@ -43,7 +43,8 @@ tests/
 │   ├── AfformPublicArgGuardTest.php # public-afform arg entitlement (task #159)
 │   └── afform-prefill-anon-probe.sh # anonymous HTTP probe; safe against production
 ├── Live/                            # NOT a phpunit suite — `cv scr`, live site, non-security
-│   └── ClientRepChangeTest.php      # client-rep change on the two VC project forms
+│   ├── ClientRepChangeTest.php      # client-rep change on the two VC project forms
+│   └── RcsChaseArmingTest.php       # RCS chase arms for BOTH intake paths, exactly once each
 ├── Fixtures/
 ├── TestCase.php                     # Base test class
 └── bootstrap.php                    # Test environment setup

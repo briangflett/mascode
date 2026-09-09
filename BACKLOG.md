@@ -55,6 +55,45 @@
 - **Performance Scaling**: Optimization for large-scale deployments
 - **Integration Hub**: Central hub for nonprofit technology integrations
 
+## Filed — RCS lifecycle follow-ups
+
+Both found while fixing the manual-intake chase arming (upgrade_5012, 2026-09-09)
+and deliberately NOT absorbed into that change.
+
+### RCS chase cadence has no terminal step
+
+Five Service Requests — **18766, 18767, 18782, 18797, 18813** — have had both
+chases sent, their queue drained, and are STILL in "Request RCS". The cadence
+sends at 21 and 42 days and then simply stops, so a fully-chased dead request is
+indistinguishable from a live one, forever, in every dashboard that counts the
+status.
+
+This matters more now, not less: arming manual intake adds ~31 cases a year to a
+pipeline with no exit. Fixing the leak without fixing this trades a silent
+under-chase for a silently growing queue of undead requests.
+
+Options worth weighing: a third cadence step that moves the case to
+"No Client Response" instead of mailing; or a scheduled sweep on age-in-status.
+The first keeps the decision inside the existing rule machinery; the second is
+easier to tune but is another cron job.
+
+| Priority | Effort | Notes |
+|----------|--------|-------|
+| Medium | Small–Medium | Needs a coordinator decision on how long "no response" takes to declare |
+
+### Prod CiviRules errors: "Contact ID is not numeric" and Relationship.create mandatory keys
+
+The August/September production logs carry recurring
+`CiviRules Contact ID is not numeric for Case` warnings and
+`Civirules api3 action exception: Mandatory key(s) missing ... Relationship.create`
+errors, several coinciding with Service Request creation. Unrelated to the chase
+— a different CiviRule is failing — but it is failing repeatedly and silently on
+production, and nobody has read the stack.
+
+| Priority | Effort | Notes |
+|----------|--------|-------|
+| Medium | Small to diagnose | Start from the log timestamps; identify which rule/action raises it |
+
 ## Technical Debt
 
 | Priority | Description | Impact | Effort |
@@ -80,5 +119,5 @@
 
 ---
 
-*Last Updated: 2025-06-18*  
+*Last Updated: 2026-09-09*  
 *For development workflow, see [DEVELOPMENT.md](docs/DEVELOPMENT.md)*

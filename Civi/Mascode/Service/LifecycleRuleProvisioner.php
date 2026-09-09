@@ -76,6 +76,73 @@ final class LifecycleRuleProvisioner
     }
 
     /**
+     * RCS chase for a Service Request CREATED directly at "Request RCS" — the
+     * manual-intake counterpart to ensureRcsChaseRule().
+     *
+     * WHY A SECOND RULE RATHER THAN A WIDER FIRST ONE
+     * The chase has always armed off changed_case + case_status_changed, so it
+     * needs a status TRANSITION. Only one of the two intake paths produces one:
+     *
+     *   - Web form: the request_for_assistance_form FormProcessor creates the
+     *     case at case_status 1 ("Open"/"Ongoing"), and sending the ask email
+     *     later makes RcsRequestStatusSubscriber advance it — a real
+     *     transition. Armed 19 of 19 on production.
+     *   - CiviCRM "New Case" UI: CRM_Case_Form_Activity_OpenCase has NO default
+     *     status (no case_status option value carries is_default = 1, so the
+     *     select renders a "- select Case Status -" placeholder). The
+     *     coordinator picks "Request RCS" because that is where the case is
+     *     going — they send the ask email in the same sitting. The case is
+     *     created AT the arming status, never transitions into it, and armed
+     *     0 of 23 on production. Manual is the MAJORITY intake path.
+     *
+     * So this rule arms on CREATION AT the status, using the mas_new_case
+     * trigger that Civi/Mascode/CiviRules/triggers.json already registers (and
+     * which, until now, no rule used). It carries case_type + case_status and
+     * deliberately NOT case_status_changed: at creation there is no previous
+     * value for that condition to compare against.
+     *
+     * THE TWO RULES CANNOT DOUBLE-ARM ONE ENTRY, and this is measured, not
+     * assumed (tests/Live/RcsChaseArmingTest.php, scenarios A/B/H):
+     *   - created AT "Request RCS"  -> this rule fires; there is no transition
+     *     for the changed_case rule to match.
+     *   - created at "Ongoing"      -> this rule does not match on create, and
+     *     does not match when the case later transitions in either, because
+     *     mas_new_case only fires on op = create. The changed_case rule arms
+     *     that one, exactly as it does today.
+     * A later RE-entry (RCS form returns -> "RCS Completed" -> asked again) is
+     * a genuine second entry and arms via the changed_case rule; creation
+     * happens once per case, ever, so this rule cannot contribute to it. That
+     * is why arming is idempotent per ENTRY without any dedupe guard.
+     *
+     * WHY NOT MODIFY RULE 9 INSTEAD
+     * Because the change would never reach production. ensureStatusChaseRule()
+     * short-circuits on "SELECT id FROM civirule_rule WHERE name = ..." and
+     * returns already_exists, so an edit to an existing rule's trigger or
+     * conditions is silently skipped wherever that rule exists — which is
+     * production. upgrade_5011 already hit exactly that and was a no-op for the
+     * RCS chase. A NEW name makes the same idempotency key work FOR us: it does
+     * not exist on production, so upgrade_5012 creates it.
+     *
+     * Keep the phrase "auto-mode (sent immediately)" in the description below —
+     * setLifecycleEmailMode() rewrites it by exact-phrase match on each flip
+     * (see MODE_PHRASES); neutral wording stops the flip recognising this rule
+     * and the CiviRules UI then advertises the wrong send mode.
+     */
+    public static function ensureRcsChaseOnCreateRule(): array
+    {
+        return self::ensureCreatedAtStatusChaseRule(
+            'mas_lifecycle_rcs_chase_on_create',
+            'mas: Lifecycle RCS chase (client, opened at status)',
+            'SR CREATED directly at Request RCS — manual intake, which produces no status transition for the changed_case chase to see; client is chased in auto-mode (sent immediately) at 21/42 days unless the case has left the status (form return moves it to RCS Completed, which cancels pending chases).',
+            'Request RCS',
+            'mas_lifecycle_rcs_chase__client',
+            'client_rep',
+            [21, 42],
+            self::serviceRequestCaseTypeId()
+        );
+    }
+
+    /**
      * Migrate the two auto-send rules off their fossil "_propose" names, which
      * date from when every lifecycle email queued a draft for review. Both have
      * sent immediately since 2026-08-20, so "propose" describes the opposite of
@@ -761,6 +828,97 @@ final class LifecycleRuleProvisioner
                 'original_operator' => '!=', 'original_value' => $statusValue,
                 'operator' => '=', 'value' => $statusValue,
             ]), 'AND'],
+            [$condIds['case_status'], serialize(['operator' => 0, 'status_id' => [$statusValue]]), 'AND'],
+        ]);
+
+        $actionParams = serialize([
+            'template' => $template,
+            'recipient' => $recipient,
+            'mode' => 'auto',
+        ]);
+        $actionRows = [];
+        foreach ($delaysDays as $days) {
+            $row = \CRM_Civirules_BAO_CiviRulesRuleAction::writeRecord([
+                'rule_id' => $ruleId,
+                'action_id' => $actionId,
+                'action_params' => $actionParams,
+                'delay' => self::serializedXDaysDelay($days),
+                'ignore_condition_with_delay' => 0,
+                'is_active' => 1,
+            ]);
+            $actionRows[] = (int) $row->id;
+        }
+
+        return [
+            'rule_id' => $ruleId,
+            'status_value' => $statusValue,
+            'condition_rows' => $condRows,
+            'action_rows' => $actionRows,
+        ];
+    }
+
+    /**
+     * Shared builder: mas_new_case rule chasing a case role with delayed
+     * lifecycle emails when the case is CREATED already sitting at one status.
+     *
+     * The transition-based sibling is ensureStatusChaseRule(). The differences
+     * are exactly two, and both follow from there being no previous value at
+     * creation time: the trigger is mas_new_case (op = create) rather than
+     * changed_case, and the condition set omits case_status_changed.
+     *
+     * Condition ORDER is load-bearing. The condition whose condition_link is
+     * NULL must sort first: CiviRules concatenates the links in weight order,
+     * so a NULL link arriving second produces a broken expression and the rule
+     * silently never matches.
+     */
+    private static function ensureCreatedAtStatusChaseRule(
+        string $name,
+        string $label,
+        string $description,
+        string $statusName,
+        string $template,
+        string $recipient,
+        array $delaysDays = [30, 90, 150],
+        ?int $caseTypeId = null
+    ): array {
+        $caseTypeId = $caseTypeId ?? self::projectCaseTypeId();
+        $existing = \CRM_Core_DAO::singleValueQuery(
+            "SELECT id FROM civirule_rule WHERE name = %1",
+            [1 => [$name, 'String']]
+        );
+        if ($existing) {
+            return ['already_exists' => (int) $existing];
+        }
+
+        // Registered by Civi/Mascode/CiviRules/triggers.json. That registration
+        // does NOT happen on `cv flush`, so on an environment where the trigger
+        // row is missing this throws rather than building a rule pointing at
+        // nothing — run `cv upgrade:db` (or reinstall the extension) first.
+        $triggerId = self::requireId(
+            "SELECT id FROM civirule_trigger WHERE name = 'mas_new_case'",
+            'trigger mas_new_case'
+        );
+        $actionId = self::requireId(
+            "SELECT id FROM civirule_action WHERE name = 'mas_lifecycle_email'",
+            'action mas_lifecycle_email'
+        );
+        $condIds = [];
+        foreach (['case_type', 'case_status'] as $n) {
+            $condIds[$n] = self::requireId("SELECT id FROM civirule_condition WHERE name = '$n'", "condition $n");
+        }
+        $statusValue = self::caseStatusValue($statusName);
+
+        $rule = \CRM_Civirules_BAO_CiviRulesRule::writeRecord([
+            'name' => $name,
+            'label' => $label,
+            'trigger_id' => $triggerId,
+            'is_active' => 1,
+            'description' => $description,
+        ]);
+        $ruleId = (int) $rule->id;
+
+        $condRows = self::writeConditions($ruleId, [
+            [$condIds['case_type'], serialize(['operator' => 0, 'case_type_id' => [$caseTypeId]]), null],
             [$condIds['case_status'], serialize(['operator' => 0, 'status_id' => [$statusValue]]), 'AND'],
         ]);
 
