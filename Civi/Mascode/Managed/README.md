@@ -34,7 +34,6 @@ CiviCRM scans this directory (and the rest of the extension) for `*.mgd.php` fil
 
 > The other `SavedSearch_*.mgd.php` files predate this table and are not yet inventoried individually — pre-existing gap, not a licence to skip the row for a new one.
 
-
 ## Sidecar `.body.html` files
 
 Templates whose bodies are version-controlled use a sidecar `.body.html` file alongside the `.mgd.php`. The `.mgd.php` loads the body via `file_get_contents(__DIR__ . '/<name>.body.html')`. This keeps HTML readable in git diffs and preserves CRLF line endings (which matters for CiviCRM's `is_modified` hash detection).
@@ -55,7 +54,7 @@ When the in-UI body diverges from the sidecar:
 | MessageTemplate | `never` | Templates may be referenced by historical activities; uninstall should NOT delete |
 | SavedSearch / SearchDisplay | `unused` | Nothing references a search by FK, so dropping one on uninstall is safe. `unused` (not `never`) keeps a search that an Afform still embeds by name, since that reference is not an FK CiviCRM can see. |
 
-`update` is `always` on case-type config (mascode is authoritative; UI drift reverts on next reconcile — Brian is the sole editor). MessageTemplate entries use `update='unmodified'`: mascode plants the skeleton (name, subject, structure, merge-tag scaffolding), but body edits in the Civi admin UI survive subsequent reconciles. Nina/Brian/Steve own template body content; mascode owns the structure around it.
+`update` is `always` on case-type config (mascode is authoritative; UI drift reverts on next reconcile — Brian is the sole editor). MessageTemplate entries use `update='unmodified'`: mascode plants the skeleton (name, subject, structure, merge-tag scaffolding), but body edits in the Civi admin UI survive subsequent reconciles. Nina/Brian/Steve own template body content; mascode owns the structure around it. SavedSearch/SearchDisplay entries default to `update='unmodified'`, with one deliberate exception: `SavedSearch_MAS_Sent_Email_Log.mgd.php` uses `always`, because it is authoritative ops config nobody should hand-edit and a stray UI tweak would otherwise detach the file from reconciliation permanently. The trade-off is that UI edits to that one search are silently reverted on the next flush.
 
 ## Post-CiviCase-upgrade checklist
 

@@ -15,7 +15,12 @@ Packaged forms (`base_module = mascode`):
 | `afformMASSASS` | `civicrm/mas-sass-form` | `Short Self Assessment Survey (SAS)` Activity |
 | `afformProjectCloseVCFeedback` | `civicrm/mas-pclose-vc` | `Project Close - VC Report` Activity on a Case |
 | `afformProjectCloseClientFeedback` | `civicrm/mas-pclose-client` | `Project Close - Client Feedback` Activity on a Case |
-| `afformMASSentEmailLog` | `civicrm/mas-sent-email-log` | *(staff, read-only)* Sent Email Log — embeds `MAS_Sent_Email_Log_Table`; gated on `edit all contacts` |
+
+Staff-facing packaged forms — read-only, create nothing, and gated rather than public:
+
+| Form | Route | Shows | Gate |
+|------|-------|-------|------|
+| `afformMASSentEmailLog` | `civicrm/mas-sent-email-log` | Sent Email Log — embeds `MAS_Sent_Email_Log_Table` | `edit all contacts` |
 
 This approach:
 - Version-controls the forms with the rest of the extension
@@ -174,12 +179,24 @@ filter by when a user holds view-all. Dev is not a reliable check here: dev VCs
 do not have these capabilities, so a form that looks correctly gated in dev can
 be wide open on production.
 
-Known limit, worth stating rather than assuming away: the gate lives on the
-**Afform**, and a SavedSearch's SearchDisplay is *also* reachable directly at
-`civicrm/search#/display/<Search>/<Display>`, a route that requires only
-`access CiviCRM`. So the Afform gate controls the intended entry point, not
-every path to the data. Where that residual exposure matters, the fix is to trim
-the offending capability from the role — not to add more Afform permissions.
+**An Afform gate alone does not close the bare SearchKit route.** A
+SearchDisplay is also reachable at `civicrm/search#/display/<Search>/<Display>`,
+which requires only `access CiviCRM` — so gating the Afform protects the
+intended entry point and nothing else. To actually close that route, set
+`'acl_bypass' => TRUE` on the SearchDisplay: core then refuses to run the
+display unless it is loaded through an Afform the viewer may access
+(`AbstractRunAction::_run`), and the bare route returns *Access denied*.
+`MAS_Sent_Email_Log_Table` does this; so do the VC Portal displays.
+
+Two consequences to respect when you use `acl_bypass`:
+
+- The inner query runs with `checkPermissions => FALSE`, so **the Afform's
+  permission becomes the only control**. Do not embed an `acl_bypass` display on
+  a second, less-gated Afform — that Afform silently becomes the new boundary.
+- Because ACLs no longer filter the query, every viewer sees identical rows and
+  counts. That is the intent for a staff report; it would be wrong for anything
+  per-user, where the VC Portal's filter-as-security predicate is the right tool
+  instead.
 
 ## Replacing a person on a form (the join-id trap)
 
